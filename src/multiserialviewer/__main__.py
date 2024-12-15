@@ -1,10 +1,12 @@
 import sys
 from multiserialviewer import __version__
 
+from application.application import Application
+
 
 def main() -> int | str:
-    print(__version__)
-    return 0
+    app = Application(__version__, sys.argv)
+    return app.exec()
 
 
 if __name__ == '__main__':
