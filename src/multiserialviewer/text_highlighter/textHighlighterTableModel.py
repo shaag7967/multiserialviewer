@@ -115,6 +115,6 @@ class TextHighlighterTableModel(QAbstractTableModel):
     def removeRows(self, row, count, parent=QModelIndex()):
         self.beginRemoveRows(parent, row, row + count - 1)
         for i in range(count):
-            self.settings.pop(row)
+            del self.settings[row]
         self.endRemoveRows()
         return True

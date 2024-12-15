@@ -11,7 +11,7 @@ class TextHighlighterSettingsDialog(QDialog):
     def __init__(self, parent, settings: List[TextHighlighterConfig]):
         super().__init__(parent)
 
-        self.setWindowTitle("Settings Text Highlighter")
+        self.setWindowTitle("Text Highlighter Settings")
         self.widget = createWidgetFromUiFile("textHighlighterSettingsDialog.ui")
 
         self.table_model = TextHighlighterTableModel(settings)
@@ -40,6 +40,7 @@ class TextHighlighterSettingsDialog(QDialog):
         self.table_model.insertRows(self.table_model.rowCount(), 1)
 
     def deleteSetting(self):
-        selected_model_indices = self.widget.tableView.selectionModel().selectedRows()
-        for index in selected_model_indices:
-            self.table_model.removeRows(index.row(), 1)
+        selected_model_indices = [modelIndex.row() for modelIndex in self.widget.tableView.selectionModel().selectedRows()]
+
+        for index in sorted(selected_model_indices, reverse=True):
+            self.table_model.removeRows(index, 1)
