@@ -1,7 +1,6 @@
 import sys
 from multiserialviewer import __version__
-
-from application.application import Application
+from multiserialviewer.application.application import Application
 
 
 def main() -> int | str:

@@ -1,7 +1,8 @@
 from PySide6.QtCore import QObject, Slot, Signal
-from gui.serialViewerWindow import SerialViewerWindow
-from serial_data.serialDataReceiver import SerialDataReceiver
-from serial_data.serialDataProcessor import SerialDataProcessor
+
+from multiserialviewer.gui.serialViewerWindow import SerialViewerWindow
+from multiserialviewer.serial_data.serialDataReceiver import SerialDataReceiver
+from multiserialviewer.serial_data.serialDataProcessor import SerialDataProcessor
 
 
 class SerialViewerController(QObject):

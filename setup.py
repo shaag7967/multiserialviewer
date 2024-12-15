@@ -27,7 +27,7 @@ if readme.is_file():
         long_description = fh.read()
 
 setup(
-    name='multiSerialViewer',
+    name='multiserialviewer',
     version=__version__,
     author='shaag',
     description='Shows multiple serial text streams in a single window with individual highlighting options.',
@@ -52,7 +52,8 @@ setup(
         'GitHub': 'https://github.com/shaag7967/multiserialviewer',
     },
     package_dir={'': 'src'},
-    packages=find_packages('src', exclude=['tests*']),
+    packages=find_packages('src'),
+    package_data={'multiserialviewer': ['ui_files/*.ui']},
     install_requires=load_req(),
     python_requires='>=3.11',
     entry_points={

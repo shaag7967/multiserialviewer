@@ -1,9 +1,10 @@
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHeaderView
-from ui_files.uiFileHelper import createWidgetFromUiFile
 from typing import List
-from text_highlighter.textHighlighterConfig import TextHighlighterConfig
-from text_highlighter.textHighlighterTableModel import TextHighlighterTableModel
-from text_highlighter.colorSelectorItemDelegate import ColorSelectorItemDelegate
+
+from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
+from multiserialviewer.text_highlighter.textHighlighterConfig import TextHighlighterConfig
+from multiserialviewer.text_highlighter.textHighlighterTableModel import TextHighlighterTableModel
+from multiserialviewer.text_highlighter.colorSelectorItemDelegate import ColorSelectorItemDelegate
 
 
 class TextHighlighterSettingsDialog(QDialog):
@@ -11,7 +12,7 @@ class TextHighlighterSettingsDialog(QDialog):
         super().__init__(parent)
 
         self.setWindowTitle("Settings Text Highlighter")
-        self.widget = createWidgetFromUiFile("./ui_files/textHighlighterSettingsDialog.ui")
+        self.widget = createWidgetFromUiFile("textHighlighterSettingsDialog.ui")
 
         self.table_model = TextHighlighterTableModel(settings)
         self.widget.tableView.setModel(self.table_model)

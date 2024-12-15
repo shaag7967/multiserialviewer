@@ -3,12 +3,12 @@ from PySide6.QtCore import QSize, Signal
 
 from typing import List
 
-from serial_data.serialConnectionSettings import SerialConnectionSettings
-from ui_files.uiFileHelper import createWidgetFromUiFile
-from gui.serialViewerWindow import SerialViewerWindow
-from gui.serialViewerCreateDialog import SerialViewerCreateDialog
-from gui.textHighlighterSettingsDialog import TextHighlighterSettingsDialog
-from text_highlighter.textHighlighter import TextHighlighterConfig
+from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
+from multiserialviewer.serial_data.serialConnectionSettings import SerialConnectionSettings
+from multiserialviewer.gui.serialViewerWindow import SerialViewerWindow
+from multiserialviewer.gui.serialViewerCreateDialog import SerialViewerCreateDialog
+from multiserialviewer.gui.textHighlighterSettingsDialog import TextHighlighterSettingsDialog
+from multiserialviewer.text_highlighter.textHighlighter import TextHighlighterConfig
 
 
 class MainWindow(QMainWindow):
@@ -24,7 +24,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.setWindowTitle(title)
 
-        widget = createWidgetFromUiFile("./ui_files/mainWindow.ui")
+        widget = createWidgetFromUiFile("mainWindow.ui")
 
         self.mdiArea = widget.findChild(QMdiArea, 'mdiArea')
         self.pb_changeConnectionState: QPushButton = widget.findChild(QPushButton, 'pb_changeConnectionState')

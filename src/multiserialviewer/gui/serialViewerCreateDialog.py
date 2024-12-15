@@ -2,7 +2,8 @@ from PySide6.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox
 from PySide6.QtCore import Slot
 import serial.tools.list_ports
 import serial
-from ui_files.uiFileHelper import createWidgetFromUiFile
+
+from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
 
 
 class SerialViewerCreateDialog(QDialog):
@@ -12,7 +13,7 @@ class SerialViewerCreateDialog(QDialog):
         self.setWindowTitle("Create SerialViewer")
         self.disabled_port_names = []
 
-        self.connectWidget = createWidgetFromUiFile("./ui_files/createSerialViewerDialog.ui")
+        self.connectWidget = createWidgetFromUiFile("createSerialViewerDialog.ui")
 
         self.refreshListOfSerialPorts()
         self.populateBaudRateCombobox()

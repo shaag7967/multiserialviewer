@@ -1,27 +1,19 @@
-from PySide6.QtWidgets import QApplication, QProxyStyle, QStyle
+from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QSettings, QSize, Slot
 from typing import List
 from platformdirs import user_config_dir
 import pathlib
 import copy
 
-from gui.mainWindow import MainWindow
+from multiserialviewer.gui.mainWindow import MainWindow
+from multiserialviewer.serial_data.serialDataReceiver import SerialDataReceiver
+from multiserialviewer.serial_data.serialDataProcessor import SerialDataProcessor
+from multiserialviewer.serial_data.serialConnectionSettings import SerialConnectionSettings
+from multiserialviewer.text_highlighter.textHighlighterConfig import TextHighlighterConfig
+from multiserialviewer.application.serialViewerController import SerialViewerController
+from multiserialviewer.application.proxyStyle import ProxyStyle
 
-from serial_data.serialDataReceiver import SerialDataReceiver
-from serial_data.serialDataProcessor import SerialDataProcessor
-from .serialViewerController import SerialViewerController
 
-from serial_data.serialConnectionSettings import SerialConnectionSettings
-from text_highlighter.textHighlighterConfig import TextHighlighterConfig
-
-
-class ProxyStyle(QProxyStyle):
-    def subElementRect(self, element, opt, widget=None):
-        if element == QStyle.SE_ItemViewItemCheckIndicator and not opt.text:
-            rect = super().subElementRect(element, opt, widget)
-            rect.moveCenter(opt.rect.center())
-            return rect
-        return super().subElementRect(element, opt, widget)
 
 
 class Application(QApplication):
@@ -30,7 +22,7 @@ class Application(QApplication):
     def __init__(self, version: str, arguments):
         super().__init__(arguments)
 
-        self.config_dir = user_config_dir(appname=Application.NAME, roaming=True, ensure_exists=True, appauthor=False)
+        self.config_dir = user_config_dir(appname=Application.NAME, roaming=False, ensure_exists=True, appauthor=False)
         self.main_config_file_path = str(pathlib.PurePath(self.config_dir, 'multiserialviewer.ini'))
         self.highlighter_config_file_path = str(pathlib.PurePath(self.config_dir, 'highlighter.ini'))
 

@@ -2,8 +2,8 @@ from PySide6.QtCore import Qt, Slot, Signal
 from PySide6.QtGui import QTextCursor, QClipboard
 from PySide6.QtWidgets import QApplication, QMdiSubWindow, QTextEdit, QPushButton, QCheckBox
 from typing import List
-from text_highlighter.textHighlighter import TextHighlighter, TextHighlighterConfig
-from ui_files.uiFileHelper import createWidgetFromUiFile
+from multiserialviewer.text_highlighter.textHighlighter import TextHighlighter, TextHighlighterConfig
+from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
 
 
 class SerialViewerWindow(QMdiSubWindow):
@@ -12,7 +12,7 @@ class SerialViewerWindow(QMdiSubWindow):
     def __init__(self, window_title):
         super().__init__()
 
-        widget = createWidgetFromUiFile("./ui_files/serialViewerWindow.ui")
+        widget = createWidgetFromUiFile("serialViewerWindow.ui")
 
         self.setWidget(widget)
         self.setWindowTitle(window_title)

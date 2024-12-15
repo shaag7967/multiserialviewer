@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QStyledItemDelegate, QAbstractItemDelegate, QAbstractItemView, QComboBox
 from PySide6.QtCore import Qt
-from text_highlighter.textHighlighterTableModel import TextHighlighterTableModel
+
+from multiserialviewer.text_highlighter.textHighlighterTableModel import TextHighlighterTableModel
 
 
 class ColorSelectorItemDelegate(QStyledItemDelegate):

@@ -1,8 +1,9 @@
 from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex
 from PySide6.QtGui import QColor
 from typing import List
-from text_highlighter.textHighlighterConfig import TextHighlighterConfig
 from collections import OrderedDict
+
+from multiserialviewer.text_highlighter.textHighlighterConfig import TextHighlighterConfig
 
 
 class TextHighlighterTableModel(QAbstractTableModel):
