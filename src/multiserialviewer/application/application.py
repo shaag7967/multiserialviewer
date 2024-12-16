@@ -131,6 +131,8 @@ class Application(QApplication):
                 for ctrl in self.controller.values():
                     ctrl.stop()
                 self.mainWindow.setConnectionState(False)
+        else:
+            self.mainWindow.setConnectionState(False)
 
     def loadSettings(self):
         settings = QSettings(self.main_config_file_path, QSettings.Format.IniFormat)
