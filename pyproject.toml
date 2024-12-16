@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "multiserialviewer"
+dynamic = ["version"]
+description = "Shows multiple serial text streams in a single window with individual highlighting options."
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.11"
+authors = [
+    { name = "shaag" },
+]
+keywords = [
+    "MCU",
+    "UART",
+    "debug output",
+    "serial",
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Embedded Systems",
+    "Topic :: Terminals :: Serial",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "platformdirs == 4.3.6",
+    "pyserial     == 3.5",
+    "pyside6      == 6.8.1",
+]
+
+[project.scripts]
+multiserialviewer = "multiserialviewer.__main__:main"
+
+[project.urls]
+GitHub = "https://github.com/shaag7967/multiserialviewer"
+Homepage = "https://github.com/shaag7967/multiserialviewer"
+
+[tool.hatch.version]
+path = "src/multiserialviewer/__version__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+]
+
+[tool.hatch.envs.default]
+type = "virtual"
+path = ".venv"
+
+[tool.hatch.envs.test]
+type = "virtual"
+path = ".venvtest"
+dependencies = [
+    "pytest",
+    "pytest-qt",
+    "pytest-html",
+    "pytest-cov"
+]
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
+
