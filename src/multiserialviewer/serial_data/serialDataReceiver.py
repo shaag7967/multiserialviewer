@@ -1,4 +1,5 @@
 import serial
+import typing
 from threading import Thread, Event
 from queue import Queue
 from .serialConnectionSettings import SerialConnectionSettings
@@ -9,8 +10,8 @@ class SerialDataReceiver:
     def __init__(self, settings: SerialConnectionSettings):
         self.terminateEvent = Event()
         self.rxQueue = Queue()
-        self.thread = None
-        self.serialPort = None
+        self.thread: typing.Optional[Thread] = None
+        self.serialPort: typing.Optional[serial.Serial] = None
         self.settings = settings
 
     def open_port(self) -> bool:
