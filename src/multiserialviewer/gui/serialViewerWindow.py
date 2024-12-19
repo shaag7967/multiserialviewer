@@ -4,21 +4,27 @@ from PySide6.QtWidgets import QApplication, QMdiSubWindow, QTextEdit, QPushButto
 from typing import List
 from multiserialviewer.text_highlighter.textHighlighter import TextHighlighter, TextHighlighterConfig
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
+from multiserialviewer.gui.serialViewerTextEdit import SerialViewerTextEdit
+from multiserialviewer.icons.iconSet import IconSet
 
 
 class SerialViewerWindow(QMdiSubWindow):
     closed = Signal()
+    signal_createTextHighlightEntry = Signal(str)
 
-    def __init__(self, window_title):
+    def __init__(self, window_title: str, icon_set: IconSet):
         super().__init__()
 
         widget = createWidgetFromUiFile("serialViewerWindow.ui")
 
         self.setWidget(widget)
         self.setWindowTitle(window_title)
+        self.setWindowIcon(icon_set.getSerialViewerIcon())
         self.setAttribute(Qt.WA_DeleteOnClose)
 
-        self.textEdit: QTextEdit = widget.findChild(QTextEdit, 'textEdit')
+        self.textEdit: SerialViewerTextEdit = widget.findChild(SerialViewerTextEdit, 'textEdit')
+        self.textEdit.setIconSet(icon_set)
+        self.textEdit.signal_createTextHighlightEntry.connect(self.signal_createTextHighlightEntry)
 
         self.highlighter = TextHighlighter()
         self.highlighter.setDocument(self.textEdit.document())

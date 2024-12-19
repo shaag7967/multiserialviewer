@@ -9,6 +9,7 @@ from multiserialviewer.gui.serialViewerWindow import SerialViewerWindow
 from multiserialviewer.gui.serialViewerCreateDialog import SerialViewerCreateDialog
 from multiserialviewer.gui.textHighlighterSettingsDialog import TextHighlighterSettingsDialog
 from multiserialviewer.text_highlighter.textHighlighter import TextHighlighterConfig
+from multiserialviewer.icons.iconSet import IconSet
 
 
 class MainWindow(QMainWindow):
@@ -19,18 +20,26 @@ class MainWindow(QMainWindow):
     signal_aboutToBeClosed = Signal()
     signal_editHighlighterSettings = Signal()
     signal_applyHighlighterSettings = Signal(object)
+    signal_createTextHighlightEntry = Signal(str)
 
-    def __init__(self, title: str):
+    def __init__(self, title: str, icon_set: IconSet):
         super(MainWindow, self).__init__()
-        self.setWindowTitle(title)
+        self.icon_set = icon_set
 
         widget = createWidgetFromUiFile("mainWindow.ui")
 
+        self.setWindowTitle(title)
+        self.setCentralWidget(widget)
         self.mdiArea = widget.findChild(QMdiArea, 'mdiArea')
         self.pb_changeConnectionState: QPushButton = widget.findChild(QPushButton, 'pb_changeConnectionState')
-
-        self.setCentralWidget(widget)
         self.setConnectionState(False)
+
+        # icons
+        self.setWindowIcon(icon_set.getAppIcon())
+        self.pb_changeConnectionState.setIcon(self.icon_set.getCaptureStartIcon())
+        widget.pb_create.setIcon(self.icon_set.getSerialViewerIcon())
+        widget.pb_clear.setIcon(self.icon_set.getClearContentIcon())
+        widget.pb_highlighter.setIcon(self.icon_set.getHighlighterIcon())
 
         # connections
         widget.pb_create.clicked.connect(self.signal_showSerialViewerCreateDialog)
@@ -53,10 +62,11 @@ class MainWindow(QMainWindow):
                 self.signal_createSerialViewer.emit(dialog.getName(), settings)
 
     def createSerialViewerWindow(self, viewTitle: str, size: QSize = None):
-        view = SerialViewerWindow(viewTitle)
+        view = SerialViewerWindow(viewTitle, self.icon_set)
         if size:
             view.resize(size)
         self.mdiArea.addSubWindow(view)
+        view.signal_createTextHighlightEntry.connect(self.signal_createTextHighlightEntry)
         view.show()
         return view
 
@@ -71,9 +81,11 @@ class MainWindow(QMainWindow):
     def setConnectionState(self, state):
         self.pb_changeConnectionState.setChecked(state)
         if state:
-            self.pb_changeConnectionState.setText('Stop')
+            self.pb_changeConnectionState.setIcon(self.icon_set.getCaptureStopIcon())
+            self.pb_changeConnectionState.setText('Stop capture')
         else:
-            self.pb_changeConnectionState.setText('Start')
+            self.pb_changeConnectionState.setIcon(self.icon_set.getCaptureStartIcon())
+            self.pb_changeConnectionState.setText('Start capture')
 
     def closeEvent(self, event):
         self.signal_aboutToBeClosed.emit()

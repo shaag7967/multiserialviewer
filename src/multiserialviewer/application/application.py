@@ -12,7 +12,7 @@ from multiserialviewer.serial_data.serialConnectionSettings import SerialConnect
 from multiserialviewer.text_highlighter.textHighlighterConfig import TextHighlighterConfig
 from multiserialviewer.application.serialViewerController import SerialViewerController
 from multiserialviewer.application.proxyStyle import ProxyStyle
-
+from multiserialviewer.icons.iconSet import IconSet
 
 
 
@@ -26,10 +26,13 @@ class Application(QApplication):
         self.main_config_file_path = str(pathlib.PurePath(self.config_dir, 'multiserialviewer.ini'))
         self.highlighter_config_file_path = str(pathlib.PurePath(self.config_dir, 'highlighter.ini'))
 
+        self.icon_set = IconSet('google', '8B0000')
+
         self.controller = {}
         self.highlighterSettings: List[TextHighlighterConfig] = []
 
-        self.mainWindow = MainWindow(f'{Application.NAME} {version}')
+        self.mainWindow = MainWindow(f'{Application.NAME} {version}', self.icon_set)
+
         self.mainWindow.signal_showSerialViewerCreateDialog.connect(self.showSerialViewerCreateDialog)
         self.mainWindow.signal_createSerialViewer.connect(self.createSerialViewer)
         self.mainWindow.signal_clearAll.connect(self.clearAll)
@@ -40,6 +43,7 @@ class Application(QApplication):
         self.mainWindow.signal_aboutToBeClosed.connect(self.stopAllSerialViewer)
         self.mainWindow.signal_editHighlighterSettings.connect(self.showHighlighterSettingsDialog)
         self.mainWindow.signal_applyHighlighterSettings.connect(self.setHighlighterSettings)
+        self.mainWindow.signal_createTextHighlightEntry.connect(self.createTextHighlightEntry)
 
         self.loadSettings()
         self.loadHighlighterSettings()
@@ -74,6 +78,15 @@ class Application(QApplication):
         self.highlighterSettings = settings
         for ctrl in self.controller.values():
             ctrl.view.setHighlighterSettings(self.highlighterSettings)
+
+    @Slot(str)
+    def createTextHighlightEntry(self, text_to_highlight: str):
+        config = TextHighlighterConfig()
+        config.pattern = text_to_highlight
+
+        highlighter_settings = copy.deepcopy(self.highlighterSettings)
+        highlighter_settings.append(config)
+        self.mainWindow.showHighlighterSettingsDialog(highlighter_settings)
 
     @Slot()
     def showSerialViewerCreateDialog(self):
