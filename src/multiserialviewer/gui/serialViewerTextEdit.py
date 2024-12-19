@@ -16,8 +16,6 @@ class SerialViewerTextEdit(QTextEdit):
         super(SerialViewerTextEdit, self).__init__(parent)
         self.icon_set: typing.Optional[IconSet] = None
 
-        self.setText("adasdaasd dasdasdasasd")
-
     def setIconSet(self, icon_set: IconSet):
         self.icon_set = icon_set
 
