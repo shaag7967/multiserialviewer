@@ -1,9 +1,6 @@
 from PySide6.QtWidgets import QTextEdit, QMenu, QWidget
-from PySide6.QtCore import QPoint
-import PySide6
-from PySide6.QtGui import QContextMenuEvent, QAction, QIcon, QKeySequence
+from PySide6.QtGui import QContextMenuEvent, QAction
 from PySide6.QtCore import Signal, Slot
-import pathlib
 import typing
 
 from multiserialviewer.icons.iconSet import IconSet
