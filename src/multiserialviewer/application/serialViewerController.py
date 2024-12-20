@@ -15,7 +15,7 @@ class SerialViewerController(QObject):
         self.processor = processor
         self.view = view
 
-        self.view.closed.connect(self.terminate)
+        self.view.signal_closed.connect(self.terminate)
         self.processor.dataAvailable.connect(self.view.appendData)
 
     def start(self) -> bool:

@@ -9,7 +9,7 @@ from multiserialviewer.icons.iconSet import IconSet
 
 
 class SerialViewerWindow(QMdiSubWindow):
-    closed = Signal()
+    signal_closed = Signal()
     signal_createTextHighlightEntry = Signal(str)
 
     def __init__(self, window_title: str, icon_set: IconSet):
@@ -40,7 +40,7 @@ class SerialViewerWindow(QMdiSubWindow):
     def closeEvent(self, event):
         # is not called when mainwindow is closed
         event.accept()
-        self.closed.emit()
+        self.signal_closed.emit()
 
     @Slot()
     def clear(self):
