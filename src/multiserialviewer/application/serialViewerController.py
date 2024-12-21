@@ -38,10 +38,10 @@ class SerialViewerController(QObject):
             self.show_message(f'Closed {self.receiver.settings.portName}')
 
     def show_message(self, text):
-        self.view.appendData(f'\n[MSG: {text} :MSG]\n', True)
+        self.view.appendData(f'\n[MSG: {text} :MSG]\n')
 
     def show_error(self, text):
-        self.view.appendData(f'\n[ERR: {text} :ERR]\n', True)
+        self.view.appendData(f'\n[ERR: {text} :ERR]\n')
 
     @Slot()
     def terminate(self):
