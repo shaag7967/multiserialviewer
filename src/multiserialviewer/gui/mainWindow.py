@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QMdiArea, QMainWindow, QPushButton
-from PySide6.QtCore import QSize, Signal
+from PySide6.QtCore import QSize, QPoint, Signal
 
 from typing import List
 
@@ -61,10 +61,12 @@ class MainWindow(QMainWindow):
 
                 self.signal_createSerialViewer.emit(dialog.getName(), settings)
 
-    def createSerialViewerWindow(self, viewTitle: str, size: QSize = None):
-        view = SerialViewerWindow(viewTitle, self.icon_set)
+    def createSerialViewerWindow(self, view_title: str, size: QSize = None, position: QPoint = None):
+        view = SerialViewerWindow(view_title, self.icon_set)
         if size:
             view.resize(size)
+        if position:
+            view.move(position)
         self.mdiArea.addSubWindow(view)
         view.signal_createTextHighlightEntry.connect(self.signal_createTextHighlightEntry)
         view.show()

@@ -11,18 +11,19 @@ class SerialViewerController(QObject):
     def __init__(self, receiver: SerialDataReceiver, processor: SerialDataProcessor, view: SerialViewerWindow):
         super().__init__()
 
-        self.receiver = receiver
-        self.processor = processor
-        self.view = view
+        self.receiver: SerialDataReceiver = receiver
+        self.processor: SerialDataProcessor = processor
+        self.view: SerialViewerWindow = view
 
         self.view.signal_closed.connect(self.terminate)
-        self.processor.dataAvailable.connect(self.view.appendData)
 
     def start(self) -> bool:
         if self.receiver.open_port():
             self.processor.start()
             self.receiver.start()
+
             self.show_message(f'Opened {self.receiver.settings.portName}')
+            self.processor.dataAvailable.connect(self.view.appendData)
             return True
         else:
             self.show_error(f'Failed to open {self.receiver.settings.portName}')
@@ -33,6 +34,7 @@ class SerialViewerController(QObject):
             self.receiver.stop()
             self.receiver.close_port()
             self.processor.stop()
+            self.processor.dataAvailable.disconnect(self.view.appendData)
             self.show_message(f'Closed {self.receiver.settings.portName}')
 
     def show_message(self, text):

@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import QSettings, QSize, Slot, Qt
+from PySide6.QtCore import QSettings, QSize, QPoint, Slot, Qt
 from typing import List
 from platformdirs import user_config_dir
 import pathlib
@@ -98,13 +98,13 @@ class Application(QApplication):
         self.mainWindow.showHighlighterSettingsDialog(copy.deepcopy(self.highlighterSettings))
 
     @Slot(str, SerialConnectionSettings)
-    def createSerialViewer(self, window_title: str, settings: SerialConnectionSettings, size: QSize = None):
+    def createSerialViewer(self, window_title: str, settings: SerialConnectionSettings, size: QSize = None, position: QPoint = None):
         if settings.portName in self.controller:
             raise Exception(f"{settings.portName} exists already")
 
         receiver = SerialDataReceiver(settings)
         processor = SerialDataProcessor(receiver.rxQueue)
-        view = self.mainWindow.createSerialViewerWindow(window_title, size)
+        view = self.mainWindow.createSerialViewerWindow(window_title, size=size, position=position)
         view.setHighlighterSettings(self.highlighterSettings)
         ctrl = SerialViewerController(receiver, processor, view)
 
@@ -112,7 +112,8 @@ class Application(QApplication):
         self.controller[settings.portName] = ctrl
 
         if self.mainWindow.getConnectionState():
-            ctrl.start()
+            if not ctrl.start():
+                self.stopAllSerialViewer()
 
     @Slot()
     def deleteSerialViewer(self, portName):
@@ -173,9 +174,9 @@ class Application(QApplication):
             settings.setArrayIndex(i)
 
             # check if all needed keys exist
-            if all(elem in settings.allKeys() for elem in ['serialViewer', 'view/size', 'view/title']):
+            if all(elem in settings.allKeys() for elem in ['serialViewer', 'view/title']):
                 self.createSerialViewer(settings.value("view/title"), settings.value("serialViewer"),
-                                        settings.value("view/size"))
+                                        settings.value("view/size"), settings.value("view/pos"))
         settings.endArray()
 
     @Slot()
@@ -190,6 +191,7 @@ class Application(QApplication):
             settings.setValue("serialViewer", ctrl.receiver.settings)
             settings.setValue("view/title", ctrl.view.windowTitle())
             settings.setValue("view/size", ctrl.view.size())
+            settings.setValue("view/pos", ctrl.view.pos())
 
         settings.endArray()
 
