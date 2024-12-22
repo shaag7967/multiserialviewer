@@ -1,3 +1,0 @@
-pyserial     == 3.5
-pyside6      == 6.8.1
-platformdirs == 4.3.6

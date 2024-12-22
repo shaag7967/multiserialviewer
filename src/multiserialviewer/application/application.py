@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import QSettings, QSize, Slot
+from PySide6.QtCore import QSettings, QSize, QPoint, Slot, Qt
 from typing import List
 from platformdirs import user_config_dir
 import pathlib
@@ -13,7 +13,7 @@ from multiserialviewer.serial_data.serialConnectionSettings import SerialConnect
 from multiserialviewer.text_highlighter.textHighlighterConfig import TextHighlighterConfig
 from multiserialviewer.application.serialViewerController import SerialViewerController
 from multiserialviewer.application.proxyStyle import ProxyStyle
-
+from multiserialviewer.icons.iconSet import IconSet
 
 
 
@@ -27,10 +27,13 @@ class Application(QApplication):
         self.main_config_file_path = str(pathlib.PurePath(self.config_dir, 'multiserialviewer.ini'))
         self.highlighter_config_file_path = str(pathlib.PurePath(self.config_dir, 'highlighter.ini'))
 
+        self.icon_set = IconSet('google', '8B0000')
+
         self.controller = {}
         self.highlighterSettings: List[TextHighlighterConfig] = []
 
-        self.mainWindow = MainWindow(f'{Application.NAME} {version}')
+        self.mainWindow = MainWindow(f'{Application.NAME} {version}', self.icon_set)
+
         self.mainWindow.signal_showSerialViewerCreateDialog.connect(self.showSerialViewerCreateDialog)
         self.mainWindow.signal_createSerialViewer.connect(self.createSerialViewer)
         self.mainWindow.signal_clearAll.connect(self.clearAll)
@@ -41,6 +44,7 @@ class Application(QApplication):
         self.mainWindow.signal_aboutToBeClosed.connect(self.stopAllSerialViewer)
         self.mainWindow.signal_editHighlighterSettings.connect(self.showHighlighterSettingsDialog)
         self.mainWindow.signal_applyHighlighterSettings.connect(self.setHighlighterSettings)
+        self.mainWindow.signal_createTextHighlightEntry.connect(self.createTextHighlightEntry)
 
         self.loadSettings()
         self.loadHighlighterSettings()
@@ -76,28 +80,42 @@ class Application(QApplication):
         for ctrl in self.controller.values():
             ctrl.view.setHighlighterSettings(self.highlighterSettings)
 
+    @Slot(str)
+    def createTextHighlightEntry(self, text_to_highlight: str):
+        config = TextHighlighterConfig()
+        config.pattern = text_to_highlight
+
+        highlighter_settings = copy.deepcopy(self.highlighterSettings)
+        highlighter_settings.append(config)
+        self.mainWindow.showHighlighterSettingsDialog(highlighter_settings)
+
     @Slot()
     def showSerialViewerCreateDialog(self):
         already_used_ports = list(self.controller.keys())
         self.mainWindow.showSerialViewerCreateDialog(already_used_ports)
 
+    @Slot()
+    def showHighlighterSettingsDialog(self):
+        self.mainWindow.showHighlighterSettingsDialog(copy.deepcopy(self.highlighterSettings))
+
     @Slot(str, SerialConnectionSettings)
-    def createSerialViewer(self, window_title: str, settings: SerialConnectionSettings, size: QSize = None):
+    def createSerialViewer(self, window_title: str, settings: SerialConnectionSettings, size: QSize = None, position: QPoint = None):
         if settings.portName in self.controller:
             raise Exception(f"{settings.portName} exists already")
 
         statistics = SerialDataStatistics(settings)
         receiver = SerialDataReceiver(settings, statistics)
         processor = SerialDataProcessor(receiver.rxQueue)
-        view = self.mainWindow.createSerialViewerWindow(window_title, size)
+        view = self.mainWindow.createSerialViewerWindow(window_title, size=size, position=position)
         view.setHighlighterSettings(self.highlighterSettings)
         ctrl = SerialViewerController(receiver, statistics, processor, view)
 
-        ctrl.terminated.connect(self.deleteSerialViewer)
+        ctrl.terminated.connect(self.deleteSerialViewer, type=Qt.ConnectionType.QueuedConnection)
         self.controller[settings.portName] = ctrl
 
         if self.mainWindow.getConnectionState():
-            ctrl.start()
+            if not ctrl.start():
+                self.stopAllSerialViewer()
 
     @Slot()
     def deleteSerialViewer(self, portName):
@@ -112,29 +130,29 @@ class Application(QApplication):
             ctrl.view.clear()
 
     @Slot(bool)
-    def changeConnectionState(self, state):
-        if len(self.controller.values()) > 0:
-            if state:
-                failed_to_connect = False
+    def changeConnectionState(self, state: bool):
+        target_connection_state = state and len(self.controller.values()) > 0
+        self.mainWindow.setConnectionState(target_connection_state)
 
-                # try to connect all ports
-                for ctrl in self.controller.values():
-                    if not ctrl.start():
-                        failed_to_connect = True
-
-                if failed_to_connect:
-                    # cleanup if connect failed
-                    for ctrl in self.controller.values():
-                        ctrl.stop()
-                    self.mainWindow.setConnectionState(False)
-                else:
-                    self.mainWindow.setConnectionState(True)
-            else:
-                for ctrl in self.controller.values():
-                    ctrl.stop()
+        if target_connection_state:
+            failed_to_connect_all = (self.startAllSerialViewer() != len(self.controller))
+            if failed_to_connect_all:
                 self.mainWindow.setConnectionState(False)
+                self.stopAllSerialViewer()
         else:
-            self.mainWindow.setConnectionState(False)
+            self.stopAllSerialViewer()
+
+    def startAllSerialViewer(self) -> int:
+        controller_started_count = 0
+        for ctrl in self.controller.values():
+            if ctrl.start():
+                controller_started_count += 1
+        return controller_started_count
+
+    @Slot()
+    def stopAllSerialViewer(self):
+        for ctrl in self.controller.values():
+            ctrl.stop()
 
     def loadSettings(self):
         settings = QSettings(self.main_config_file_path, QSettings.Format.IniFormat)
@@ -158,9 +176,9 @@ class Application(QApplication):
             settings.setArrayIndex(i)
 
             # check if all needed keys exist
-            if all(elem in settings.allKeys() for elem in ['serialViewer', 'view/size', 'view/title']):
+            if all(elem in settings.allKeys() for elem in ['serialViewer', 'view/title']):
                 self.createSerialViewer(settings.value("view/title"), settings.value("serialViewer"),
-                                        settings.value("view/size"))
+                                        settings.value("view/size"), settings.value("view/pos"))
         settings.endArray()
 
     @Slot()
@@ -175,6 +193,7 @@ class Application(QApplication):
             settings.setValue("serialViewer", ctrl.receiver.settings)
             settings.setValue("view/title", ctrl.view.windowTitle())
             settings.setValue("view/size", ctrl.view.size())
+            settings.setValue("view/pos", ctrl.view.pos())
 
         settings.endArray()
 
@@ -218,12 +237,3 @@ class Application(QApplication):
             settings.setValue("bold", cfg.bold)
             settings.setValue("font_size", cfg.font_size)
         settings.endArray()
-
-    @Slot()
-    def stopAllSerialViewer(self):
-        for ctrl in self.controller.values():
-            ctrl.stop()
-
-    @Slot()
-    def showHighlighterSettingsDialog(self):
-        self.mainWindow.showHighlighterSettingsDialog(copy.deepcopy(self.highlighterSettings))

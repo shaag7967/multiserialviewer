@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "Shows multiple serial text streams in a single window with individual highlighting options."
 readme = "README.md"
 license = {file = "LICENSE"}
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 authors = [
     { name = "shaag" },
 ]
@@ -32,7 +32,7 @@ dependencies = [
     "pyside6      == 6.8.1",
 ]
 
-[project.scripts]
+[project.gui-scripts]
 multiserialviewer = "multiserialviewer.__main__:main"
 
 [project.urls]
@@ -57,9 +57,13 @@ path = ".venvtest"
 dependencies = [
     "pytest",
     "pytest-qt",
+    "pytest-mock",
     "pytest-html",
     "pytest-cov"
 ]
+
+[[tool.hatch.envs.test.matrix]]
+python = ["3.13", "3.12", "3.11", "3.10"]
 
 [tool.pytest.ini_options]
 addopts = [
