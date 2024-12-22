@@ -6,6 +6,7 @@ import pathlib
 import copy
 
 from multiserialviewer.gui.mainWindow import MainWindow
+from multiserialviewer.serial_data.serialDataStatistics import SerialDataStatistics
 from multiserialviewer.serial_data.serialDataReceiver import SerialDataReceiver
 from multiserialviewer.serial_data.serialDataProcessor import SerialDataProcessor
 from multiserialviewer.serial_data.serialConnectionSettings import SerialConnectionSettings
@@ -85,11 +86,12 @@ class Application(QApplication):
         if settings.portName in self.controller:
             raise Exception(f"{settings.portName} exists already")
 
-        receiver = SerialDataReceiver(settings)
+        statistics = SerialDataStatistics(settings)
+        receiver = SerialDataReceiver(settings, statistics)
         processor = SerialDataProcessor(receiver.rxQueue)
         view = self.mainWindow.createSerialViewerWindow(window_title, size)
         view.setHighlighterSettings(self.highlighterSettings)
-        ctrl = SerialViewerController(receiver, processor, view)
+        ctrl = SerialViewerController(receiver, statistics, processor, view)
 
         ctrl.terminated.connect(self.deleteSerialViewer)
         self.controller[settings.portName] = ctrl

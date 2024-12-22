@@ -3,16 +3,16 @@ import typing
 from threading import Thread, Event
 from queue import Queue
 from .serialConnectionSettings import SerialConnectionSettings
-
-
+from .serialDataStatistics import SerialDataStatistics
 
 class SerialDataReceiver:
-    def __init__(self, settings: SerialConnectionSettings):
+    def __init__(self, settings: SerialConnectionSettings, statistics: SerialDataStatistics):
         self.terminateEvent = Event()
         self.rxQueue = Queue()
         self.thread: typing.Optional[Thread] = None
         self.serialPort: typing.Optional[serial.Serial] = None
         self.settings = settings
+        self.statistics = statistics
 
     def open_port(self) -> bool:
         if self.serialPort:
@@ -57,8 +57,10 @@ class SerialDataReceiver:
 
         while not terminate_event.is_set():
             received_data = self.serialPort.read(1)
-            if len(received_data) > 0:
+
+            count = len(received_data)
+            if count > 0:
                 queue.put(received_data)
+                self.statistics.incrementFrameCount(count)
 
         self.terminateEvent.clear()
-

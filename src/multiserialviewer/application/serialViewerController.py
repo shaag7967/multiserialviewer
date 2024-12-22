@@ -3,24 +3,28 @@ from PySide6.QtCore import QObject, Slot, Signal
 from multiserialviewer.gui.serialViewerWindow import SerialViewerWindow
 from multiserialviewer.serial_data.serialDataReceiver import SerialDataReceiver
 from multiserialviewer.serial_data.serialDataProcessor import SerialDataProcessor
+from multiserialviewer.serial_data.serialDataStatistics import SerialDataStatistics
 
 
 class SerialViewerController(QObject):
     terminated = Signal(str)
 
-    def __init__(self, receiver: SerialDataReceiver, processor: SerialDataProcessor, view: SerialViewerWindow):
+    def __init__(self, receiver: SerialDataReceiver, statistics: SerialDataStatistics, processor: SerialDataProcessor, view: SerialViewerWindow):
         super().__init__()
 
         self.receiver = receiver
+        self.statistics = statistics
         self.processor = processor
         self.view = view
 
         self.view.closed.connect(self.terminate)
         self.processor.dataAvailable.connect(self.view.appendData)
+        self.statistics.utilizationInPercentage.connect(self.view.setUtilizationInPercentage)
 
     def start(self) -> bool:
         if self.receiver.open_port():
             self.processor.start()
+            self.statistics.start()
             self.receiver.start()
             self.show_message(f'Opened {self.receiver.settings.portName}')
             return True
@@ -32,6 +36,7 @@ class SerialViewerController(QObject):
         if self.receiver.isReceiving():
             self.receiver.stop()
             self.receiver.close_port()
+            self.statistics.stop()
             self.processor.stop()
             self.show_message(f'Closed {self.receiver.settings.portName}')
 
@@ -46,5 +51,6 @@ class SerialViewerController(QObject):
         # view is already closed
         self.receiver.stop()
         self.receiver.close_port()
+        self.statistics.stop()
         self.processor.stop()
         self.terminated.emit(self.receiver.settings.portName)

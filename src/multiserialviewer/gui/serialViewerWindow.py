@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, Slot, Signal
 from PySide6.QtGui import QTextCursor, QClipboard
-from PySide6.QtWidgets import QApplication, QMdiSubWindow, QTextEdit, QPushButton, QCheckBox
+from PySide6.QtWidgets import QApplication, QMdiSubWindow, QTextEdit, QPushButton, QCheckBox, QProgressBar
 from typing import List
 from multiserialviewer.text_highlighter.textHighlighter import TextHighlighter, TextHighlighterConfig
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
@@ -29,6 +29,8 @@ class SerialViewerWindow(QMdiSubWindow):
         pb_copy: QPushButton = widget.findChild(QPushButton, 'pb_copy')
         pb_copy.pressed.connect(self.copy)
 
+        self.progBar_utilization: QProgressBar = widget.findChild(QProgressBar, 'progBar_utilization')
+
         self.checkBox_enabled: QCheckBox = self.widget().findChild(QCheckBox, 'checkBox_enabled')
 
     def closeEvent(self, event):
@@ -43,6 +45,10 @@ class SerialViewerWindow(QMdiSubWindow):
     def setHighlighterSettings(self, settings: List[TextHighlighterConfig]):
         self.highlighter.setSettings(settings)
         self.highlighter.rehighlight()
+
+    @Slot()
+    def setUtilizationInPercentage(self, value: int):
+        self.progBar_utilization.setValue(value)
 
     @Slot()
     def copy(self):
