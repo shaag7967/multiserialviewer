@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, Slot, Signal, QPoint
 from PySide6.QtGui import QTextCursor, QClipboard
-from PySide6.QtWidgets import QApplication, QMdiSubWindow, QPushButton, QCheckBox
+from PySide6.QtWidgets import QApplication, QMdiSubWindow, QPushButton, QCheckBox, QAbstractSlider
 from typing import List
 from multiserialviewer.text_highlighter.textHighlighter import TextHighlighter, TextHighlighterConfig
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
@@ -26,7 +26,10 @@ class SerialViewerWindow(QMdiSubWindow):
         self.textEdit: SerialViewerTextEdit = widget.findChild(SerialViewerTextEdit, 'textEdit')
         self.textEdit.setIconSet(icon_set)
         self.textEdit.signal_createTextHighlightEntry.connect(self.signal_createTextHighlightEntry)
+
         self.textEdit.signal_mousePressed.connect(self.handleMousePress)
+        self.textEdit.verticalScrollBar().sliderPressed.connect(self.handleSliderPress)
+        self.textEdit.verticalScrollBar().actionTriggered.connect(self.handleSliderAction)
 
         self.highlighter = TextHighlighter()
         self.highlighter.setDocument(self.textEdit.document())
@@ -77,10 +80,25 @@ class SerialViewerWindow(QMdiSubWindow):
             self.textEdit.moveCursor(QTextCursor.MoveOperation.End)
             self.textEdit.ensureCursorVisible()
 
-    @Slot()
-    def handleMousePress(self, position: QPoint):
+    def deactivateAutoscroll(self):
         if self.checkBox_autoscrollActive.isChecked():
             self.checkBox_autoscrollActive.setCheckState(Qt.CheckState.Unchecked)
+
+    @Slot(QPoint)
+    def handleMousePress(self, position: QPoint):
+        self.deactivateAutoscroll()
+
+    @Slot()
+    def handleSliderPress(self):
+        self.deactivateAutoscroll()
+
+    @Slot()
+    def handleSliderAction(self, action: QAbstractSlider.SliderAction):
+        if action in [QAbstractSlider.SliderAction.SliderPageStepAdd.value,
+                      QAbstractSlider.SliderAction.SliderPageStepSub.value,
+                      QAbstractSlider.SliderAction.SliderSingleStepAdd.value,
+                      QAbstractSlider.SliderAction.SliderSingleStepSub.value]:
+            self.deactivateAutoscroll()
 
     @Slot()
     def autoscrollStateChanged(self, state: Qt.CheckState):
