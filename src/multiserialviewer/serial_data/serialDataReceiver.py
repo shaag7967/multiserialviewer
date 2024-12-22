@@ -12,7 +12,7 @@ class SerialDataReceiver:
         self._serialPort: typing.Optional[serial.Serial] = None
         self.settings = settings
         self.rxQueue = Queue()
-        self.statistics = statistics
+        self._statistics = statistics
 
     def open_port(self) -> bool:
         if self._serialPort:
@@ -57,11 +57,11 @@ class SerialDataReceiver:
 
         while not terminate_event.is_set():
             received_data = self._serialPort.read(1)
-            
+
             count = len(received_data)
             if count > 0:
                 queue.put(received_data)
-                self.statistics.incrementFrameCount(count)
+                self._statistics.incrementFrameCount(count)
 
         self._terminateEvent.clear()
 

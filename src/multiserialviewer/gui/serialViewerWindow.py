@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, Slot, Signal, QPoint
 from PySide6.QtGui import QTextCursor, QClipboard
-from PySide6.QtWidgets import QApplication, QMdiSubWindow, QPushButton, QCheckBox, QAbstractSlider, QProgressBar
+from PySide6.QtWidgets import QApplication, QMdiSubWindow, QPushButton, QCheckBox, QProgressBar, QAbstractSlider, QProgressBar
 from typing import List
 from multiserialviewer.text_highlighter.textHighlighter import TextHighlighter, TextHighlighterConfig
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile

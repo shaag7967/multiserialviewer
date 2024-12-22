@@ -11,13 +11,11 @@ class SerialDataStatistics(QObject):
     def __init__(self, settings: SerialConnectionSettings):
         super(SerialDataStatistics, self).__init__()
 
-        STARTBIT = 1        
         parityBits = 0
-
         if (settings.parity != serial.PARITY_NONE):
             parityBits = 1
 
-        self.__bitsPerFrame = STARTBIT + settings.bytesize + settings.stopbits + parityBits
+        self.__bitsPerFrame = settings.bytesize + settings.stopbits + parityBits
         self.__thread: typing.Optional[Thread] = None
         self.__terminateEvent = Event()
         self.__lock = Lock()
@@ -41,8 +39,9 @@ class SerialDataStatistics(QObject):
         pass
 
     def incrementFrameCount(self, count: int = 1):
-        with self.__lock:
-            self.__framesPerPeriod += count
+        self.__lock.acquire()
+        self.__framesPerPeriod += count
+        self.__lock.release()
 
     def __process(self, terminateEvent):
 
@@ -51,10 +50,10 @@ class SerialDataStatistics(QObject):
 
         while not terminateEvent.is_set():
 
-            framesPerPeriodCached = 0
-            with self.__lock:
-                framesPerPeriodCached = self.__framesPerPeriod
-                self.__framesPerPeriod = 0
+            self.__lock.acquire()
+            framesPerPeriodCached = self.__framesPerPeriod
+            self.__framesPerPeriod = 0
+            self.__lock.release()
 
             bitsPerPeriod = framesPerPeriodCached * self.__bitsPerFrame
             maxBitsPerPeriod = int(self.__baudrate) * STATISTICS_UPDATE_PERIOD_S
