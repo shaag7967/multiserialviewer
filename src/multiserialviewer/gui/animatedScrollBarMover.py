@@ -16,7 +16,7 @@ class AnimatedScrollBarMover(QVariantAnimation):
     def scroll(self, start: int, end: int, duration: int = 1000):
         self.stop()
         self.setDuration(duration)  # ms
-        self.setEasingCurve(QEasingCurve.Type.InOutQuart)
+        self.setEasingCurve(QEasingCurve.Type.Linear)
 
         # value() returns wrong position if used like this. Not sure why.
         # self.setStartValue(self._scroll_bar.value())
