@@ -90,3 +90,6 @@ class SerialViewerWindow(QMdiSubWindow):
             start = self.textEdit.verticalScrollBar().value()
             end = self.textEdit.verticalScrollBar().maximum()
             self.animatedScrollBarMover.scroll(start, end)
+        elif state == Qt.CheckState.Unchecked:
+            if self.animatedScrollBarMover.isRunning():
+                self.animatedScrollBarMover.stop()
