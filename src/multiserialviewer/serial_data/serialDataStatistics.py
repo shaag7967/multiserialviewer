@@ -11,11 +11,13 @@ class SerialDataStatistics(QObject):
     def __init__(self, settings: SerialConnectionSettings):
         super(SerialDataStatistics, self).__init__()
 
+        STARTBIT = 1        
         parityBits = 0
+
         if (settings.parity != serial.PARITY_NONE):
             parityBits = 1
 
-        self.__bitsPerFrame = settings.bytesize + settings.stopbits + parityBits
+        self.__bitsPerFrame = STARTBIT + settings.bytesize + settings.stopbits + parityBits
         self.__thread: typing.Optional[Thread] = None
         self.__terminateEvent = Event()
         self.__lock = Lock()
