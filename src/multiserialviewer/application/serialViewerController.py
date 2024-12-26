@@ -18,24 +18,24 @@ class SerialViewerController(QObject):
         self.view.signal_closed.connect(self.terminate)
 
     def start(self) -> bool:
-        if self.receiver.open_port():
+        if self.receiver.openPort():
             self.processor.start()
             self.receiver.start()
 
-            self.show_message(f'Opened {self.receiver.settings.portName}')
+            self.show_message(f'Opened {self.receiver.getSettings().portName}')
             self.processor.dataAvailable.connect(self.view.appendData)
             return True
         else:
-            self.show_error(f'Failed to open {self.receiver.settings.portName}')
+            self.show_error(f'Failed to open {self.receiver.getSettings().portName}')
             return False
 
     def stop(self):
         if self.receiver.isReceiving():
             self.receiver.stop()
-            self.receiver.close_port()
+            self.receiver.closePort()
             self.processor.stop()
             self.processor.dataAvailable.disconnect(self.view.appendData)
-            self.show_message(f'Closed {self.receiver.settings.portName}')
+            self.show_message(f'Closed {self.receiver.getSettings().portName}')
 
     def show_message(self, text):
         self.view.appendData(f'\n[MSG: {text} :MSG]\n')
@@ -47,6 +47,6 @@ class SerialViewerController(QObject):
     def terminate(self):
         # view is already closed
         self.receiver.stop()
-        self.receiver.close_port()
+        self.receiver.closePort()
         self.processor.stop()
-        self.terminated.emit(self.receiver.settings.portName)
+        self.terminated.emit(self.receiver.getSettings().portName)

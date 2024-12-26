@@ -188,7 +188,7 @@ class Application(QApplication):
 
         for i, ctrl in enumerate(self.controller.values()):
             settings.setArrayIndex(i)
-            settings.setValue("serialViewer", ctrl.receiver.settings)
+            settings.setValue("serialViewer", ctrl.receiver.getSettings())
             settings.setValue("view/title", ctrl.view.windowTitle())
             settings.setValue("view/size", ctrl.view.size())
             settings.setValue("view/pos", ctrl.view.pos())

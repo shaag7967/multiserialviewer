@@ -1,8 +1,6 @@
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox
 from PySide6.QtCore import Slot
-import serial.tools.list_ports
-import serial
-
+from PySide6.QtSerialPort import QSerialPort, QSerialPortInfo
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
 
 
@@ -33,8 +31,8 @@ class SerialViewerCreateDialog(QDialog):
 
     @Slot()
     def refreshListOfSerialPorts(self):
-        port_name_list = [p.device for p in serial.tools.list_ports.comports() if
-                          p.device not in self.disabled_port_names]
+        port_name_list = [p.portName() for p in QSerialPortInfo.availablePorts() if
+                          p.portName() not in self.disabled_port_names]
         self.connectWidget.cb_portName.clear()
         self.connectWidget.cb_portName.addItems(port_name_list)
 
@@ -49,27 +47,26 @@ class SerialViewerCreateDialog(QDialog):
 
     def populateDataBitsCombobox(self):
         self.connectWidget.cb_dataSize.clear()
-        self.connectWidget.cb_dataSize.addItem(str(serial.FIVEBITS), userData=serial.FIVEBITS)
-        self.connectWidget.cb_dataSize.addItem(str(serial.SIXBITS), userData=serial.SIXBITS)
-        self.connectWidget.cb_dataSize.addItem(str(serial.SEVENBITS), userData=serial.SEVENBITS)
-        self.connectWidget.cb_dataSize.addItem(str(serial.EIGHTBITS), userData=serial.EIGHTBITS)
+        self.connectWidget.cb_dataSize.addItem("5", userData=QSerialPort.DataBits.Data5)
+        self.connectWidget.cb_dataSize.addItem("6", userData=QSerialPort.DataBits.Data6)
+        self.connectWidget.cb_dataSize.addItem("7", userData=QSerialPort.DataBits.Data7)
+        self.connectWidget.cb_dataSize.addItem("8", userData=QSerialPort.DataBits.Data8)
         self.connectWidget.cb_dataSize.setCurrentIndex(3)
 
     def populateParityCombobox(self):
         self.connectWidget.cb_parity.clear()
-        self.connectWidget.cb_parity.addItem(serial.PARITY_NAMES[serial.PARITY_NONE], userData=serial.PARITY_NONE)
-        self.connectWidget.cb_parity.addItem(serial.PARITY_NAMES[serial.PARITY_EVEN], userData=serial.PARITY_EVEN)
-        self.connectWidget.cb_parity.addItem(serial.PARITY_NAMES[serial.PARITY_ODD], userData=serial.PARITY_ODD)
-        self.connectWidget.cb_parity.addItem(serial.PARITY_NAMES[serial.PARITY_MARK], userData=serial.PARITY_MARK)
-        self.connectWidget.cb_parity.addItem(serial.PARITY_NAMES[serial.PARITY_SPACE], userData=serial.PARITY_SPACE)
+        self.connectWidget.cb_parity.addItem("No", userData=QSerialPort.Parity.NoParity)
+        self.connectWidget.cb_parity.addItem("Even", userData=QSerialPort.Parity.EvenParity)
+        self.connectWidget.cb_parity.addItem("Odd", userData=QSerialPort.Parity.OddParity)
+        self.connectWidget.cb_parity.addItem("Mark", userData=QSerialPort.Parity.MarkParity)
+        self.connectWidget.cb_parity.addItem("Space", userData=QSerialPort.Parity.SpaceParity)
         self.connectWidget.cb_parity.setCurrentIndex(0)
 
     def populateStopBitsCombobox(self):
         self.connectWidget.cb_stopBits.clear()
-        self.connectWidget.cb_stopBits.addItem(str(serial.STOPBITS_ONE), userData=serial.STOPBITS_ONE)
-        self.connectWidget.cb_stopBits.addItem(str(serial.STOPBITS_ONE_POINT_FIVE),
-                                               userData=serial.STOPBITS_ONE_POINT_FIVE)
-        self.connectWidget.cb_stopBits.addItem(str(serial.STOPBITS_TWO), userData=serial.STOPBITS_TWO)
+        self.connectWidget.cb_stopBits.addItem("1", userData=QSerialPort.StopBits.OneStop)
+        self.connectWidget.cb_stopBits.addItem("1.5", userData=QSerialPort.StopBits.OneAndHalfStop)
+        self.connectWidget.cb_stopBits.addItem("2", userData=QSerialPort.StopBits.TwoStop)
         self.connectWidget.cb_stopBits.setCurrentIndex(0)
 
     def getName(self):
