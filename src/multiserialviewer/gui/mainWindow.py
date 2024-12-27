@@ -55,7 +55,7 @@ class MainWindow(QMainWindow):
             if len(port_name) > 0:
                 settings = SerialConnectionSettings(port_name)
                 settings.baudrate = dialog.getBaudrate()
-                settings.bytesize = dialog.getDataBits()
+                settings.dataBits = dialog.getDataBits()
                 settings.parity = dialog.getParity()
                 settings.stopbits = dialog.getStopBits()
 

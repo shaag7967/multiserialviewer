@@ -1,64 +1,50 @@
-import serial
-import typing
-from threading import Thread, Event
+from PySide6.QtSerialPort import QSerialPort
+from PySide6.QtCore import Slot, QObject, QByteArray
 from queue import Queue
 from .serialConnectionSettings import SerialConnectionSettings
 
 
-
-class SerialDataReceiver:
+class SerialDataReceiver(QObject):
     def __init__(self, settings: SerialConnectionSettings):
-        self._terminateEvent = Event()
-        self._thread: typing.Optional[Thread] = None
-        self._serialPort: typing.Optional[serial.Serial] = None
-        self.settings = settings
+        super(SerialDataReceiver, self).__init__()
+        self.__serialPort: QSerialPort = QSerialPort(settings.portName)
+        self.__serialPort.setBaudRate(settings.baudrate)
+        self.__serialPort.setParity(settings.parity)
+        self.__serialPort.setStopBits(settings.stopbits)
+        self.__serialPort.setDataBits(settings.dataBits)
+        self.__settings = settings
         self.rxQueue = Queue()
 
-    def open_port(self) -> bool:
-        if self._serialPort:
-            self._serialPort.close()
-
-        self._serialPort = serial.Serial()
-        self._serialPort.port = self.settings.portName
-        self._serialPort.baudrate = self.settings.baudrate
-        self._serialPort.bytesize = self.settings.bytesize
-        self._serialPort.parity = self.settings.parity
-        self._serialPort.stopbits = self.settings.stopbits
-        self._serialPort.timeout = self.settings.timeout
-
-        try:
-            self._serialPort.open()
-        except serial.SerialException:
+    def openPort(self) -> bool:
+        if not self.__serialPort.isOpen():
+            return self.__serialPort.open(QSerialPort.OpenModeFlag.ReadOnly)
+        else:
             return False
-        return True
 
-    def close_port(self):
-        if self._serialPort:
-            self._serialPort.close()
-            self._serialPort = None
+    def closePort(self):
+        if self.__serialPort.isOpen():
+            self.__serialPort.close()
 
     def start(self):
-        if self._thread is None:
-            self._thread = Thread(target=self.receiveData, args=(self.rxQueue, self._terminateEvent))
-            self._thread.start()
+        self.__serialPort.readyRead.connect(self.__handleReadableData)
 
     def stop(self):
-        if self._thread:
-            self._terminateEvent.set()
-            self._thread.join()
-            self._thread = None
-            self._terminateEvent.clear()
+        if self.__isSignalConnected():
+            self.__serialPort.readyRead.disconnect(self.__handleReadableData)
 
-    def isReceiving(self):
-        return self._thread and self._thread.is_alive()
+    def getSettings(self) -> SerialConnectionSettings:
+        return self.__settings
 
-    def receiveData(self, queue, terminate_event):
-        self._serialPort.reset_input_buffer()
+    def isReceiving(self) -> bool:
+        return (self.__serialPort.isOpen() and self.__isSignalConnected())
+    
+    def __isSignalConnected(self) -> bool:
+        meta = self.__serialPort.metaObject()
+        return self.__serialPort.isSignalConnected(meta.method(meta.indexOfSignal('readyRead()')))
 
-        while not terminate_event.is_set():
-            received_data = self._serialPort.read(1)
-            if len(received_data) > 0:
-                queue.put(received_data)
-
-        self._terminateEvent.clear()
+    @Slot()
+    def __handleReadableData(self):
+        received_data : QByteArray = self.__serialPort.readAll()
+        if len(received_data) > 0:
+            self.rxQueue.put(received_data)
 
