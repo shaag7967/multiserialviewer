@@ -1,5 +1,5 @@
 from PySide6.QtSerialPort import QSerialPort
-from PySide6.QtCore import Slot, QObject
+from PySide6.QtCore import Slot, QObject, QByteArray
 from queue import Queue
 from .serialConnectionSettings import SerialConnectionSettings
 
@@ -44,7 +44,7 @@ class SerialDataReceiver(QObject):
 
     @Slot()
     def __handleReadableData(self):
-        received_data = self.__serialPort.readAll()
+        received_data : QByteArray = self.__serialPort.readAll()
         if len(received_data) > 0:
             self.rxQueue.put(received_data)
 
