@@ -174,8 +174,8 @@ class Application(QApplication):
             settings.setArrayIndex(i)
 
             # check if all needed keys exist
-            if all(elem in settings.allKeys() for elem in ['serialViewer', 'view/title']):
-                self.createSerialViewer(settings.value("view/title"), settings.value("serialViewer"),
+            if all(elem in settings.allKeys() for elem in ['serialViewer_v2', 'view/title']):
+                self.createSerialViewer(settings.value("view/title"), settings.value("serialViewer_v2"),
                                         settings.value("view/size"), settings.value("view/pos"))
         settings.endArray()
 
@@ -188,7 +188,7 @@ class Application(QApplication):
 
         for i, ctrl in enumerate(self.controller.values()):
             settings.setArrayIndex(i)
-            settings.setValue("serialViewer", ctrl.receiver.getSettings())
+            settings.setValue("serialViewer_v2", ctrl.receiver.getSettings())
             settings.setValue("view/title", ctrl.view.windowTitle())
             settings.setValue("view/size", ctrl.view.size())
             settings.setValue("view/pos", ctrl.view.pos())
