@@ -55,7 +55,7 @@ class SerialViewerCreateDialog(QDialog):
 
     def populateParityCombobox(self):
         self.connectWidget.cb_parity.clear()
-        self.connectWidget.cb_parity.addItem("No", userData=QSerialPort.Parity.NoParity)
+        self.connectWidget.cb_parity.addItem("None", userData=QSerialPort.Parity.NoParity)
         self.connectWidget.cb_parity.addItem("Even", userData=QSerialPort.Parity.EvenParity)
         self.connectWidget.cb_parity.addItem("Odd", userData=QSerialPort.Parity.OddParity)
         self.connectWidget.cb_parity.addItem("Mark", userData=QSerialPort.Parity.MarkParity)
