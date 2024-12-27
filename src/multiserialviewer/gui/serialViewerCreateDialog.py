@@ -80,8 +80,8 @@ class SerialViewerCreateDialog(QDialog):
     def getPortName(self):
         return self.connectWidget.cb_portName.currentText()
 
-    def getBaudrate(self):
-        return self.connectWidget.cb_baudrate.currentText()
+    def getBaudrate(self) -> int:
+        return int(self.connectWidget.cb_baudrate.currentText())
 
     def getDataBits(self):
         return self.connectWidget.cb_dataSize.currentData()

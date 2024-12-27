@@ -8,7 +8,7 @@ class SerialDataReceiver(QObject):
     def __init__(self, settings: SerialConnectionSettings):
         super(SerialDataReceiver, self).__init__()
         self.__serialPort: QSerialPort = QSerialPort(settings.portName)
-        self.__serialPort.setBaudRate(int(settings.baudrate))
+        self.__serialPort.setBaudRate(settings.baudrate)
         self.__serialPort.setParity(settings.parity)
         self.__serialPort.setStopBits(settings.stopbits)
         self.__serialPort.setDataBits(settings.dataBits)
