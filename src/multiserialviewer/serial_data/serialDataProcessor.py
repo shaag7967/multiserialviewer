@@ -1,4 +1,4 @@
-from PySide6.QtCore import Signal, Slot, QObject, QThread, QByteArray
+from PySide6.QtCore import Signal, Slot, QObject, QThread, QByteArray, Qt
 
 
 class Processor(QObject):
@@ -21,8 +21,8 @@ class SerialDataProcessor(QObject):
         self.__worker: Processor = Processor()
         self.__thread: QThread = QThread()
         self.__worker.moveToThread(self.__thread)
-        self.__rawData.connect(self.__worker.handleRawData)
-        self.__worker.asciiData.connect(self.__handleAsciiData)
+        self.__rawData.connect(self.__worker.handleRawData, Qt.ConnectionType.QueuedConnection)
+        self.__worker.asciiData.connect(self.__handleAsciiData, Qt.ConnectionType.QueuedConnection)
 
     def start(self):
         self.__thread.start()
