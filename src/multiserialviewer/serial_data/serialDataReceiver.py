@@ -1,10 +1,11 @@
 from PySide6.QtSerialPort import QSerialPort
-from PySide6.QtCore import Slot, QObject, QByteArray
-from queue import Queue
+from PySide6.QtCore import Slot, Signal, QObject, QByteArray
 from .serialConnectionSettings import SerialConnectionSettings
 
 
 class SerialDataReceiver(QObject):
+    rawData: Signal = Signal(QByteArray)
+
     def __init__(self, settings: SerialConnectionSettings):
         super(SerialDataReceiver, self).__init__()
         self.__serialPort: QSerialPort = QSerialPort(settings.portName)
@@ -13,7 +14,6 @@ class SerialDataReceiver(QObject):
         self.__serialPort.setStopBits(settings.stopbits)
         self.__serialPort.setDataBits(settings.dataBits)
         self.__settings = settings
-        self.rxQueue = Queue()
 
     def openPort(self) -> bool:
         if not self.__serialPort.isOpen():
@@ -46,5 +46,5 @@ class SerialDataReceiver(QObject):
     def __handleReadableData(self):
         received_data : QByteArray = self.__serialPort.readAll()
         if len(received_data) > 0:
-            self.rxQueue.put(received_data)
+            self.rawData.emit(received_data)
 

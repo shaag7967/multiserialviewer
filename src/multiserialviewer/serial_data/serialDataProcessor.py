@@ -1,52 +1,40 @@
-import time
-import typing
-from threading import Thread, Event
-from queue import Queue, Empty
-from PySide6.QtCore import Signal, QObject
+from PySide6.QtCore import Signal, Slot, QObject, QThread, QByteArray
+
+
+class Processor(QObject):
+    asciiData = Signal(str)
+
+    Slot()
+    def handleRawData(self, rawData: QByteArray):
+        data : bytearray = bytearray(rawData) 
+
+        if len(data) > 0:
+            self.asciiData.emit(data.decode(encoding='ascii', errors='ignore'))
 
 
 class SerialDataProcessor(QObject):
-    dataAvailable = Signal(str)
+    asciiData: Signal = Signal(str)
+    __rawData: Signal = Signal(QByteArray)
 
-    def __init__(self, raw_data_queue: Queue):
+    def __init__(self):
         super(SerialDataProcessor, self).__init__()
-        self.lastEmitTimestamp = self.getTimestamp()
-        self._terminateEvent = Event()
-        self._rawDataQueue = raw_data_queue
-        self._thread: typing.Optional[Thread] = None
+        self.__worker: Processor = Processor()
+        self.__thread: QThread = QThread()
+        self.__worker.moveToThread(self.__thread)
+        self.__rawData.connect(self.__worker.handleRawData)
+        self.__worker.asciiData.connect(self.__handleAsciiData)
 
     def start(self):
-        if self._thread is None:
-            self._thread = Thread(target=self.processData, args=(self._rawDataQueue, self._terminateEvent))
-            self._thread.start()
+        self.__thread.start()
 
     def stop(self):
-        if self._thread and self._thread.is_alive():
-            self._terminateEvent.set()
-            self._thread.join()
-            self._thread = None
-            self._terminateEvent.clear()
+        self.__thread.quit()
+        self.__thread.wait()
 
-    def getTimestamp(self):
-        return int(round(time.time() * 1000))
+    Slot(QByteArray)
+    def handleRawData(self, rawData: QByteArray):
+        self.__rawData.emit(rawData)
 
-    def timeDiffSinceLastEmit(self):
-        return self.getTimestamp() - self.lastEmitTimestamp
-
-    def processData(self, queue, terminate_event):
-        data = bytearray()
-
-        while not terminate_event.is_set():
-            try:
-                rx_bytes = queue.get(timeout=0.2)
-                data.extend(rx_bytes)
-            except Empty:
-                pass
-            finally:
-                if len(data) > 0:
-                    try:
-                        self.dataAvailable.emit(data.decode("ascii"))
-                        queue.task_done()
-                    except:
-                        pass
-                    data = bytearray()
+    Slot(str)
+    def __handleAsciiData(self, asciiData: str):
+        self.asciiData.emit(asciiData)
