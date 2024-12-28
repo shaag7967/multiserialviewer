@@ -4,7 +4,7 @@ from PySide6.QtCore import Signal, Slot, QObject, QThread, QByteArray, Qt
 class Processor(QObject):
     asciiData = Signal(str)
 
-    Slot()
+    Slot(QByteArray)
     def handleRawData(self, rawData: QByteArray):
         data : bytearray = bytearray(rawData) 
 
