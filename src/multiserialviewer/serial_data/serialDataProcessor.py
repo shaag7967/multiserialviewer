@@ -1,4 +1,4 @@
-from PySide6.QtCore import Signal, Slot, QObject, QThread, QByteArray, Qt
+from PySide6.QtCore import Signal, Slot, QObject, QThread, QByteArray
 
 
 class SerialDataProcessor(QObject):
