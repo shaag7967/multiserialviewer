@@ -9,10 +9,9 @@ class SerialDataProcessor(QObject):
         self.__thread: QThread = QThread()
         self.moveToThread(self.__thread)
 
-    def start(self):
         self.__thread.start()
 
-    def stop(self):
+    def __del__(self):
         self.__thread.quit()
         self.__thread.wait()
 

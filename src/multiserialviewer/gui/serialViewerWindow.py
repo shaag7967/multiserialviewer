@@ -6,12 +6,15 @@ from multiserialviewer.text_highlighter.textHighlighter import TextHighlighter, 
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
 from multiserialviewer.gui.serialViewerTextEdit import SerialViewerTextEdit
 from multiserialviewer.gui.searchWidget import SearchWidget
+from multiserialviewer.gui.statisticsWidget import StatisticsWidget
+
 from multiserialviewer.icons.iconSet import IconSet
 from multiserialviewer.gui.animatedScrollBarMover import AnimatedScrollBarMover
 
 
 class SerialViewerWindow(QMdiSubWindow):
     signal_closed = Signal()
+    signal_clearPressed = Signal()
     signal_createTextHighlightEntry = Signal(str)
 
     def __init__(self, window_title: str, icon_set: IconSet):
@@ -39,6 +42,7 @@ class SerialViewerWindow(QMdiSubWindow):
 
         pb_clear: QPushButton = widget.findChild(QPushButton, 'pb_clear')
         pb_clear.pressed.connect(self.clear)
+        pb_clear.pressed.connect(self.signal_clearPressed)
 
         pb_copy: QPushButton = widget.findChild(QPushButton, 'pb_copy')
         pb_copy.pressed.connect(self.copy)
@@ -50,16 +54,19 @@ class SerialViewerWindow(QMdiSubWindow):
         self._initTabWidget(widget.findChild(QTabWidget, 'tabWidget'))
 
 
+
     def _initTabWidget(self, tab_widget: QTabWidget):
         self.searchWidget: SearchWidget = SearchWidget(self)
+        self.statisticsWidget: StatisticsWidget = StatisticsWidget(self)
+        
         self.searchWidget.signal_searchString.connect(self.searchString)
         self.searchWidget.signal_previousClicked.connect(self.searchPrevious)
         self.searchWidget.signal_nextClicked.connect(self.searchNext)
 
         tab_widget.addTab(self.searchWidget, "Search")
+        tab_widget.addTab(self.statisticsWidget, "Statistics")
         # tab_widget.addTab(QWidget(), "Watches")
         # tab_widget.addTab(QWidget(), "Counter")
-        # tab_widget.addTab(QWidget(), "Statistics")
 
         # tab_widget.updateGeometry()
         # super().updateGeometry()
