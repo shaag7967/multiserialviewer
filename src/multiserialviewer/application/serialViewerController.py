@@ -16,7 +16,7 @@ class SerialViewerController(QObject):
         self.view: SerialViewerWindow = view
 
         self.view.signal_closed.connect(self.terminate)
-        self.receiver.rawData.connect(self.processor.handleRawData)
+        self.receiver.signal_rawDataAvailable.connect(self.processor.handleRawData)
 
     def start(self) -> bool:
         if self.receiver.openPort():
@@ -24,7 +24,7 @@ class SerialViewerController(QObject):
             self.receiver.start()
 
             self.show_message(f'Opened {self.receiver.getSettings().portName}')
-            self.processor.asciiData.connect(self.view.appendData)
+            self.processor.signal_asciiDataAvailable.connect(self.view.appendData)
             return True
         else:
             self.show_error(f'Failed to open {self.receiver.getSettings().portName}')
@@ -35,7 +35,7 @@ class SerialViewerController(QObject):
             self.receiver.stop()
             self.receiver.closePort()
             self.processor.stop()
-            self.processor.asciiData.disconnect(self.view.appendData)
+            self.processor.signal_asciiDataAvailable.disconnect(self.view.appendData)
             self.show_message(f'Closed {self.receiver.getSettings().portName}')
 
     def show_message(self, text):

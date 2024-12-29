@@ -4,7 +4,7 @@ from .serialConnectionSettings import SerialConnectionSettings
 
 
 class SerialDataReceiver(QObject):
-    rawData: Signal = Signal(QByteArray)
+    signal_rawDataAvailable: Signal = Signal(QByteArray)
 
     def __init__(self, settings: SerialConnectionSettings):
         super(SerialDataReceiver, self).__init__()
@@ -46,5 +46,5 @@ class SerialDataReceiver(QObject):
     def __handleReadableData(self):
         received_data : QByteArray = self.__serialPort.readAll()
         if len(received_data) > 0:
-            self.rawData.emit(received_data)
+            self.signal_rawDataAvailable.emit(received_data)
 
