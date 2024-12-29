@@ -1,44 +1,50 @@
-from PySide6.QtCore import QSettings, QSize, QPoint, Qt
-from PySide6.QtWidgets import QApplication
-from typing import Optional, List
+from PySide6.QtCore import QSettings, QSize
+from PySide6.QtSerialPort import QSerialPort
+from typing import List
 from pathlib import PurePath
 
-from multiserialviewer.serial_data.serialConnectionSettings import SerialConnectionSettings, QSerialPort
-from multiserialviewer.text_highlighter.textHighlighterConfig import TextHighlighterConfig
+from multiserialviewer.application.serialViewerSettings import SerialViewerSettings
+from multiserialviewer.text_highlighter.textHighlighterSettings import TextHighlighterSettings
 
 
 class Settings:
-    settingsFileName_main = 'multiserialviewer2.ini'
+    settingsFileName_main = 'multiserialviewer.ini'
     settingsFileName_highlighter = 'highlighter.ini'
 
-    def __init__(self, configDir: str):
-        self.__configDir = configDir
-        self.__mainSettingsFilePath = PurePath(self.__configDir, Settings.settingsFileName_main)
-        # highlighter settings are stored in a separate file, because then it can be copied separately to another PC
-        self.__highlighterSettingsFilePath = PurePath(self.__configDir, Settings.settingsFileName_highlighter)
+    def __init__(self, settingsDir: str):
+        self.__settingsDir = settingsDir
+        self.__mainSettingsFilePath = PurePath(self.__settingsDir, Settings.settingsFileName_main)
+        # highlighter settings are stored in a separate file, because then e.g. it can be copied separately to another PC
+        self.__highlighterSettingsFilePath = PurePath(self.__settingsDir, Settings.settingsFileName_highlighter)
 
         self.mainWindow: Settings.MainWindow = Settings.MainWindow()
-        self.serialViewerList: Settings.SerialViewerArray = Settings.SerialViewerArray()
+        self.serialViewer: Settings.SerialViewer = Settings.SerialViewer()
+        self.textHighlighter: Settings.TextHighlighter = Settings.TextHighlighter()
 
         self.restoreDefaultValues()
 
     def restoreDefaultValues(self):
         self.mainWindow.restoreDefaultValues()
-        self.serialViewerList.restoreDefaultValues()
+        self.serialViewer.restoreDefaultValues()
+        self.textHighlighter.restoreDefaultValues()
 
     def loadFromDisk(self):
         self.restoreDefaultValues()
 
         settings = QSettings(str(self.__mainSettingsFilePath), QSettings.Format.IniFormat)
-
         self.mainWindow.loadSettings(settings)
-        self.serialViewerList.loadSettings(settings)
+        self.serialViewer.loadSettings(settings)
+
+        settings = QSettings(str(self.__highlighterSettingsFilePath), QSettings.Format.IniFormat)
+        self.textHighlighter.loadSettings(settings)
 
     def saveToDisk(self):
         settings = QSettings(str(self.__mainSettingsFilePath), QSettings.Format.IniFormat)
-
         self.mainWindow.saveSettings(settings)
-        self.serialViewerList.saveSettings(settings)
+        self.serialViewer.saveSettings(settings)
+
+        settings = QSettings(str(self.__highlighterSettingsFilePath), QSettings.Format.IniFormat)
+        self.textHighlighter.saveSettings(settings)
 
     class MainWindow:
         SettingsName_v1: str = "MainWindow"
@@ -68,31 +74,14 @@ class Settings:
             settings.setValue("size", self.size)
             settings.endGroup()
 
-    class SerialViewerArray:
+    class SerialViewer:
         ArrayName_v1: str = "SerialViewer"
 
         def __init__(self):
-            self.__index: int = 0
-            self.serialViewer: List[Settings.SerialViewer] = []
-
-        def __iter__(self):
-            self.__index = 0
-            return self
-
-        def __next__(self):
-            if self.__index < len(self.serialViewer):
-                self.__index += 1
-                return self.serialViewer[self.__index - 1]
-            raise StopIteration
-
-        def clear(self):
-            self.serialViewer.clear()
-
-        def append(self, item):
-            self.serialViewer.append(item)
+            self.entries: List[SerialViewerSettings] = []
 
         def restoreDefaultValues(self):
-            self.serialViewer = []
+            self.entries = []
 
         def loadSettings(self, settings: QSettings):
             self.restoreDefaultValues()
@@ -101,65 +90,93 @@ class Settings:
             for index in range(numberOfSerialViewers):
                 settings.setArrayIndex(index)
 
-                viewer: Settings.SerialViewer = Settings.SerialViewer()
-                viewer.loadSettings(settings)
-                self.serialViewer.append(viewer)
+                entry = SerialViewerSettings()
+                # settings of window
+                if settings.contains("view/title"):
+                    entry.title = settings.value("view/title")
+                if settings.contains("view/size"):
+                    entry.size = settings.value("view/size")
+                if settings.contains("view/pos"):
+                    entry.position = settings.value("view/pos")
+                # serial connection settings
+                if settings.contains("connection/portName"):
+                    entry.connection.portName = settings.value("connection/portName")
+                if settings.contains("connection/baudrate"):
+                    entry.connection.baudrate = int(settings.value("connection/baudrate"))
+                if settings.contains("connection/dataBits"):
+                    entry.connection.dataBits = QSerialPort.DataBits(settings.value("connection/dataBits", type=int))
+                if settings.contains("connection/parity"):
+                    entry.connection.parity = QSerialPort.Parity(settings.value("connection/parity", type=int))
+                if settings.contains("connection/stopBits"):
+                    entry.connection.stopBits = QSerialPort.StopBits(settings.value("connection/stopBits", type=int))
+
+                self.entries.append(entry)
             settings.endArray()
 
         def saveSettings(self, settings: QSettings):
             settings.beginWriteArray(self.ArrayName_v1)
-            settings.remove("")  # remove all existing connections
+            settings.remove("")  # remove all existing entries
 
-            for index, serialViewer in enumerate(self.serialViewer):
+            for index, entry in enumerate(self.entries):
                 settings.setArrayIndex(index)
 
-                serialViewer.saveSettings(settings)
+                settings.setValue("view/title", entry.title)
+                settings.setValue("view/size", entry.size)
+                settings.setValue("view/pos", entry.position)
+
+                settings.setValue("connection/portName", entry.connection.portName)
+                settings.setValue("connection/baudrate", entry.connection.baudrate)
+                settings.setValue("connection/dataBits", entry.connection.dataBits.value)
+                settings.setValue("connection/parity", entry.connection.parity.value)
+                settings.setValue("connection/stopBits", entry.connection.stopBits.value)
             settings.endArray()
 
 
-    class SerialViewer:
+    class TextHighlighter:
+        ArrayName_v1: str = "TextHighlighter"
+
         def __init__(self):
-            self.title: str = ''
-            self.size: Optional[QSize] = None
-            self.position: Optional[QPoint] = None
-            self.connection: SerialConnectionSettings = SerialConnectionSettings('')
+            self.entries: List[TextHighlighterSettings] = []
 
         def restoreDefaultValues(self):
-            self.title = 'Unnamed'
-            self.size = None
-            self.position = None
-            self.connection = SerialConnectionSettings('')
+            self.entries = []
 
         def loadSettings(self, settings: QSettings):
             self.restoreDefaultValues()
 
-            if settings.contains("view/title"):
-                self.title = settings.value("view/title")
-            if settings.contains("view/size"):
-                self.size = settings.value("view/size")
-            if settings.contains("view/pos"):
-                self.position = settings.value("view/pos")
+            numberOfEntries = settings.beginReadArray(self.ArrayName_v1)
+            for index in range(numberOfEntries):
+                settings.setArrayIndex(index)
 
-            # load serial connection settings
-            if settings.contains("connection/portName"):
-                self.connection.portName = str(settings.value("connection/portName"))
-            if settings.contains("connection/baudrate"):
-                self.connection.baudrate = int(settings.value("connection/baudrate"))
-            if settings.contains("connection/dataBits"):
-                self.connection.dataBits = QSerialPort.DataBits(int(settings.value("connection/dataBits")))
-            if settings.contains("connection/parity"):
-                self.connection.parity = QSerialPort.Parity(int(settings.value("connection/parity")))
-            if settings.contains("connection/stopBits"):
-                self.connection.stopBits = QSerialPort.StopBits(int(settings.value("connection/stopBits")))
+                entry = TextHighlighterSettings()
+                if settings.contains("pattern"):
+                    entry.pattern = settings.value("pattern")
+                if settings.contains("color_foreground"):
+                    entry.color_foreground = settings.value("color_foreground")
+                if settings.contains("color_background"):
+                    entry.color_background = settings.value("color_background")
+                if settings.contains("italic"):
+                    entry.italic = settings.value("italic", type=bool)
+                if settings.contains("bold"):
+                    entry.bold = settings.value("bold", type=bool)
+                if settings.contains("font_size"):
+                    entry.font_size = settings.value("font_size", type=int)
+
+                self.entries.append(entry)
+            settings.endArray()
 
         def saveSettings(self, settings: QSettings):
-            settings.setValue("view/title", self.title)
-            settings.setValue("view/size", self.size)
-            settings.setValue("view/pos", self.position)
+            settings.beginWriteArray(self.ArrayName_v1)
+            settings.remove("")  # remove all existing entries
 
-            settings.setValue("connection/portName", self.connection.portName)
-            settings.setValue("connection/baudrate", self.connection.baudrate)
-            settings.setValue("connection/dataBits", self.connection.dataBits.value)
-            settings.setValue("connection/parity", self.connection.parity.value)
-            settings.setValue("connection/stopBits", self.connection.stopBits.value)
+            for index, entry in enumerate(self.entries):
+                settings.setArrayIndex(index)
 
+                settings.setValue("pattern", entry.pattern)
+                settings.setValue("color_foreground", entry.color_foreground)
+                settings.setValue("color_background", entry.color_background)
+                settings.setValue("italic", entry.italic)
+                settings.setValue("bold", entry.bold)
+                settings.setValue("font_size", entry.font_size)
+
+            settings.endArray()

@@ -2,7 +2,7 @@ from PySide6.QtCore import Qt, Slot, Signal, QPoint
 from PySide6.QtGui import QTextCursor, QClipboard, QTextDocument
 from PySide6.QtWidgets import QApplication, QMdiSubWindow, QPushButton, QCheckBox, QAbstractSlider, QTabWidget
 from typing import List
-from multiserialviewer.text_highlighter.textHighlighter import TextHighlighter, TextHighlighterConfig
+from multiserialviewer.text_highlighter.textHighlighter import TextHighlighter, TextHighlighterSettings
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
 from multiserialviewer.gui.serialViewerTextEdit import SerialViewerTextEdit
 from multiserialviewer.gui.searchWidget import SearchWidget
@@ -74,7 +74,7 @@ class SerialViewerWindow(QMdiSubWindow):
     def clear(self):
         self.textEdit.clear()
 
-    def setHighlighterSettings(self, settings: List[TextHighlighterConfig]):
+    def setHighlighterSettings(self, settings: List[TextHighlighterSettings]):
         self.highlighter.setSettings(settings)
         self.highlighter.rehighlight()
 

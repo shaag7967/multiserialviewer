@@ -3,15 +3,15 @@ from PySide6.QtGui import QColor
 import re
 from typing import List
 
-from multiserialviewer.text_highlighter.textHighlighterConfig import TextHighlighterConfig
+from multiserialviewer.text_highlighter.textHighlighterSettings import TextHighlighterSettings
 
 
 class TextHighlighter(QSyntaxHighlighter):
     def __init__(self, parent=None):
         QSyntaxHighlighter.__init__(self, parent)
-        self._settings: List[TextHighlighterConfig] = []
+        self._settings: List[TextHighlighterSettings] = []
 
-    def setSettings(self, settings: List[TextHighlighterConfig]):
+    def setSettings(self, settings: List[TextHighlighterSettings]):
         self._settings = settings
 
     def highlightBlock(self, text):

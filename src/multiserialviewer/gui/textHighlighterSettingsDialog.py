@@ -2,13 +2,13 @@ from PySide6.QtWidgets import QDialog, QVBoxLayout, QHeaderView
 from typing import List
 
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
-from multiserialviewer.text_highlighter.textHighlighterConfig import TextHighlighterConfig
+from multiserialviewer.text_highlighter.textHighlighterSettings import TextHighlighterSettings
 from multiserialviewer.text_highlighter.textHighlighterTableModel import TextHighlighterTableModel
 from multiserialviewer.text_highlighter.colorSelectorItemDelegate import ColorSelectorItemDelegate
 
 
 class TextHighlighterSettingsDialog(QDialog):
-    def __init__(self, parent, settings: List[TextHighlighterConfig]):
+    def __init__(self, parent, settings: List[TextHighlighterSettings]):
         super().__init__(parent)
 
         self.setWindowTitle("Text Highlighter Settings")

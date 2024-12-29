@@ -3,14 +3,14 @@ from PySide6.QtGui import QColor
 from typing import List
 from collections import OrderedDict
 
-from multiserialviewer.text_highlighter.textHighlighterConfig import TextHighlighterConfig
+from multiserialviewer.text_highlighter.textHighlighterSettings import TextHighlighterSettings
 
 
 class TextHighlighterTableModel(QAbstractTableModel):
     AllColorsRole = Qt.UserRole + 1
     SelectedColorRole = Qt.UserRole + 2
 
-    def __init__(self, settings: List[TextHighlighterConfig]):
+    def __init__(self, settings: List[TextHighlighterSettings]):
         QAbstractTableModel.__init__(self)
         self.settings = settings
 
@@ -22,7 +22,7 @@ class TextHighlighterTableModel(QAbstractTableModel):
         return len(self.settings)
 
     def columnCount(self, parent=QModelIndex()):
-        return TextHighlighterConfig.number_of_attributes
+        return TextHighlighterSettings.number_of_attributes
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role != Qt.DisplayRole:
@@ -40,7 +40,7 @@ class TextHighlighterTableModel(QAbstractTableModel):
         row = index.row()
         if row >= len(self.settings):
             return False
-        if column >= TextHighlighterConfig.number_of_attributes:
+        if column >= TextHighlighterSettings.number_of_attributes:
             return False
 
         if column == 0:
@@ -109,7 +109,7 @@ class TextHighlighterTableModel(QAbstractTableModel):
     def insertRows(self, row, count, parent=QModelIndex()):
         self.beginInsertRows(parent, row, row + count - 1)
         for i in range(count):
-            self.settings.insert(row+i, TextHighlighterConfig())
+            self.settings.insert(row+i, TextHighlighterSettings())
         self.endInsertRows()
 
     def removeRows(self, row, count, parent=QModelIndex()):

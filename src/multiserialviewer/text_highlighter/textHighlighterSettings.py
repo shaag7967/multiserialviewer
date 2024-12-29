@@ -1,6 +1,6 @@
 
 
-class TextHighlighterConfig:
+class TextHighlighterSettings:
     number_of_attributes = 6
 
     def __init__(self):

@@ -8,7 +8,7 @@ from multiserialviewer.serial_data.serialConnectionSettings import SerialConnect
 from multiserialviewer.gui.serialViewerWindow import SerialViewerWindow
 from multiserialviewer.gui.serialViewerCreateDialog import SerialViewerCreateDialog
 from multiserialviewer.gui.textHighlighterSettingsDialog import TextHighlighterSettingsDialog
-from multiserialviewer.text_highlighter.textHighlighter import TextHighlighterConfig
+from multiserialviewer.text_highlighter.textHighlighter import TextHighlighterSettings
 from multiserialviewer.icons.iconSet import IconSet
 
 
@@ -72,7 +72,7 @@ class MainWindow(QMainWindow):
         view.show()
         return view
 
-    def showHighlighterSettingsDialog(self, settings: List[TextHighlighterConfig]):
+    def showHighlighterSettingsDialog(self, settings: List[TextHighlighterSettings]):
         dialog = TextHighlighterSettingsDialog(self, settings)
         if dialog.exec():
             self.signal_applyHighlighterSettings.emit(dialog.table_model.settings)
