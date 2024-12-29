@@ -10,7 +10,7 @@ class SerialDataReceiver(QObject):
         self.__serialPort: QSerialPort = QSerialPort(settings.portName)
         self.__serialPort.setBaudRate(settings.baudrate)
         self.__serialPort.setParity(settings.parity)
-        self.__serialPort.setStopBits(settings.stopbits)
+        self.__serialPort.setStopBits(settings.stopBits)
         self.__serialPort.setDataBits(settings.dataBits)
         self.__settings = settings
         self.rxQueue = Queue()

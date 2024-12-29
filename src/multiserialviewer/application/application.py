@@ -13,7 +13,7 @@ from multiserialviewer.text_highlighter.textHighlighterConfig import TextHighlig
 from multiserialviewer.application.serialViewerController import SerialViewerController
 from multiserialviewer.application.proxyStyle import ProxyStyle
 from multiserialviewer.icons.iconSet import IconSet
-
+from multiserialviewer.application.settings import Settings
 
 
 class Application(QApplication):
@@ -22,9 +22,10 @@ class Application(QApplication):
     def __init__(self, version: str, arguments):
         super().__init__(arguments)
 
-        self.config_dir = user_config_dir(appname=Application.NAME, roaming=False, ensure_exists=True, appauthor=False)
-        self.main_config_file_path = str(pathlib.PurePath(self.config_dir, 'multiserialviewer.ini'))
-        self.highlighter_config_file_path = str(pathlib.PurePath(self.config_dir, 'highlighter.ini'))
+        configDir = user_config_dir(appname=Application.NAME, roaming=False, ensure_exists=True, appauthor=False)
+        self.settings: Settings = Settings(configDir)
+
+        self.highlighter_config_file_path = str(pathlib.PurePath(configDir, 'highlighter.ini'))
 
         self.icon_set = IconSet('google', '8B0000')
 
@@ -38,7 +39,7 @@ class Application(QApplication):
         self.mainWindow.signal_clearAll.connect(self.clearAll)
         self.mainWindow.signal_connectionStateChanged.connect(self.changeConnectionState)
         self.mainWindow.signal_aboutToBeClosed.connect(self.saveSettings)
-        self.mainWindow.signal_aboutToBeClosed.connect(self.saveSerialViewerSettings)
+        # self.mainWindow.signal_aboutToBeClosed.connect(self.saveSerialViewerSettings)
         self.mainWindow.signal_aboutToBeClosed.connect(self.saveHighlighterSettings)
         self.mainWindow.signal_aboutToBeClosed.connect(self.stopAllSerialViewer)
         self.mainWindow.signal_editHighlighterSettings.connect(self.showHighlighterSettingsDialog)
@@ -47,7 +48,7 @@ class Application(QApplication):
 
         self.loadSettings()
         self.loadHighlighterSettings()
-        self.loadSerialViewerSettings()
+        # self.loadSerialViewerSettings()
 
         self.setStyle(ProxyStyle())
         self.mainWindow.show()
@@ -153,47 +154,65 @@ class Application(QApplication):
             ctrl.stop()
 
     def loadSettings(self):
-        settings = QSettings(self.main_config_file_path, QSettings.Format.IniFormat)
+        self.settings.loadFromDisk()
+        self.mainWindow.resize(self.settings.mainWindow.size)
 
-        settings.beginGroup("MainWindow")
-        self.mainWindow.resize(settings.value("size", QSize(800, 800)))
-        settings.endGroup()
+        # TODO make config reloadable at runtime (rename to applySettings and load settings somewhere else)
+        for serialViewerSetting in self.settings.serialViewerList:
+            self.createSerialViewer(serialViewerSetting.title, serialViewerSetting.connection,
+                                    serialViewerSetting.size, serialViewerSetting.position)
 
     def saveSettings(self):
-        settings = QSettings(self.main_config_file_path, QSettings.Format.IniFormat)
+        self.settings.mainWindow.size = self.mainWindow.size()
 
-        settings.beginGroup("MainWindow")
-        settings.setValue("size", self.mainWindow.size())
-        settings.endGroup()
-
-    def loadSerialViewerSettings(self):
-        settings = QSettings(self.main_config_file_path, QSettings.Format.IniFormat)
-
-        number_of_connections = settings.beginReadArray("connections")
-        for i in range(number_of_connections):
-            settings.setArrayIndex(i)
-
-            # check if all needed keys exist
-            if all(elem in settings.allKeys() for elem in ['serialViewer_v2', 'view/title']):
-                self.createSerialViewer(settings.value("view/title"), settings.value("serialViewer_v2"),
-                                        settings.value("view/size"), settings.value("view/pos"))
-        settings.endArray()
-
-    @Slot()
-    def saveSerialViewerSettings(self):
-        settings = QSettings(self.main_config_file_path, QSettings.Format.IniFormat)
-
-        settings.beginWriteArray("connections")
-        settings.remove("")  # remove all existing connections
+        self.settings.serialViewerList.clear()
 
         for i, ctrl in enumerate(self.controller.values()):
-            settings.setArrayIndex(i)
-            settings.setValue("serialViewer_v2", ctrl.receiver.getSettings())
-            settings.setValue("view/title", ctrl.view.windowTitle())
-            settings.setValue("view/size", ctrl.view.size())
-            settings.setValue("view/pos", ctrl.view.pos())
+            serialViewer = Settings.SerialViewer()
+            serialViewer.title = ctrl.view.windowTitle()
+            serialViewer.size = ctrl.view.size()
+            serialViewer.position = ctrl.view.pos()
 
-        settings.endArray()
+            connection: SerialConnectionSettings = ctrl.receiver.getSettings()
+            serialViewer.connection.portName = connection.portName
+            serialViewer.connection.baudrate = connection.baudrate
+            serialViewer.connection.dataBits = connection.dataBits
+            serialViewer.connection.parity = connection.parity
+            serialViewer.connection.stopBits = connection.stopBits
+
+            self.settings.serialViewerList.append(serialViewer)
+
+        self.settings.saveToDisk()
+
+
+    # def loadSerialViewerSettings(self):
+    #     settings = QSettings(self.main_config_file_path, QSettings.Format.IniFormat)
+    #
+    #     number_of_connections = settings.beginReadArray("connections")
+    #     for i in range(number_of_connections):
+    #         settings.setArrayIndex(i)
+    #
+    #         # check if all needed keys exist
+    #         if all(elem in settings.allKeys() for elem in ['serialViewer_v2', 'view/title']):
+    #             self.createSerialViewer(settings.value("view/title"), settings.value("serialViewer_v2"),
+    #                                     settings.value("view/size"), settings.value("view/pos"))
+    #     settings.endArray()
+
+    # @Slot()
+    # def saveSerialViewerSettings(self):
+    #     settings = QSettings(self.main_config_file_path, QSettings.Format.IniFormat)
+    #
+    #     settings.beginWriteArray("connections")
+    #     settings.remove("")  # remove all existing connections
+    #
+    #     for i, ctrl in enumerate(self.controller.values()):
+    #         settings.setArrayIndex(i)
+    #         settings.setValue("serialViewer_v2", ctrl.receiver.getSettings())
+    #         settings.setValue("view/title", ctrl.view.windowTitle())
+    #         settings.setValue("view/size", ctrl.view.size())
+    #         settings.setValue("view/pos", ctrl.view.pos())
+    #
+    #     settings.endArray()
 
     def loadHighlighterSettings(self):
         settings = QSettings(self.highlighter_config_file_path, QSettings.Format.IniFormat)

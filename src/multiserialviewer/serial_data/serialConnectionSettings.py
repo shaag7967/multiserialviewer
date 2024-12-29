@@ -6,5 +6,5 @@ class SerialConnectionSettings:
         self.baudrate : int = 1000000
         self.dataBits : QSerialPort.DataBits = QSerialPort.DataBits.Data8
         self.parity : QSerialPort.Parity = QSerialPort.Parity.NoParity
-        self.stopbits : QSerialPort.StopBits = QSerialPort.StopBits.OneStop
+        self.stopBits : QSerialPort.StopBits = QSerialPort.StopBits.OneStop
         self.timeout = 0.5
