@@ -1,6 +1,6 @@
 from PySide6.QtCore import QSettings, QSize
 from PySide6.QtSerialPort import QSerialPort
-from typing import List
+from typing import List, Any
 from pathlib import PurePath
 from contextlib import contextmanager
 from collections.abc import Generator
@@ -63,13 +63,7 @@ class Settings:
         self.textHighlighter.saveSettings(settings)
 
     @staticmethod
-    @contextmanager
-    def loadValue(settings: QSettings, key: str) -> Generator[int, bool, str]:
-        if settings.contains(key):
-            yield settings.value(key)
-
-    @staticmethod
-    def loadMandatoryValue(settings: QSettings, key: str) -> [int, bool, str]:
+    def loadMandatoryValue(settings: QSettings, key: str) -> Any:
         if settings.contains(key):
             return settings.value(key)
         else:
@@ -93,8 +87,8 @@ class Settings:
 
         def loadSettings_V1(self, settings: QSettings):
             settings.beginGroup(self.SettingsName_v1)
-            with Settings.loadValue(settings, "size") as value:
-                self.size = value
+            if settings.contains("size"):
+                self.size = settings.value("size")
             settings.endGroup()
 
         def saveSettings(self, settings: QSettings):
@@ -121,12 +115,12 @@ class Settings:
 
                 entry = SerialViewerSettings()
                 # settings of window
-                with Settings.loadValue(settings, "view/title") as value:
-                    entry.title = value
-                with Settings.loadValue(settings, "view/size") as value:
-                    entry.size = value
-                with Settings.loadValue(settings, "view/pos") as value:
-                    entry.pos = value
+                if settings.contains("view/title"):
+                    entry.title = settings.value("view/title")
+                if settings.contains("view/size"):
+                    entry.size = settings.value("view/size")
+                if settings.contains("view/position"):
+                    entry.position = settings.value("view/position")
 
                 # serial connection settings (mandatory)
                 try:
@@ -152,7 +146,7 @@ class Settings:
 
                 settings.setValue("view/title", entry.title)
                 settings.setValue("view/size", entry.size)
-                settings.setValue("view/pos", entry.position)
+                settings.setValue("view/position", entry.position)
 
                 settings.setValue("connection/portName", entry.connection.portName)
                 settings.setValue("connection/baudrate", entry.connection.baudrate)
@@ -179,18 +173,18 @@ class Settings:
                 settings.setArrayIndex(index)
 
                 entry = TextHighlighterSettings()
-                with Settings.loadValue(settings, "pattern") as value:
-                    entry.pattern = value
-                with Settings.loadValue(settings, "color_foreground") as value:
-                    entry.color_foreground = value
-                with Settings.loadValue(settings, "color_background") as value:
-                    entry.color_background = value
-                with Settings.loadValue(settings, "italic") as value:
-                    entry.italic = True if value == 'true' else False
-                with Settings.loadValue(settings, "bold") as value:
-                    entry.bold = True if value == 'true' else False
-                with Settings.loadValue(settings, "font_size") as value:
-                    entry.font_size = int(value)
+                if settings.contains("pattern"):
+                    entry.pattern = settings.value("pattern")
+                if settings.contains("color_foreground"):
+                    entry.color_foreground = settings.value("color_foreground")
+                if settings.contains("color_background"):
+                    entry.color_background = settings.value("color_background")
+                if settings.contains("italic"):
+                    entry.italic = settings.value("italic", type=bool)
+                if settings.contains("bold"):
+                    entry.bold = settings.value("bold", type=bool)
+                if settings.contains("font_size"):
+                    entry.font_size = settings.value("font_size", type=int)
 
                 self.entries.append(entry)
             settings.endArray()
