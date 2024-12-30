@@ -26,8 +26,6 @@ class Application(QApplication):
         configDir = user_config_dir(appname=Application.NAME, roaming=False, ensure_exists=True, appauthor=False)
         self.settings: Settings = Settings(configDir)
         self.settings.loadFromDisk()
-        if len(self.settings.textHighlighter.entries) == 0:
-            self.createDefaultHighlighterSettings()
 
         self.controller = {}
         self.icon_set = IconSet('google', '8B0000')
@@ -46,27 +44,6 @@ class Application(QApplication):
         self.applySettings()
         self.setStyle(ProxyStyle())
         self.mainWindow.show()
-
-    def createDefaultHighlighterSettings(self):
-        self.settings.textHighlighter.entries.clear()
-
-        cfg = TextHighlighterSettings()
-        cfg.pattern = r'\[MSG: .* :MSG\]'
-        cfg.color_foreground = 'darkgreen'
-        cfg.color_background = 'transparent'
-        cfg.italic = False
-        cfg.bold = True
-        cfg.font_size = QApplication.font().pointSize()
-        self.settings.textHighlighter.entries.append(cfg)
-
-        cfg = TextHighlighterSettings()
-        cfg.pattern = r'\[ERR: .* :ERR\]'
-        cfg.color_foreground = 'darkred'
-        cfg.color_background = 'transparent'
-        cfg.italic = False
-        cfg.bold = True
-        cfg.font_size = QApplication.font().pointSize()
-        self.settings.textHighlighter.entries.append(cfg)
 
     @Slot(object)
     def setHighlighterSettings(self, settings: List[TextHighlighterSettings]):

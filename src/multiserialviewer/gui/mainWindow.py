@@ -75,7 +75,7 @@ class MainWindow(QMainWindow):
     def showHighlighterSettingsDialog(self, settings: List[TextHighlighterSettings]):
         dialog = TextHighlighterSettingsDialog(self, settings)
         if dialog.exec():
-            self.signal_applyHighlighterSettings.emit(dialog.table_model.settings)
+            self.signal_applyHighlighterSettings.emit(dialog.tableModel.settings)
 
     def getConnectionState(self):
         return self.pb_changeConnectionState.isChecked()
