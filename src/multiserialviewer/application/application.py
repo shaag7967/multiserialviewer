@@ -70,18 +70,19 @@ class Application(QApplication):
         self.mainWindow.showHighlighterSettingsDialog(copy.deepcopy(self.settings.textHighlighter.entries))
 
     @Slot(str, SerialConnectionSettings)
-    def createSerialViewer(self, window_title: str, settings: SerialConnectionSettings, size: QSize = None, position: QPoint = None):
-        if settings.portName in self.controller:
-            raise Exception(f"{settings.portName} exists already")
+    def createSerialViewer(self, settings: SerialViewerSettings):
+        if settings.connection.portName in self.controller:
+            raise Exception(f"{settings.connection.portName} exists already")
 
-        receiver = SerialDataReceiver(settings)
+        receiver = SerialDataReceiver(settings.connection)
         processor = SerialDataProcessor(receiver.rxQueue)
-        view = self.mainWindow.createSerialViewerWindow(window_title, size=size, position=position)
+        view = self.mainWindow.createSerialViewerWindow(settings.title, size=settings.size, position=settings.position)
         view.setHighlighterSettings(self.settings.textHighlighter.entries)
+        view.setSerialViewerSettings(settings)
         ctrl = SerialViewerController(receiver, processor, view)
 
         ctrl.terminated.connect(self.deleteSerialViewer, type=Qt.ConnectionType.QueuedConnection)
-        self.controller[settings.portName] = ctrl
+        self.controller[settings.connection.portName] = ctrl
 
         if self.mainWindow.getConnectionState():
             if not ctrl.start():
@@ -128,8 +129,7 @@ class Application(QApplication):
         self.mainWindow.resize(self.settings.mainWindow.size)
 
         for serialViewerSetting in self.settings.serialViewer.entries:
-            self.createSerialViewer(serialViewerSetting.title, serialViewerSetting.connection,
-                                    serialViewerSetting.size, serialViewerSetting.position)
+            self.createSerialViewer(serialViewerSetting)
         # note: highlighter settings do not need to be applied here, because this is
         #       done inside function createSerialViewer
 

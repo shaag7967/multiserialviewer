@@ -1,13 +1,16 @@
 from PySide6.QtCore import Qt, Slot, Signal, QPoint
 from PySide6.QtGui import QTextCursor, QClipboard, QTextDocument
-from PySide6.QtWidgets import QApplication, QMdiSubWindow, QPushButton, QCheckBox, QAbstractSlider, QTabWidget
+from PySide6.QtWidgets import QApplication, QMdiSubWindow, QPushButton, QCheckBox, QAbstractSlider, \
+    QTabWidget, QScrollArea, QVBoxLayout, QFrame, QSizePolicy
 from typing import List
 from multiserialviewer.text_highlighter.textHighlighter import TextHighlighter, TextHighlighterSettings
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
 from multiserialviewer.gui.serialViewerTextEdit import SerialViewerTextEdit
 from multiserialviewer.gui.searchWidget import SearchWidget
+from multiserialviewer.gui.serialViewerSettingsWidget import SerialViewerSettingsWidget
 from multiserialviewer.icons.iconSet import IconSet
 from multiserialviewer.gui.animatedScrollBarMover import AnimatedScrollBarMover
+from multiserialviewer.application.serialViewerSettings import SerialViewerSettings
 
 
 class SerialViewerWindow(QMdiSubWindow):
@@ -51,19 +54,26 @@ class SerialViewerWindow(QMdiSubWindow):
 
 
     def _initTabWidget(self, tab_widget: QTabWidget):
-        self.searchWidget: SearchWidget = SearchWidget(self)
+        # search
+        self.searchScrollArea = QScrollArea(tab_widget)
+        self.searchScrollArea.setFrameShape(QFrame.Shape.NoFrame)
+
+        self.searchWidget: SearchWidget = SearchWidget(self.searchScrollArea)
         self.searchWidget.signal_searchString.connect(self.searchString)
         self.searchWidget.signal_previousClicked.connect(self.searchPrevious)
         self.searchWidget.signal_nextClicked.connect(self.searchNext)
+        self.searchScrollArea.setWidget(self.searchWidget)
+        tab_widget.addTab(self.searchScrollArea, "Search")
 
-        tab_widget.addTab(self.searchWidget, "Search")
-        # tab_widget.addTab(QWidget(), "Watches")
-        # tab_widget.addTab(QWidget(), "Counter")
-        # tab_widget.addTab(QWidget(), "Statistics")
+        # settings
+        self.settingsScrollArea = QScrollArea(tab_widget)
+        self.settingsScrollArea.setFrameShape(QFrame.Shape.NoFrame)
 
-        # tab_widget.updateGeometry()
-        # super().updateGeometry()
-        # self.adjustSize()
+        self.settingsWidget: SerialViewerSettingsWidget = SerialViewerSettingsWidget(self.settingsScrollArea)
+        self.settingsScrollArea.setWidget(self.settingsWidget)
+        tab_widget.addTab(self.settingsScrollArea, "Settings")
+
+
 
     def closeEvent(self, event):
         # is not called when mainwindow is closed
@@ -77,6 +87,9 @@ class SerialViewerWindow(QMdiSubWindow):
     def setHighlighterSettings(self, settings: List[TextHighlighterSettings]):
         self.highlighter.setSettings(settings)
         self.highlighter.rehighlight()
+
+    def setSerialViewerSettings(self, settings: SerialViewerSettings):
+        self.settingsWidget.setSerialViewerSettings(settings)
 
     @Slot()
     def copy(self):

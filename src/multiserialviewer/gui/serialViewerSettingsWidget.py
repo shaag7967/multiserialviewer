@@ -5,6 +5,7 @@ from PySide6.QtSerialPort import QSerialPort, QSerialPortInfo
 from typing import List
 
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
+from multiserialviewer.application.serialViewerSettings import SerialViewerSettings
 
 
 class SerialViewerSettingsWidget(QWidget):
@@ -14,6 +15,7 @@ class SerialViewerSettingsWidget(QWidget):
         super().__init__(parent)
 
         self.disabledPortNames = []
+        self.settings: SerialViewerSettings = SerialViewerSettings()
 
         self.widget = createWidgetFromUiFile("serialViewerSettingsWidget.ui")
         self.widget.setParent(self)
@@ -32,6 +34,12 @@ class SerialViewerSettingsWidget(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
         layout.addWidget(self.widget)
+
+    def setSerialViewerSettings(self, settings: SerialViewerSettings):
+        self.settings = settings
+
+        self.widget.ed_name.setText(self.settings.title)
+        # TODO set other elements
 
     def disablePorts(self, disabledPortNames: List[str]):
         self.disabledPortNames = disabledPortNames
