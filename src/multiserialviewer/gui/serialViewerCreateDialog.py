@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox
 from PySide6.QtCore import Slot, Qt
+from PySide6.QtGui import QRegularExpressionValidator
 from PySide6.QtSerialPort import QSerialPort, QSerialPortInfo
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
 
@@ -15,6 +16,7 @@ class SerialViewerCreateDialog(QDialog):
         self.buttonBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel,
                                           Qt.Orientation.Horizontal, self)
 
+        self.settingsWidget.cb_baudrate.setValidator(QRegularExpressionValidator(r'[0-9]+', self))
         self.refreshListOfSerialPorts()
         self.populateBaudRateCombobox()
         self.populateDataBitsCombobox()

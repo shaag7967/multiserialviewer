@@ -144,7 +144,7 @@
       <item row="1" column="1">
        <widget class="QComboBox" name="cb_baudrate">
         <property name="editable">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="maxCount">
          <number>20</number>
