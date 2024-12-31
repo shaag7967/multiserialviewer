@@ -75,7 +75,7 @@ class Application(QApplication):
             raise Exception(f"{settings.connection.portName} exists already")
 
         receiver = SerialDataReceiver(settings.connection)
-        processor = SerialDataProcessor(receiver.rxQueue)
+        processor = SerialDataProcessor()
         view = self.mainWindow.createSerialViewerWindow(settings.title, size=settings.size, position=settings.position)
         view.setHighlighterSettings(self.settings.textHighlighter.entries)
         view.setSerialViewerSettings(settings)
