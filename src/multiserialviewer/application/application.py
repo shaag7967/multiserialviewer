@@ -8,6 +8,7 @@ import copy
 from multiserialviewer.gui.mainWindow import MainWindow
 from multiserialviewer.serial_data.serialDataReceiver import SerialDataReceiver
 from multiserialviewer.serial_data.serialDataProcessor import SerialDataProcessor
+from multiserialviewer.serial_data.serialDataStatistics import SerialDataStatistics
 from multiserialviewer.serial_data.serialConnectionSettings import SerialConnectionSettings
 from multiserialviewer.text_highlighter.textHighlighterConfig import TextHighlighterConfig
 from multiserialviewer.application.serialViewerController import SerialViewerController
@@ -40,7 +41,7 @@ class Application(QApplication):
         self.mainWindow.signal_aboutToBeClosed.connect(self.saveSettings)
         self.mainWindow.signal_aboutToBeClosed.connect(self.saveSerialViewerSettings)
         self.mainWindow.signal_aboutToBeClosed.connect(self.saveHighlighterSettings)
-        self.mainWindow.signal_aboutToBeClosed.connect(self.stopAllSerialViewer)
+        self.mainWindow.signal_aboutToBeClosed.connect(self.terminateAllSerialViewer)
         self.mainWindow.signal_editHighlighterSettings.connect(self.showHighlighterSettingsDialog)
         self.mainWindow.signal_applyHighlighterSettings.connect(self.setHighlighterSettings)
         self.mainWindow.signal_createTextHighlightEntry.connect(self.createTextHighlightEntry)
@@ -103,13 +104,17 @@ class Application(QApplication):
             raise Exception(f"{settings.portName} exists already")
 
         receiver = SerialDataReceiver(settings)
+        statistics = SerialDataStatistics(settings)
         processor = SerialDataProcessor()
+
         view = self.mainWindow.createSerialViewerWindow(window_title, size=size, position=position)
         view.setHighlighterSettings(self.highlighterSettings)
-        ctrl = SerialViewerController(receiver, processor, view)
 
+        ctrl = SerialViewerController(receiver, processor, statistics, view)
         ctrl.terminated.connect(self.deleteSerialViewer, type=Qt.ConnectionType.QueuedConnection)
         self.controller[settings.portName] = ctrl
+
+        self.mainWindow.signal_clearAll.connect(statistics.handleReset)
 
         if self.mainWindow.getConnectionState():
             if not ctrl.start():
@@ -147,10 +152,14 @@ class Application(QApplication):
                 controller_started_count += 1
         return controller_started_count
 
-    @Slot()
     def stopAllSerialViewer(self):
         for ctrl in self.controller.values():
             ctrl.stop()
+
+    @Slot()
+    def terminateAllSerialViewer(self):
+        for ctrl in self.controller.values():
+            ctrl.terminate()
 
     def loadSettings(self):
         settings = QSettings(self.main_config_file_path, QSettings.Format.IniFormat)
