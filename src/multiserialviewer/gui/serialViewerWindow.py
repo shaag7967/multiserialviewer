@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt, Slot, Signal, QPoint
 from PySide6.QtGui import QTextCursor, QClipboard, QTextDocument
 from PySide6.QtWidgets import QApplication, QMdiSubWindow, QPushButton, QCheckBox, QAbstractSlider, \
-    QTabWidget, QScrollArea, QVBoxLayout, QFrame, QSizePolicy
+    QTabWidget, QScrollArea, QDialogButtonBox, QFrame, QWidget, QVBoxLayout
 from typing import List
 from multiserialviewer.text_highlighter.textHighlighter import TextHighlighter, TextHighlighterSettings
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
@@ -9,7 +9,6 @@ from multiserialviewer.gui.serialViewerTextEdit import SerialViewerTextEdit
 from multiserialviewer.gui.searchWidget import SearchWidget
 from multiserialviewer.gui.serialViewerSettingsWidget import SerialViewerSettingsWidget
 from multiserialviewer.icons.iconSet import IconSet
-from multiserialviewer.gui.animatedScrollBarMover import AnimatedScrollBarMover
 from multiserialviewer.application.serialViewerSettings import SerialViewerSettings
 
 
@@ -34,24 +33,14 @@ class SerialViewerWindow(QMdiSubWindow):
         self.textEdit.selectionChanged.connect(self.handleTextSelectionChange)
 
         self.textEdit.signal_mousePressed.connect(self.handleMousePress)
+        self.textEdit.signal_wheelEvent.connect(self.handleWheelEvent)
         self.textEdit.verticalScrollBar().sliderPressed.connect(self.handleSliderPress)
         self.textEdit.verticalScrollBar().actionTriggered.connect(self.handleSliderAction)
 
         self.highlighter = TextHighlighter()
         self.highlighter.setDocument(self.textEdit.document())
 
-        pb_clear: QPushButton = widget.findChild(QPushButton, 'pb_clear')
-        pb_clear.pressed.connect(self.clear)
-
-        pb_copy: QPushButton = widget.findChild(QPushButton, 'pb_copy')
-        pb_copy.pressed.connect(self.copy)
-
-        self.checkBox_autoscrollActive: QCheckBox = self.widget().findChild(QCheckBox, 'checkBox_autoscrollActive')
-        self.checkBox_autoscrollActive.checkStateChanged.connect(self.autoscrollStateChanged)
-        self.animatedScrollBarMover: AnimatedScrollBarMover = AnimatedScrollBarMover(self.textEdit.verticalScrollBar())
-
         self._initTabWidget(widget.findChild(QTabWidget, 'tabWidget'))
-
 
     def _initTabWidget(self, tab_widget: QTabWidget):
         # search
@@ -70,10 +59,22 @@ class SerialViewerWindow(QMdiSubWindow):
         self.settingsScrollArea.setFrameShape(QFrame.Shape.NoFrame)
 
         self.settingsWidget: SerialViewerSettingsWidget = SerialViewerSettingsWidget(self.settingsScrollArea)
-        self.settingsScrollArea.setWidget(self.settingsWidget)
+
+        self.settingsWidget.widget.cb_autoscrollActive.checkStateChanged.connect(self.autoscrollStateChanged)
+
+        self.settingsButtonBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Apply | QDialogButtonBox.StandardButton.Discard,
+                                          Qt.Orientation.Horizontal, self)
+        self.settingsButtonBox.button(QDialogButtonBox.StandardButton.Apply).setEnabled(False)
+        self.settingsButtonBox.button(QDialogButtonBox.StandardButton.Discard).setEnabled(False)
+
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.settingsWidget)
+        layout.addWidget(self.settingsButtonBox)
+        self.settingsScrollArea.setWidget(widget)
+
         tab_widget.addTab(self.settingsScrollArea, "Settings")
-
-
 
     def closeEvent(self, event):
         # is not called when mainwindow is closed
@@ -89,20 +90,13 @@ class SerialViewerWindow(QMdiSubWindow):
         self.highlighter.rehighlight()
 
     def setSerialViewerSettings(self, settings: SerialViewerSettings):
+        if self.windowTitle() == '':
+            self.setWindowTitle(settings.connection.portName)
         self.settingsWidget.setSerialViewerSettings(settings)
 
-    @Slot()
-    def copy(self):
-        clipboard: QClipboard = QApplication.clipboard()
-        cursor = self.textEdit.textCursor()
-
-        if cursor.selection().isEmpty():
-            text = self.textEdit.toPlainText()
-        else:
-            text = cursor.selection().toPlainText()
-
-        if len(text) > 0:
-            clipboard.setText(text)
+    @Slot(object)
+    def setExcludedPorts(self, excludedPorts: List[str]):
+        self.settingsWidget.disablePorts(excludedPorts)
 
     @Slot()
     def appendData(self, data):
@@ -110,17 +104,37 @@ class SerialViewerWindow(QMdiSubWindow):
         cursor.movePosition(QTextCursor.MoveOperation.End)
         cursor.insertText(data)
 
-        if self.checkBox_autoscrollActive.isChecked() and not self.animatedScrollBarMover.isRunning():
+        if self.autoscrollIsActive():
             self.textEdit.moveCursor(QTextCursor.MoveOperation.End)
             self.textEdit.ensureCursorVisible()
 
+    def autoscrollIsActive(self) -> bool:
+        return self.settingsWidget.widget.cb_autoscrollActive.isChecked()
+    def autoscrollReactivateIsActive(self) -> bool:
+        return self.settingsWidget.widget.cb_autoscrollReactivate.isChecked()
+
+    def activateAutoscroll(self):
+        if not self.autoscrollIsActive():
+            self.settingsWidget.widget.cb_autoscrollActive.setCheckState(Qt.CheckState.Checked)
+
     def deactivateAutoscroll(self):
-        if self.checkBox_autoscrollActive.isChecked():
-            self.checkBox_autoscrollActive.setCheckState(Qt.CheckState.Unchecked)
+        if self.autoscrollIsActive():
+            self.settingsWidget.widget.cb_autoscrollActive.setCheckState(Qt.CheckState.Unchecked)
 
     @Slot(QPoint)
     def handleMousePress(self, position: QPoint):
         self.deactivateAutoscroll()
+
+    @Slot()
+    def handleWheelEvent(self, angleDelta: QPoint):
+        scrollingDownwards = angleDelta.y() < 0
+        bottomOfScrollBarReached = self.textEdit.verticalScrollBar().value() == self.textEdit.verticalScrollBar().maximum()
+
+        if scrollingDownwards and bottomOfScrollBarReached:
+            if self.autoscrollReactivateIsActive():
+                self.activateAutoscroll()
+        else:
+            self.deactivateAutoscroll()
 
     @Slot()
     def handleSliderPress(self):
@@ -135,16 +149,17 @@ class SerialViewerWindow(QMdiSubWindow):
             self.deactivateAutoscroll()
 
     @Slot()
+    def checkIfScrolledToBottom(self, value: int):
+        if value == self.textEdit.verticalScrollBar().maximum():
+            if self.autoscrollReactivateIsActive():
+                self.activateAutoscroll()
+
+    @Slot()
     def autoscrollStateChanged(self, state: Qt.CheckState):
         if state == Qt.CheckState.Checked:
-            # retrieving start and end value here, because inside scroll
-            # function, scroll bar returns wrong values... not sure why.
-            start = self.textEdit.verticalScrollBar().value()
-            end = self.textEdit.verticalScrollBar().maximum()
-            self.animatedScrollBarMover.scroll(start, end)
+            self.textEdit.verticalScrollBar().valueChanged.disconnect(self.checkIfScrolledToBottom)
         elif state == Qt.CheckState.Unchecked:
-            if self.animatedScrollBarMover.isRunning():
-                self.animatedScrollBarMover.stop()
+            self.textEdit.verticalScrollBar().valueChanged.connect(self.checkIfScrolledToBottom)
 
     @Slot(str, bool)
     def searchString(self, text: str, backward_search: bool):

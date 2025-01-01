@@ -121,6 +121,10 @@ class Settings:
                     entry.size = settings.value("view/size")
                 if settings.contains("view/position"):
                     entry.position = settings.value("view/position")
+                if settings.contains("view/autoscrollActive"):
+                    entry.autoscrollActive = settings.value("view/autoscrollActive", type=bool)
+                if settings.contains("view/autoscrollReactivate"):
+                    entry.autoscrollReactivate = settings.value("view/autoscrollReactivate", type=bool)
 
                 # serial connection settings (mandatory)
                 try:
@@ -147,6 +151,8 @@ class Settings:
                 settings.setValue("view/title", entry.title)
                 settings.setValue("view/size", entry.size)
                 settings.setValue("view/position", entry.position)
+                settings.setValue("view/autoscrollActive", entry.autoscrollActive)
+                settings.setValue("view/autoscrollReactivate", entry.autoscrollReactivate)
 
                 settings.setValue("connection/portName", entry.connection.portName)
                 settings.setValue("connection/baudrate", entry.connection.baudrate)

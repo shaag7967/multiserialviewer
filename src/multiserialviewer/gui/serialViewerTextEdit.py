@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QTextEdit, QMenu, QWidget
-from PySide6.QtGui import QContextMenuEvent, QAction, QMouseEvent
+from PySide6.QtGui import QContextMenuEvent, QAction, QMouseEvent, QWheelEvent
 from PySide6.QtCore import Signal, Slot, QPoint
 import typing
 
@@ -7,8 +7,9 @@ from multiserialviewer.icons.iconSet import IconSet
 
 
 class SerialViewerTextEdit(QTextEdit):
-    signal_createTextHighlightEntry = Signal(str)
-    signal_mousePressed = Signal(QPoint)
+    signal_createTextHighlightEntry: Signal = Signal(str)
+    signal_mousePressed: Signal = Signal(QPoint)
+    signal_wheelEvent: Signal = Signal(QPoint)
 
     def __init__(self, parent: QWidget):
         super(SerialViewerTextEdit, self).__init__(parent)
@@ -30,6 +31,10 @@ class SerialViewerTextEdit(QTextEdit):
         menu.insertSeparator(menu.actions()[1])
         menu.exec(event.globalPos())
         del menu
+
+    def wheelEvent(self, event: QWheelEvent):
+        super(SerialViewerTextEdit, self).wheelEvent(event)
+        self.signal_wheelEvent.emit(event.angleDelta())
 
     def mousePressEvent(self, event: QMouseEvent):
         super(SerialViewerTextEdit, self).mousePressEvent(event)

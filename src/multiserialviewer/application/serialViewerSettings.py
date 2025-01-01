@@ -9,4 +9,6 @@ class SerialViewerSettings:
         self.title: str = ''
         self.size: Optional[QSize] = None
         self.position: Optional[QPoint] = None
+        self.autoscrollActive: bool = True
+        self.autoscrollReactivate: bool = True
         self.connection: SerialConnectionSettings = SerialConnectionSettings('')

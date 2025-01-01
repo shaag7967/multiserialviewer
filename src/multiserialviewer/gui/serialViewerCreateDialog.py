@@ -3,6 +3,7 @@ from PySide6.QtCore import Qt
 from typing import List
 
 from multiserialviewer.gui.serialViewerSettingsWidget import SerialViewerSettingsWidget
+from multiserialviewer.application.serialViewerSettings import SerialViewerSettings, SerialConnectionSettings
 
 
 class SerialViewerCreateDialog(QDialog):
@@ -29,20 +30,15 @@ class SerialViewerCreateDialog(QDialog):
     def disablePorts(self, disabledPortNames: List[str]):
         self.settingsWidget.disablePorts(disabledPortNames)
 
-    def getName(self):
-        return self.settingsWidget.getName()
+    def getSerialViewerSettings(self) -> SerialViewerSettings:
+        serialViewerSettings: SerialViewerSettings = SerialViewerSettings()
+        serialViewerSettings.title = self.settingsWidget.getName()
 
-    def getPortName(self):
-        return self.settingsWidget.getPortName()
+        serialViewerSettings.connection = SerialConnectionSettings()
+        serialViewerSettings.connection.portName = self.settingsWidget.getPortName()
+        serialViewerSettings.connection.baudrate = self.settingsWidget.getBaudrate()
+        serialViewerSettings.connection.dataBits = self.settingsWidget.getDataBits()
+        serialViewerSettings.connection.parity = self.settingsWidget.getParity()
+        serialViewerSettings.connection.stopBits = self.settingsWidget.getStopBits()
 
-    def getBaudrate(self) -> int:
-        return self.settingsWidget.getBaudrate()
-
-    def getDataBits(self):
-        return self.settingsWidget.getDataBits()
-
-    def getParity(self):
-        return self.settingsWidget.getParity()
-
-    def getStopBits(self):
-        return self.settingsWidget.getStopBits()
+        return serialViewerSettings

@@ -1,8 +1,7 @@
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import QSettings, QSize, QPoint, Slot, Qt
+from PySide6.QtCore import Signal, Slot, Qt
 from typing import List
 from platformdirs import user_config_dir
-import pathlib
 import copy
 
 from multiserialviewer.gui.mainWindow import MainWindow
@@ -19,6 +18,8 @@ from multiserialviewer.application.settings import Settings
 
 class Application(QApplication):
     NAME = 'MultiSerialViewer'
+
+    signal_portsInUseChanged: Signal = Signal(object)
 
     def __init__(self, version: str, arguments):
         super().__init__(arguments)
@@ -77,12 +78,14 @@ class Application(QApplication):
         receiver = SerialDataReceiver(settings.connection)
         processor = SerialDataProcessor()
         view = self.mainWindow.createSerialViewerWindow(settings.title, size=settings.size, position=settings.position)
+        self.signal_portsInUseChanged.connect(view.setExcludedPorts)
         view.setHighlighterSettings(self.settings.textHighlighter.entries)
         view.setSerialViewerSettings(settings)
         ctrl = SerialViewerController(receiver, processor, view)
 
         ctrl.terminated.connect(self.deleteSerialViewer, type=Qt.ConnectionType.QueuedConnection)
         self.controller[settings.connection.portName] = ctrl
+        self.signal_portsInUseChanged.emit(self.controller.keys())
 
         if self.mainWindow.getConnectionState():
             if not ctrl.start():
@@ -92,6 +95,7 @@ class Application(QApplication):
     def deleteSerialViewer(self, portName):
         if portName in self.controller:
             del self.controller[portName]
+            self.signal_portsInUseChanged.emit(self.controller.keys())
         else:
             raise Exception("Controller to remove does not exist in list")
 
@@ -142,6 +146,9 @@ class Application(QApplication):
             settings.title = ctrl.view.windowTitle()
             settings.size = ctrl.view.size()
             settings.position = ctrl.view.pos()
+
+            settings.autoscrollActive = ctrl.view.autoscrollIsActive()
+            settings.autoscrollReactivate = ctrl.view.autoscrollReactivateIsActive()
 
             connection: SerialConnectionSettings = ctrl.receiver.getSettings()
             settings.connection.portName = connection.portName
