@@ -46,6 +46,9 @@ class Application(QApplication):
         self.setStyle(ProxyStyle())
         self.mainWindow.show()
 
+        if len(self.controller) == 0:
+            self.showSerialViewerCreateDialog()
+
     @Slot(object)
     def setHighlighterSettings(self, settings: List[TextHighlighterSettings]):
         self.settings.textHighlighter.entries = settings
