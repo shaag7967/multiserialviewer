@@ -51,6 +51,7 @@ class SerialViewerWindow(QMdiSubWindow):
         self.searchWidget.signal_searchString.connect(self.searchString)
         self.searchWidget.signal_previousClicked.connect(self.searchPrevious)
         self.searchWidget.signal_nextClicked.connect(self.searchNext)
+
         self.searchScrollArea.setWidget(self.searchWidget)
         tab_widget.addTab(self.searchScrollArea, "Search")
 
@@ -58,22 +59,11 @@ class SerialViewerWindow(QMdiSubWindow):
         self.settingsScrollArea = QScrollArea(tab_widget)
         self.settingsScrollArea.setFrameShape(QFrame.Shape.NoFrame)
 
-        self.settingsWidget: SerialViewerSettingsWidget = SerialViewerSettingsWidget(self.settingsScrollArea)
-
+        self.settingsWidget: SerialViewerSettingsWidget = SerialViewerSettingsWidget(self.settingsScrollArea, readOnly=True)
         self.settingsWidget.widget.cb_autoscrollActive.checkStateChanged.connect(self.autoscrollStateChanged)
+        self.settingsWidget.widget.ed_name.textChanged.connect(self.nameChanged)
 
-        self.settingsButtonBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Apply | QDialogButtonBox.StandardButton.Discard,
-                                          Qt.Orientation.Horizontal, self)
-        self.settingsButtonBox.button(QDialogButtonBox.StandardButton.Apply).setEnabled(False)
-        self.settingsButtonBox.button(QDialogButtonBox.StandardButton.Discard).setEnabled(False)
-
-        widget = QWidget()
-        layout = QVBoxLayout(widget)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.settingsWidget)
-        layout.addWidget(self.settingsButtonBox)
-        self.settingsScrollArea.setWidget(widget)
-
+        self.settingsScrollArea.setWidget(self.settingsWidget)
         tab_widget.addTab(self.settingsScrollArea, "Settings")
 
     def closeEvent(self, event):
@@ -90,13 +80,7 @@ class SerialViewerWindow(QMdiSubWindow):
         self.highlighter.rehighlight()
 
     def setSerialViewerSettings(self, settings: SerialViewerSettings):
-        if self.windowTitle() == '':
-            self.setWindowTitle(settings.connection.portName)
         self.settingsWidget.setSerialViewerSettings(settings)
-
-    @Slot(object)
-    def setExcludedPorts(self, excludedPorts: List[str]):
-        self.settingsWidget.disablePorts(excludedPorts)
 
     @Slot()
     def appendData(self, data):
@@ -160,6 +144,10 @@ class SerialViewerWindow(QMdiSubWindow):
             self.textEdit.verticalScrollBar().valueChanged.disconnect(self.checkIfScrolledToBottom)
         elif state == Qt.CheckState.Unchecked:
             self.textEdit.verticalScrollBar().valueChanged.connect(self.checkIfScrolledToBottom)
+
+    @Slot()
+    def nameChanged(self, name: str):
+        self.setWindowTitle(name)
 
     @Slot(str, bool)
     def searchString(self, text: str, backward_search: bool):

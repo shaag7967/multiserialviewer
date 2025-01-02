@@ -63,7 +63,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
        </size>
       </property>
       <property name="tabPosition">
-       <enum>QTabWidget::TabPosition::South</enum>
+       <enum>QTabWidget::TabPosition::North</enum>
       </property>
       <property name="currentIndex">
        <number>-1</number>

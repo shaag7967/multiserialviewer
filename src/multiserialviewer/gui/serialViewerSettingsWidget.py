@@ -11,7 +11,7 @@ from multiserialviewer.application.serialViewerSettings import SerialViewerSetti
 class SerialViewerSettingsWidget(QWidget):
     signal_settingsValidStateChanged: Signal = Signal(bool)
 
-    def __init__(self, parent: QWidget):
+    def __init__(self, parent: QWidget, readOnly=False):
         super().__init__(parent)
 
         self.disabledPortNames = []
@@ -20,16 +20,24 @@ class SerialViewerSettingsWidget(QWidget):
         self.widget = createWidgetFromUiFile("serialViewerSettingsWidget.ui")
         self.widget.setParent(self)
 
-        self.widget.cb_baudrate.setValidator(QRegularExpressionValidator(r'[0-9]+', self))
         self.refreshListOfSerialPorts()
         self.populateBaudRateCombobox()
         self.populateDataBitsCombobox()
         self.populateParityCombobox()
         self.populateStopBitsCombobox()
 
-        self.widget.pb_refresh.clicked.connect(self.refreshListOfSerialPorts)
-        self.widget.cb_portName.currentTextChanged.connect(self.updateSettingsValidState)
-        self.widget.cb_baudrate.currentTextChanged.connect(self.updateSettingsValidState)
+        if readOnly:
+            self.widget.pb_refresh.setVisible(False)
+            self.widget.cb_portName.setEnabled(False)
+            self.widget.cb_baudrate.setEnabled(False)
+            self.widget.cb_dataSize.setEnabled(False)
+            self.widget.cb_parity.setEnabled(False)
+            self.widget.cb_stopBits.setEnabled(False)
+        else:
+            self.widget.cb_baudrate.setValidator(QRegularExpressionValidator(r'[0-9]+', self))
+            self.widget.pb_refresh.clicked.connect(self.refreshListOfSerialPorts)
+            self.widget.cb_portName.currentTextChanged.connect(self.updateSettingsValidState)
+            self.widget.cb_baudrate.currentTextChanged.connect(self.updateSettingsValidState)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
@@ -39,13 +47,14 @@ class SerialViewerSettingsWidget(QWidget):
         self.settings = settings
 
         self.widget.cb_autoscrollActive.setCheckState(
-            Qt.CheckState.Checked if settings.autoscrollActive else Qt.CheckState.Unchecked)
+            Qt.CheckState.Checked if self.settings.autoscrollActive else Qt.CheckState.Unchecked)
         self.widget.cb_autoscrollReactivate.setCheckState(
-            Qt.CheckState.Checked if settings.autoscrollReactivate else Qt.CheckState.Unchecked)
+            Qt.CheckState.Checked if self.settings.autoscrollReactivate else Qt.CheckState.Unchecked)
 
         self.widget.ed_name.setText(self.settings.title)
         self.refreshListOfSerialPorts()
         self.widget.cb_baudrate.setCurrentText(str(self.settings.connection.baudrate))
+
         if (index := self.widget.cb_dataSize.findData(self.settings.connection.dataBits)) >= 0:
             self.widget.cb_dataSize.setCurrentIndex(index)
         if (index := self.widget.cb_parity.findData(self.settings.connection.parity)) >= 0:

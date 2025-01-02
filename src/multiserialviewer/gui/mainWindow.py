@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QMdiArea, QMainWindow, QPushButton
-from PySide6.QtCore import QSize, QPoint, Signal
+from PySide6.QtCore import QSize, QPoint, Signal, Slot
+from PySide6.QtGui import QAction
 
 from typing import List
 
@@ -26,6 +27,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.icon_set = icon_set
 
+        self.populateMenuBar()
         widget = createWidgetFromUiFile("mainWindow.ui")
 
         self.setWindowTitle(title)
@@ -39,13 +41,18 @@ class MainWindow(QMainWindow):
         self.pb_changeConnectionState.setIcon(self.icon_set.getCaptureStartIcon())
         widget.pb_create.setIcon(self.icon_set.getSerialViewerIcon())
         widget.pb_clear.setIcon(self.icon_set.getClearContentIcon())
-        widget.pb_highlighter.setIcon(self.icon_set.getHighlighterIcon())
 
         # connections
         widget.pb_create.clicked.connect(self.signal_showSerialViewerCreateDialog)
         widget.pb_clear.clicked.connect(self.signal_clearAll)
         widget.pb_changeConnectionState.clicked.connect(self.signal_connectionStateChanged)
-        widget.pb_highlighter.clicked.connect(self.signal_editHighlighterSettings)
+
+    def populateMenuBar(self):
+        fileMenu = self.menuBar().addMenu("&Settings")
+
+        action_textHighlighterSettings: QAction = QAction(icon=self.icon_set.getHighlighterIcon(), text="Text Highlighter",  parent=fileMenu)
+        action_textHighlighterSettings.triggered.connect(self.signal_editHighlighterSettings)
+        fileMenu.addAction(action_textHighlighterSettings)
 
     def showSerialViewerCreateDialog(self, disabled_ports: list):
         dialog = SerialViewerCreateDialog(self)
