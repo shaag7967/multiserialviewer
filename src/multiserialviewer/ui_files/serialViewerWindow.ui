@@ -51,16 +51,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
      </widget>
      <widget class="QTabWidget" name="tabWidget">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
         <horstretch>0</horstretch>
         <verstretch>1</verstretch>
        </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>100</width>
-        <height>100</height>
-       </size>
       </property>
       <property name="tabPosition">
        <enum>QTabWidget::TabPosition::North</enum>

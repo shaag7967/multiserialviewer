@@ -151,6 +151,8 @@ class SerialViewerWindow(QMdiSubWindow):
 
     @Slot(str, bool)
     def searchString(self, text: str, backward_search: bool):
+        if self.autoscrollIsActive():
+            self.deactivateAutoscroll()
         if self.textEdit.textCursor().selectedText() != text:
             self.textEdit.textCursor().clearSelection()
         self.textEdit.find(text, QTextDocument.FindFlag.FindBackward if backward_search else QTextDocument.FindFlag(0))
