@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import Signal, Slot, Qt
+from PySide6.QtCore import Slot, Qt, QUrl
+from PySide6.QtGui import QDesktopServices
 from typing import List
 from platformdirs import user_config_dir
 import copy
@@ -22,8 +23,8 @@ class Application(QApplication):
     def __init__(self, version: str, arguments):
         super().__init__(arguments)
 
-        configDir = user_config_dir(appname=Application.NAME, roaming=False, ensure_exists=True, appauthor=False)
-        self.settings: Settings = Settings(configDir)
+        self.configDir = user_config_dir(appname=Application.NAME, roaming=False, ensure_exists=True, appauthor=False)
+        self.settings: Settings = Settings(self.configDir)
         self.settings.loadFromDisk()
 
         self.controller = {}
@@ -39,6 +40,7 @@ class Application(QApplication):
         self.mainWindow.signal_editHighlighterSettings.connect(self.showHighlighterSettingsDialog)
         self.mainWindow.signal_applyHighlighterSettings.connect(self.setHighlighterSettings)
         self.mainWindow.signal_createTextHighlightEntry.connect(self.createTextHighlightEntry)
+        self.mainWindow.signal_openSettingsDirectory.connect(self.openSettingsDirectoryInFileBrowser)
 
         self.applySettings()
         self.setStyle(ProxyStyle())
@@ -67,6 +69,10 @@ class Application(QApplication):
     @Slot()
     def showHighlighterSettingsDialog(self):
         self.mainWindow.showHighlighterSettingsDialog(copy.deepcopy(self.settings.textHighlighter.entries))
+
+    @Slot()
+    def openSettingsDirectoryInFileBrowser(self):
+        QDesktopServices.openUrl(QUrl.fromLocalFile(self.configDir))
 
     @Slot(str, SerialConnectionSettings)
     def createSerialViewer(self, settings: SerialViewerSettings):

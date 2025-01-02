@@ -22,6 +22,7 @@ class MainWindow(QMainWindow):
     signal_editHighlighterSettings: Signal = Signal()
     signal_applyHighlighterSettings: Signal = Signal(object)
     signal_createTextHighlightEntry: Signal = Signal(str)
+    signal_openSettingsDirectory: Signal = Signal()
 
     def __init__(self, title: str, icon_set: IconSet):
         super(MainWindow, self).__init__()
@@ -53,6 +54,12 @@ class MainWindow(QMainWindow):
         action_textHighlighterSettings: QAction = QAction(icon=self.icon_set.getHighlighterIcon(), text="Text Highlighter",  parent=fileMenu)
         action_textHighlighterSettings.triggered.connect(self.signal_editHighlighterSettings)
         fileMenu.addAction(action_textHighlighterSettings)
+
+        fileMenu.addSeparator()
+
+        action_openSettingsDirectory: QAction = QAction(text="Open settings directory",  parent=fileMenu)
+        action_openSettingsDirectory.triggered.connect(self.signal_openSettingsDirectory)
+        fileMenu.addAction(action_openSettingsDirectory)
 
     def showSerialViewerCreateDialog(self, disabled_ports: list):
         dialog = SerialViewerCreateDialog(self)
