@@ -1,7 +1,6 @@
 from PySide6.QtWidgets import QMdiArea, QMainWindow, QPushButton
-from PySide6.QtCore import QSize, QPoint, Signal, Slot
+from PySide6.QtCore import QSize, QPoint, Signal
 from PySide6.QtGui import QAction
-
 from typing import List
 
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
@@ -49,6 +48,7 @@ class MainWindow(QMainWindow):
         widget.pb_changeConnectionState.clicked.connect(self.signal_connectionStateChanged)
 
     def populateMenuBar(self):
+        # settings
         fileMenu = self.menuBar().addMenu("&Settings")
 
         action_textHighlighterSettings: QAction = QAction(icon=self.icon_set.getHighlighterIcon(), text="Text Highlighter",  parent=fileMenu)

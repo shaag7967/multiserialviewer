@@ -151,8 +151,8 @@ class Application(QApplication):
             settings.size = ctrl.view.size()
             settings.position = ctrl.view.pos()
 
-            settings.autoscrollActive = ctrl.view.autoscrollIsActive()
-            settings.autoscrollReactivate = ctrl.view.autoscrollReactivateIsActive()
+            settings.autoscrollActive = ctrl.view.autoscroll.autoscrollIsActive()
+            settings.autoscrollReactivate = ctrl.view.autoscroll.autoReactivateIsActive()
 
             connection: SerialConnectionSettings = ctrl.receiver.getSettings()
             settings.connection.portName = connection.portName
