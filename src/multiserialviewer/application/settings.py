@@ -77,7 +77,7 @@ class Settings:
 
         def restoreDefaultValues(self):
             self.size = QSize(800, 800)
-            self.toolBarArea = Qt.ToolBarArea.TopToolBarArea
+            self.toolBarArea = Qt.ToolBarArea.LeftToolBarArea
 
         def loadSettings(self, settings: QSettings):
             self.restoreDefaultValues()

@@ -110,6 +110,9 @@
          <height>90</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Find previous or next occurrence of selected text</string>
+       </property>
        <property name="title">
         <string>Navigation</string>
        </property>

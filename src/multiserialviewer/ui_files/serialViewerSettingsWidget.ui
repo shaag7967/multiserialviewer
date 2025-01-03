@@ -200,6 +200,17 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>ed_name</tabstop>
+  <tabstop>cb_autoscrollActive</tabstop>
+  <tabstop>cb_autoscrollReactivate</tabstop>
+  <tabstop>pb_refresh</tabstop>
+  <tabstop>cb_portName</tabstop>
+  <tabstop>cb_baudrate</tabstop>
+  <tabstop>cb_dataSize</tabstop>
+  <tabstop>cb_parity</tabstop>
+  <tabstop>cb_stopBits</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

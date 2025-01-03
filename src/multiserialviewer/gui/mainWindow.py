@@ -42,26 +42,28 @@ class MainWindow(QMainWindow):
     def __createActions(self):
         actions = {}
 
-        action: QAction = QAction(icon=self.icon_set.getHighlighterIcon(), text="Text Highlighter",  parent=self)
+        action: QAction = QAction(icon=self.icon_set.getHighlighterIcon(), text="Highlighter",  parent=self)
         action.setToolTip("Modify Text Highlighter settings")
         actions['textHighlighterSettings'] = action
 
         action: QAction = QAction(icon=self.icon_set.getDirectoryIcon(), text="Open settings directory",  parent=self)
         actions['openSettingsDir'] = action
 
-        action: QAction = QAction(icon=self.icon_set.getAddIcon(), text="Create SerialViewer",  parent=self)
+        action: QAction = QAction(icon=self.icon_set.getAddIcon(), text="Create Viewer",  parent=self)
+        action.setToolTip("Create additional SerialViewer window")
         actions['createSerialViewer'] = action
 
-        action: QAction = QAction(icon=self.icon_set.getClearContentIcon(), text="Clear content",  parent=self)
+        action: QAction = QAction(icon=self.icon_set.getClearContentIcon(), text="Clear Content",  parent=self)
+        action.setToolTip("Remove received serial data")
         actions['clearContent'] = action
 
-        action: QAction = QAction(icon=self.icon_set.getCaptureStartIcon(), text="Start capture",  parent=self)
+        action: QAction = QAction(icon=self.icon_set.getCaptureStartIcon(), text="Start Capture",  parent=self)
+        action.setToolTip("Start/stop receiving serial data")
         actions['capture'] = action
 
-        action: QAction = QAction(icon=self.icon_set.getCascadeIcon(), text="Cascade",  parent=self)
-        actions['cascadeSerialViewerWindows'] = action
-        action: QAction = QAction(icon=self.icon_set.getTileIcon(), text="Tile",  parent=self)
-        actions['tileSerialViewerWindows'] = action
+        action: QAction = QAction(icon=self.icon_set.getTileIcon(), text="Arrange",  parent=self)
+        action.setToolTip("Automatically arrange all SerialViewer windows side by side")
+        actions['arrangeSerialViewerWindows'] = action
 
         return actions
 
@@ -71,12 +73,12 @@ class MainWindow(QMainWindow):
         self.actions['createSerialViewer'].triggered.connect(self.signal_showSerialViewerCreateDialog)
         self.actions['clearContent'].triggered.connect(self.signal_clearAll)
         self.actions['capture'].triggered.connect(self.signal_toggleCaptureState)
-        self.actions['cascadeSerialViewerWindows'].triggered.connect(self.arrangeWindowsInCascade)
-        self.actions['tileSerialViewerWindows'].triggered.connect(self.arrangeWindowsInTile)
+        self.actions['arrangeSerialViewerWindows'].triggered.connect(self.arrangeWindowsInTile)
 
     def __createToolBar(self) -> QToolBar:
         toolBar: QToolBar = QToolBar(self)
         toolBar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
+        toolBar.setIconSize(QSize(48, 48))
 
         toolBar.addAction(self.actions['createSerialViewer'])
         toolBar.addAction(self.actions['capture'])
@@ -88,8 +90,7 @@ class MainWindow(QMainWindow):
         toolBar.addWidget(space)
 
         toolBar.addSeparator()
-        toolBar.addAction(self.actions['cascadeSerialViewerWindows'])
-        toolBar.addAction(self.actions['tileSerialViewerWindows'])
+        toolBar.addAction(self.actions['arrangeSerialViewerWindows'])
         toolBar.addSeparator()
 
         # settings
