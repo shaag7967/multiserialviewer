@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QMdiArea, QMainWindow, QToolBar, QMenu, QWidget, QSizePolicy
-from PySide6.QtCore import Qt, QSize, QPoint, Signal
+from PySide6.QtCore import Qt, QSize, QPoint, Signal, Slot
 from PySide6.QtGui import QAction
 from typing import List
 
@@ -35,7 +35,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(title)
         self.setWindowIcon(icon_set.getAppIcon())
         self.setCentralWidget(widget)
-        self.mdiArea = widget.findChild(QMdiArea, 'mdiArea')
+        self.mdiArea: QMdiArea = widget.findChild(QMdiArea, 'mdiArea')
         self.updateCaptureButton(False)
 
 
@@ -58,6 +58,11 @@ class MainWindow(QMainWindow):
         action: QAction = QAction(icon=self.icon_set.getCaptureStartIcon(), text="Start capture",  parent=self)
         actions['capture'] = action
 
+        action: QAction = QAction(icon=self.icon_set.getCascadeIcon(), text="Cascade",  parent=self)
+        actions['cascadeSerialViewerWindows'] = action
+        action: QAction = QAction(icon=self.icon_set.getTileIcon(), text="Tile",  parent=self)
+        actions['tileSerialViewerWindows'] = action
+
         return actions
 
     def __connectActions(self):
@@ -66,6 +71,8 @@ class MainWindow(QMainWindow):
         self.actions['createSerialViewer'].triggered.connect(self.signal_showSerialViewerCreateDialog)
         self.actions['clearContent'].triggered.connect(self.signal_clearAll)
         self.actions['capture'].triggered.connect(self.signal_toggleCaptureState)
+        self.actions['cascadeSerialViewerWindows'].triggered.connect(self.arrangeWindowsInCascade)
+        self.actions['tileSerialViewerWindows'].triggered.connect(self.arrangeWindowsInTile)
 
     def __createToolBar(self) -> QToolBar:
         toolBar: QToolBar = QToolBar(self)
@@ -79,6 +86,11 @@ class MainWindow(QMainWindow):
         space = QWidget()
         space.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         toolBar.addWidget(space)
+
+        toolBar.addSeparator()
+        toolBar.addAction(self.actions['cascadeSerialViewerWindows'])
+        toolBar.addAction(self.actions['tileSerialViewerWindows'])
+        toolBar.addSeparator()
 
         # settings
         settingsMenu: QMenu = QMenu(toolBar)
@@ -121,3 +133,11 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         self.signal_aboutToBeClosed.emit()
         event.accept()
+
+    @Slot()
+    def arrangeWindowsInCascade(self):
+        self.mdiArea.cascadeSubWindows()
+
+    @Slot()
+    def arrangeWindowsInTile(self):
+        self.mdiArea.tileSubWindows()

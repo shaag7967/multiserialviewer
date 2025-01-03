@@ -34,3 +34,9 @@ class IconSet:
 
     def getDirectoryIcon(self) -> QIcon:
         return QIcon(str(self.icons_dir_name.joinpath('folder.png')))
+
+    def getCascadeIcon(self) -> QIcon:
+        return QIcon(str(self.icons_dir_name.joinpath('cascade.png')))
+
+    def getTileIcon(self) -> QIcon:
+        return QIcon(str(self.icons_dir_name.joinpath('tile.png')))
