@@ -126,10 +126,10 @@ class MainWindow(QMainWindow):
     def updateCaptureButton(self, captureState):
         if captureState:
             self.actions['capture'].setIcon(self.icon_set.getCaptureStopIcon())
-            self.actions['capture'].setText('Stop capture')
+            self.actions['capture'].setText('Stop Capture')
         else:
             self.actions['capture'].setIcon(self.icon_set.getCaptureStartIcon())
-            self.actions['capture'].setText('Start capture')
+            self.actions['capture'].setText('Start Capture')
 
     def closeEvent(self, event):
         self.signal_aboutToBeClosed.emit()
