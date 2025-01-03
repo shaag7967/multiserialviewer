@@ -1,5 +1,5 @@
-from PySide6.QtWidgets import QMdiArea, QMainWindow, QPushButton
-from PySide6.QtCore import QSize, QPoint, Signal
+from PySide6.QtWidgets import QMdiArea, QMainWindow, QToolBar, QMenu, QWidget, QSizePolicy
+from PySide6.QtCore import Qt, QSize, QPoint, Signal
 from PySide6.QtGui import QAction
 from typing import List
 
@@ -16,7 +16,7 @@ class MainWindow(QMainWindow):
     signal_showSerialViewerCreateDialog: Signal = Signal()
     signal_createSerialViewer: Signal = Signal(SerialViewerSettings)
     signal_clearAll: Signal = Signal()
-    signal_connectionStateChanged: Signal = Signal(bool)
+    signal_toggleCaptureState: Signal = Signal()
     signal_aboutToBeClosed: Signal = Signal()
     signal_editHighlighterSettings: Signal = Signal()
     signal_applyHighlighterSettings: Signal = Signal(object)
@@ -26,40 +26,67 @@ class MainWindow(QMainWindow):
     def __init__(self, title: str, icon_set: IconSet):
         super(MainWindow, self).__init__()
         self.icon_set = icon_set
+        self.actions = self.__createActions()
+        self.__connectActions()
+        self.toolBar: QToolBar = self.__createToolBar()
 
-        self.populateMenuBar()
         widget = createWidgetFromUiFile("mainWindow.ui")
 
         self.setWindowTitle(title)
+        self.setWindowIcon(icon_set.getAppIcon())
         self.setCentralWidget(widget)
         self.mdiArea = widget.findChild(QMdiArea, 'mdiArea')
-        self.pb_changeConnectionState: QPushButton = widget.findChild(QPushButton, 'pb_changeConnectionState')
-        self.setConnectionState(False)
+        self.updateCaptureButton(False)
 
-        # icons
-        self.setWindowIcon(icon_set.getAppIcon())
-        self.pb_changeConnectionState.setIcon(self.icon_set.getCaptureStartIcon())
-        widget.pb_create.setIcon(self.icon_set.getSerialViewerIcon())
-        widget.pb_clear.setIcon(self.icon_set.getClearContentIcon())
 
-        # connections
-        widget.pb_create.clicked.connect(self.signal_showSerialViewerCreateDialog)
-        widget.pb_clear.clicked.connect(self.signal_clearAll)
-        widget.pb_changeConnectionState.clicked.connect(self.signal_connectionStateChanged)
+    def __createActions(self):
+        actions = {}
 
-    def populateMenuBar(self):
+        action: QAction = QAction(icon=self.icon_set.getHighlighterIcon(), text="Text Highlighter",  parent=self)
+        action.setToolTip("Modify Text Highlighter settings")
+        actions['textHighlighterSettings'] = action
+
+        action: QAction = QAction(icon=self.icon_set.getDirectoryIcon(), text="Open settings directory",  parent=self)
+        actions['openSettingsDir'] = action
+
+        action: QAction = QAction(icon=self.icon_set.getAddIcon(), text="Create SerialViewer",  parent=self)
+        actions['createSerialViewer'] = action
+
+        action: QAction = QAction(icon=self.icon_set.getClearContentIcon(), text="Clear content",  parent=self)
+        actions['clearContent'] = action
+
+        action: QAction = QAction(icon=self.icon_set.getCaptureStartIcon(), text="Start capture",  parent=self)
+        actions['capture'] = action
+
+        return actions
+
+    def __connectActions(self):
+        self.actions['textHighlighterSettings'].triggered.connect(self.signal_editHighlighterSettings)
+        self.actions['openSettingsDir'].triggered.connect(self.signal_openSettingsDirectory)
+        self.actions['createSerialViewer'].triggered.connect(self.signal_showSerialViewerCreateDialog)
+        self.actions['clearContent'].triggered.connect(self.signal_clearAll)
+        self.actions['capture'].triggered.connect(self.signal_toggleCaptureState)
+
+    def __createToolBar(self) -> QToolBar:
+        toolBar: QToolBar = QToolBar(self)
+        toolBar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
+
+        toolBar.addAction(self.actions['createSerialViewer'])
+        toolBar.addAction(self.actions['capture'])
+        toolBar.addAction(self.actions['clearContent'])
+
+        # expanding space
+        space = QWidget()
+        space.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        toolBar.addWidget(space)
+
         # settings
-        fileMenu = self.menuBar().addMenu("&Settings")
+        settingsMenu: QMenu = QMenu(toolBar)
+        settingsMenu.addAction(self.actions['openSettingsDir'])
+        self.actions['textHighlighterSettings'].setMenu(settingsMenu)
+        toolBar.addAction(self.actions['textHighlighterSettings'])
 
-        action_textHighlighterSettings: QAction = QAction(icon=self.icon_set.getHighlighterIcon(), text="Text Highlighter",  parent=fileMenu)
-        action_textHighlighterSettings.triggered.connect(self.signal_editHighlighterSettings)
-        fileMenu.addAction(action_textHighlighterSettings)
-
-        fileMenu.addSeparator()
-
-        action_openSettingsDirectory: QAction = QAction(text="Open settings directory",  parent=fileMenu)
-        action_openSettingsDirectory.triggered.connect(self.signal_openSettingsDirectory)
-        fileMenu.addAction(action_openSettingsDirectory)
+        return toolBar
 
     def showSerialViewerCreateDialog(self, disabled_ports: list):
         dialog = SerialViewerCreateDialog(self)
@@ -83,17 +110,13 @@ class MainWindow(QMainWindow):
         if dialog.exec():
             self.signal_applyHighlighterSettings.emit(dialog.tableModel.settings)
 
-    def getConnectionState(self):
-        return self.pb_changeConnectionState.isChecked()
-
-    def setConnectionState(self, state):
-        self.pb_changeConnectionState.setChecked(state)
-        if state:
-            self.pb_changeConnectionState.setIcon(self.icon_set.getCaptureStopIcon())
-            self.pb_changeConnectionState.setText('Stop capture')
+    def updateCaptureButton(self, captureState):
+        if captureState:
+            self.actions['capture'].setIcon(self.icon_set.getCaptureStopIcon())
+            self.actions['capture'].setText('Stop capture')
         else:
-            self.pb_changeConnectionState.setIcon(self.icon_set.getCaptureStartIcon())
-            self.pb_changeConnectionState.setText('Start capture')
+            self.actions['capture'].setIcon(self.icon_set.getCaptureStartIcon())
+            self.actions['capture'].setText('Start capture')
 
     def closeEvent(self, event):
         self.signal_aboutToBeClosed.emit()

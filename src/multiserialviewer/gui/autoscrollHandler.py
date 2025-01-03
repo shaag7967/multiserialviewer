@@ -8,9 +8,9 @@ class AutoscrollHandler(QObject):
     def __init__(self, textEdit: SerialViewerTextEdit, autoscrollActive: QCheckBox, autoReactivate: QCheckBox):
         super(AutoscrollHandler, self).__init__()
 
-        self.__textEdit = textEdit
-        self.__autoscrollActive = autoscrollActive
-        self.__autoReactivate = autoReactivate
+        self.__textEdit: SerialViewerTextEdit = textEdit
+        self.__autoscrollActive: QCheckBox = autoscrollActive
+        self.__autoReactivate: QCheckBox = autoReactivate
 
         self.__autoscrollActive.checkStateChanged.connect(self.autoscrollStateChanged)
         self.__textEdit.signal_mousePressed.connect(self.handleMousePress)

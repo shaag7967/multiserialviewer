@@ -27,14 +27,17 @@ class Application(QApplication):
         self.settings: Settings = Settings(self.configDir)
         self.settings.loadFromDisk()
 
+        self.captureActive: bool = False
         self.controller = {}
-        self.icon_set = IconSet('google', '8B0000')
+        self.icon_set = IconSet('google', 'CCCCCC')
 
         self.mainWindow = MainWindow(f'{Application.NAME} {version}', self.icon_set)
+        self.mainWindow.updateCaptureButton(self.captureActive)
+
         self.mainWindow.signal_showSerialViewerCreateDialog.connect(self.showSerialViewerCreateDialog)
         self.mainWindow.signal_createSerialViewer.connect(self.createSerialViewer)
         self.mainWindow.signal_clearAll.connect(self.clearAll)
-        self.mainWindow.signal_connectionStateChanged.connect(self.changeConnectionState)
+        self.mainWindow.signal_toggleCaptureState.connect(self.toggleCaptureState)
         self.mainWindow.signal_aboutToBeClosed.connect(self.persistCurrentSettings)
         self.mainWindow.signal_aboutToBeClosed.connect(self.stopAllSerialViewer)
         self.mainWindow.signal_editHighlighterSettings.connect(self.showHighlighterSettingsDialog)
@@ -92,7 +95,7 @@ class Application(QApplication):
         ctrl.terminated.connect(self.deleteSerialViewer, type=Qt.ConnectionType.QueuedConnection)
         self.controller[settings.connection.portName] = ctrl
 
-        if self.mainWindow.getConnectionState():
+        if self.captureActive:
             if not ctrl.start():
                 self.stopAllSerialViewer()
 
@@ -109,17 +112,20 @@ class Application(QApplication):
             ctrl.view.clear()
 
     @Slot(bool)
-    def changeConnectionState(self, state: bool):
-        target_connection_state = state and len(self.controller.values()) > 0
-        self.mainWindow.setConnectionState(target_connection_state)
+    def toggleCaptureState(self):
+        self.captureActive = not self.captureActive
+        targetCaptureState = self.captureActive and len(self.controller.values()) > 0
 
-        if target_connection_state:
-            failed_to_connect_all = (self.startAllSerialViewer() != len(self.controller))
-            if failed_to_connect_all:
-                self.mainWindow.setConnectionState(False)
+        if targetCaptureState:
+            failedToConnectAll = (self.startAllSerialViewer() != len(self.controller))
+            if failedToConnectAll:
+                self.captureActive = False
                 self.stopAllSerialViewer()
+            else:
+                self.captureActive = True
         else:
             self.stopAllSerialViewer()
+        self.mainWindow.updateCaptureButton(self.captureActive)
 
     def startAllSerialViewer(self) -> int:
         controller_started_count = 0
@@ -135,6 +141,7 @@ class Application(QApplication):
 
     def applySettings(self):
         self.mainWindow.resize(self.settings.mainWindow.size)
+        self.mainWindow.addToolBar(self.settings.mainWindow.toolBarArea, self.mainWindow.toolBar)
 
         for serialViewerSetting in self.settings.serialViewer.entries:
             self.createSerialViewer(serialViewerSetting)
@@ -143,6 +150,7 @@ class Application(QApplication):
 
     def persistCurrentSettings(self):
         self.settings.mainWindow.size = self.mainWindow.size()
+        self.settings.mainWindow.toolBarArea = self.mainWindow.toolBarArea(self.mainWindow.toolBar)
 
         self.settings.serialViewer.entries.clear()
         for ctrl in self.controller.values():

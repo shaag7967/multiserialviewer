@@ -1,9 +1,7 @@
-from PySide6.QtCore import QSettings, QSize
+from PySide6.QtCore import Qt, QSettings, QSize, QPoint
 from PySide6.QtSerialPort import QSerialPort
 from typing import List, Any
 from pathlib import PurePath
-from contextlib import contextmanager
-from collections.abc import Generator
 
 from multiserialviewer.application.serialViewerSettings import SerialViewerSettings
 from multiserialviewer.text_highlighter.textHighlighterSettings import TextHighlighterSettings
@@ -74,10 +72,12 @@ class Settings:
 
         def __init__(self):
             self.size: QSize = QSize()
+            self.toolBarArea: Qt.ToolBarArea = Qt.ToolBarArea.TopToolBarArea
             self.restoreDefaultValues()
 
         def restoreDefaultValues(self):
             self.size = QSize(800, 800)
+            self.toolBarArea = Qt.ToolBarArea.TopToolBarArea
 
         def loadSettings(self, settings: QSettings):
             self.restoreDefaultValues()
@@ -89,12 +89,15 @@ class Settings:
             settings.beginGroup(self.SettingsName_v1)
             if settings.contains("size"):
                 self.size = settings.value("size")
+            if settings.contains("toolBarArea"):
+                self.toolBarArea = Qt.ToolBarArea(int(settings.value("toolBarArea")))
             settings.endGroup()
 
         def saveSettings(self, settings: QSettings):
             """ Writes settings to disk. We always use the latest version."""
             settings.beginGroup(self.SettingsName_v1)
             settings.setValue("size", self.size)
+            settings.setValue("toolBarArea", self.toolBarArea.value)
             settings.endGroup()
 
     class SerialViewer:
