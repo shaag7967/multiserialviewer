@@ -25,3 +25,18 @@ class IconSet:
 
     def getClearContentIcon(self) -> QIcon:
         return QIcon(str(self.icons_dir_name.joinpath('clear.png')))
+
+    def getAddIcon(self) -> QIcon:
+        return QIcon(str(self.icons_dir_name.joinpath('add.png')))
+
+    def getSettingsIcon(self) -> QIcon:
+        return QIcon(str(self.icons_dir_name.joinpath('settings.png')))
+
+    def getDirectoryIcon(self) -> QIcon:
+        return QIcon(str(self.icons_dir_name.joinpath('folder.png')))
+
+    def getCascadeIcon(self) -> QIcon:
+        return QIcon(str(self.icons_dir_name.joinpath('cascade.png')))
+
+    def getTileIcon(self) -> QIcon:
+        return QIcon(str(self.icons_dir_name.joinpath('tile.png')))

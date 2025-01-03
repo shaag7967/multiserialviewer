@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>422</width>
+    <height>349</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+    <horstretch>1</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>General</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="1" colspan="2">
+       <widget class="QLineEdit" name="ed_name"/>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="lb_name">
+        <property name="text">
+         <string>Name</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>Autoscroll</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QCheckBox" name="cb_autoscrollActive">
+        <property name="text">
+         <string>Active</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="cb_autoscrollReactivate">
+        <property name="text">
+         <string>Automatically reactivate (when scrolling to bottom)</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="title">
+      <string>Serial port settings</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="1">
+       <widget class="QComboBox" name="cb_portName">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="editable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QComboBox" name="cb_parity">
+        <property name="editable">
+         <bool>false</bool>
+        </property>
+        <property name="maxCount">
+         <number>20</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QPushButton" name="pb_refresh">
+        <property name="text">
+         <string>Refresh</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QLabel" name="lb_dataSize_unit">
+        <property name="text">
+         <string>bits/char</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="lb_parity">
+        <property name="text">
+         <string>Parity</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="cb_dataSize">
+        <property name="editable">
+         <bool>false</bool>
+        </property>
+        <property name="maxCount">
+         <number>20</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="lb_dataSize">
+        <property name="text">
+         <string>Data size</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="lb_baudrate">
+        <property name="text">
+         <string>Speed</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="lb_stopBits">
+        <property name="text">
+         <string>Stop bits</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QComboBox" name="cb_stopBits">
+        <property name="editable">
+         <bool>false</bool>
+        </property>
+        <property name="maxCount">
+         <number>20</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="cb_baudrate">
+        <property name="editable">
+         <bool>true</bool>
+        </property>
+        <property name="maxCount">
+         <number>20</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QLabel" name="lb_baudrate_unit">
+        <property name="text">
+         <string>bits/sec</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="lb_port">
+        <property name="text">
+         <string>Port</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>ed_name</tabstop>
+  <tabstop>cb_autoscrollActive</tabstop>
+  <tabstop>cb_autoscrollReactivate</tabstop>
+  <tabstop>pb_refresh</tabstop>
+  <tabstop>cb_portName</tabstop>
+  <tabstop>cb_baudrate</tabstop>
+  <tabstop>cb_dataSize</tabstop>
+  <tabstop>cb_parity</tabstop>
+  <tabstop>cb_stopBits</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

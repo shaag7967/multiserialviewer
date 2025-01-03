@@ -3,16 +3,16 @@ from PySide6.QtGui import QColor
 from typing import List
 from collections import OrderedDict
 
-from multiserialviewer.text_highlighter.textHighlighterConfig import TextHighlighterConfig
+from multiserialviewer.text_highlighter.textHighlighterSettings import TextHighlighterSettings
 
 
 class TextHighlighterTableModel(QAbstractTableModel):
-    AllColorsRole = Qt.UserRole + 1
-    SelectedColorRole = Qt.UserRole + 2
+    AllColorsRole = Qt.ItemDataRole.UserRole + 1
+    SelectedColorRole = Qt.ItemDataRole.UserRole + 2
 
-    def __init__(self, settings: List[TextHighlighterConfig]):
+    def __init__(self, settings: List[TextHighlighterSettings]):
         QAbstractTableModel.__init__(self)
-        self.settings = settings
+        self.settings: List[TextHighlighterSettings] = settings
 
         self.color_map = OrderedDict()
         for i, name in enumerate(QColor.colorNames()):
@@ -22,25 +22,25 @@ class TextHighlighterTableModel(QAbstractTableModel):
         return len(self.settings)
 
     def columnCount(self, parent=QModelIndex()):
-        return TextHighlighterConfig.number_of_attributes
+        return TextHighlighterSettings.numberOfAttributes
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if role != Qt.DisplayRole:
+    def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
+        if role != Qt.ItemDataRole.DisplayRole:
             return None
-        if orientation == Qt.Horizontal:
+        if orientation == Qt.Orientation.Horizontal:
             return ("Text/Pattern", "Foreground", "Background", "Italic", "Bold", "Font Size")[section]
         else:  # vertical
             return f"{section}"
 
-    def setData(self, index, value, role=Qt.EditRole):
-        if role not in [Qt.EditRole, Qt.CheckStateRole, TextHighlighterTableModel.SelectedColorRole]:
+    def setData(self, index: QModelIndex, value, role=Qt.ItemDataRole.EditRole):
+        if role not in [Qt.ItemDataRole.EditRole, Qt.ItemDataRole.CheckStateRole, TextHighlighterTableModel.SelectedColorRole]:
             return False
 
         column = index.column()
         row = index.row()
         if row >= len(self.settings):
             return False
-        if column >= TextHighlighterConfig.number_of_attributes:
+        if column >= TextHighlighterSettings.numberOfAttributes:
             return False
 
         if column == 0:
@@ -50,10 +50,10 @@ class TextHighlighterTableModel(QAbstractTableModel):
         elif column == 2:
             self.settings[row].color_background = list(self.color_map.values())[value][1]  # color by index
         elif column == 3:
-            if role == Qt.CheckStateRole:
+            if role == Qt.ItemDataRole.CheckStateRole:
                 self.settings[row].italic = bool(value)
         elif column == 4:
-            if role == Qt.CheckStateRole:
+            if role == Qt.ItemDataRole.CheckStateRole:
                 self.settings[row].bold = bool(value)
         elif column == 5:
             self.settings[row].font_size = int(value)
@@ -62,14 +62,14 @@ class TextHighlighterTableModel(QAbstractTableModel):
         return True
 
     def flags(self, index):
-        f = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        f = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
         if index.column() in [0, 1, 2, 5]:
-            f |= Qt.ItemIsEditable
+            f |= Qt.ItemFlag.ItemIsEditable
         elif index.column() == 3 or index.column() == 4:
-            f |= Qt.ItemIsUserCheckable
+            f |= Qt.ItemFlag.ItemIsUserCheckable
         return f
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index: QModelIndex, role=Qt.ItemDataRole.DisplayRole):
         column = index.column()
         row = index.row()
 
@@ -82,34 +82,38 @@ class TextHighlighterTableModel(QAbstractTableModel):
             elif column == 2:
                 return self.color_map[self.settings[row].color_background][0]
 
-        if role == Qt.DisplayRole or role == Qt.EditRole:
+        if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
             if column == 0:
                 return self.settings[row].pattern
             elif column == 5:
                 return self.settings[row].font_size
-        elif role == Qt.CheckStateRole:
+        elif role == Qt.ItemDataRole.CheckStateRole:
             if column == 3:
                 value = self.settings[row].italic
             elif column == 4:
                 value = self.settings[row].bold
             else:
                 return None
-            return Qt.Checked if value else Qt.Unchecked
-        elif role == Qt.BackgroundRole:
+            return Qt.CheckState.Checked if value else Qt.CheckState.Unchecked
+        elif role == Qt.ItemDataRole.BackgroundRole:
             if column == 0:
                 return self.color_map[self.settings[row].color_background][2]
-        elif role == Qt.ForegroundRole:
+        elif role == Qt.ItemDataRole.ForegroundRole:
             if column == 0:
                 return self.color_map[self.settings[row].color_foreground][2]
-        elif role == Qt.TextAlignmentRole:
+        elif role == Qt.ItemDataRole.TextAlignmentRole:
             if column == 0:
-                return Qt.AlignRight
+                return Qt.AlignmentFlag.AlignRight
         return None
+
+    def replaceRow(self, row, content: TextHighlighterSettings):
+        self.settings[row] = content
+        self.dataChanged.emit(self.index(row, 0), self.index(row, TextHighlighterSettings.numberOfAttributes - 1))
 
     def insertRows(self, row, count, parent=QModelIndex()):
         self.beginInsertRows(parent, row, row + count - 1)
         for i in range(count):
-            self.settings.insert(row+i, TextHighlighterConfig())
+            self.settings.insert(row+i, TextHighlighterSettings())
         self.endInsertRows()
 
     def removeRows(self, row, count, parent=QModelIndex()):
