@@ -2,7 +2,7 @@ from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile
 import pathlib
 
-from multiserialviewer.gui.serialViewerTextEdit import SerialViewerTextEdit
+from multiserialviewer.gui_viewer.serialViewerTextEdit import SerialViewerTextEdit
 
 
 def createWidgetFromUiFile(ui_file_name):

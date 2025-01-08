@@ -5,13 +5,13 @@ from typing import List
 
 from multiserialviewer.text_highlighter.textHighlighter import TextHighlighter, TextHighlighterSettings
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
-from multiserialviewer.gui.serialViewerTextEdit import SerialViewerTextEdit
-from multiserialviewer.gui.searchWidget import SearchWidget
-from multiserialviewer.gui.serialViewerSettingsWidget import SerialViewerSettingsWidget
+from multiserialviewer.gui_viewer.serialViewerTextEdit import SerialViewerTextEdit
+from multiserialviewer.gui_viewer.searchWidget import SearchWidget
+from multiserialviewer.gui_viewer.serialViewerSettingsWidget import SerialViewerSettingsWidget
 from multiserialviewer.icons.iconSet import IconSet
 from multiserialviewer.application.serialViewerSettings import SerialViewerSettings
-from multiserialviewer.gui.autoscrollHandler import AutoscrollHandler
-from multiserialviewer.gui.searchHandler import SearchHandler
+from multiserialviewer.gui_viewer.autoscrollHandler import AutoscrollHandler
+from multiserialviewer.gui_viewer.searchHandler import SearchHandler
 
 
 class SerialViewerWindow(QMdiSubWindow):

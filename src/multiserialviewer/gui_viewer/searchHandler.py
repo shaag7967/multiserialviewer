@@ -1,8 +1,8 @@
 from PySide6.QtCore import QObject, Signal, Slot
 from PySide6.QtGui import QTextDocument
 
-from multiserialviewer.gui.serialViewerTextEdit import SerialViewerTextEdit
-from multiserialviewer.gui.searchWidget import SearchWidget
+from multiserialviewer.gui_viewer.serialViewerTextEdit import SerialViewerTextEdit
+from multiserialviewer.gui_viewer.searchWidget import SearchWidget
 
 
 class SearchHandler(QObject):

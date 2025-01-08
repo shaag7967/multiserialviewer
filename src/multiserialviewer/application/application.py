@@ -5,7 +5,7 @@ from typing import List
 from platformdirs import user_config_dir
 import copy
 
-from multiserialviewer.gui.mainWindow import MainWindow
+from multiserialviewer.gui_main.mainWindow import MainWindow
 from multiserialviewer.serial_data.serialDataReceiver import SerialDataReceiver
 from multiserialviewer.serial_data.serialDataProcessor import SerialDataProcessor
 from multiserialviewer.serial_data.serialConnectionSettings import SerialConnectionSettings

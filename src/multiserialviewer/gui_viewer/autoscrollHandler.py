@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt, QObject, Slot, QPoint
 from PySide6.QtWidgets import QCheckBox, QAbstractSlider
 
-from multiserialviewer.gui.serialViewerTextEdit import SerialViewerTextEdit
+from multiserialviewer.gui_viewer.serialViewerTextEdit import SerialViewerTextEdit
 
 
 class AutoscrollHandler(QObject):

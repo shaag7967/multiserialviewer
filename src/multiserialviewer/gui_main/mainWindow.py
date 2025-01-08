@@ -4,9 +4,9 @@ from PySide6.QtGui import QAction
 from typing import List
 
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
-from multiserialviewer.gui.serialViewerWindow import SerialViewerWindow
-from multiserialviewer.gui.serialViewerCreateDialog import SerialViewerCreateDialog
-from multiserialviewer.gui.textHighlighterSettingsDialog import TextHighlighterSettingsDialog
+from multiserialviewer.gui_viewer.serialViewerWindow import SerialViewerWindow
+from multiserialviewer.gui_viewer.serialViewerCreateDialog import SerialViewerCreateDialog
+from multiserialviewer.gui_main.textHighlighterSettingsDialog import TextHighlighterSettingsDialog
 from multiserialviewer.text_highlighter.textHighlighter import TextHighlighterSettings
 from multiserialviewer.application.serialViewerSettings import SerialViewerSettings
 from multiserialviewer.icons.iconSet import IconSet

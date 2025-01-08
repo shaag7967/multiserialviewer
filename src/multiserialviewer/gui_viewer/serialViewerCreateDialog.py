@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox
 from PySide6.QtCore import Qt
 from typing import List
 
-from multiserialviewer.gui.serialViewerSettingsWidget import SerialViewerSettingsWidget
+from multiserialviewer.gui_viewer.serialViewerSettingsWidget import SerialViewerSettingsWidget
 from multiserialviewer.application.serialViewerSettings import SerialViewerSettings, SerialConnectionSettings
 
 
