@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import Slot, Qt, QUrl
-from PySide6.QtGui import QDesktopServices
+from PySide6.QtGui import QDesktopServices, QGuiApplication
 from typing import List
 from platformdirs import user_config_dir
 import copy
@@ -29,7 +29,12 @@ class Application(QApplication):
 
         self.captureActive: bool = False
         self.controller = {}
-        self.icon_set = IconSet('google', 'CCCCCC')
+
+        colorScheme: Qt.ColorScheme = QGuiApplication.styleHints().colorScheme()
+        if colorScheme == Qt.ColorScheme.Dark:
+            self.icon_set = IconSet('google', 'CCCCCC')
+        else:
+            self.icon_set = IconSet('google', '434343')
 
         self.mainWindow = MainWindow(f'{Application.NAME} {version}', self.icon_set)
         self.mainWindow.updateCaptureButton(self.captureActive)
