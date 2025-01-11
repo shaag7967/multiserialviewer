@@ -1,4 +1,5 @@
 from PySide6.QtCore import QObject, Slot, Signal
+from datetime import datetime
 
 from multiserialviewer.gui_viewer.serialViewerWindow import SerialViewerWindow
 from multiserialviewer.serial_data.serialDataReceiver import SerialDataReceiver
@@ -39,10 +40,10 @@ class SerialViewerController(QObject):
             self.show_message(f'Closed {self.receiver.getSettings().portName}')
 
     def show_message(self, text):
-        self.view.appendData(f'\n[MSG: {text} :MSG]\n')
+        self.view.appendData(f'\n[MSG: {datetime.now().strftime("%Y/%b/%d %H:%M:%S")}: {text} :MSG]\n')
 
     def show_error(self, text):
-        self.view.appendData(f'\n[ERR: {text} :ERR]\n')
+        self.view.appendData(f'\n[ERR: {datetime.now().strftime("%Y/%b/%d %H:%M:%S")}: {text} :ERR]\n')
 
     @Slot()
     def terminate(self):
