@@ -3,7 +3,7 @@ from PySide6.QtSerialPort import QSerialPort
 from typing import List, Any
 from pathlib import PurePath
 
-from multiserialviewer.application.serialViewerSettings import SerialViewerSettings
+from multiserialviewer.application.serialViewerSettings import SerialViewerSettings, CounterSettings
 from multiserialviewer.text_highlighter.textHighlighterSettings import TextHighlighterSettings
 
 
@@ -116,31 +116,43 @@ class Settings:
             for index in range(numberOfSerialViewers):
                 settings.setArrayIndex(index)
 
+                settings.beginGroup('view')
                 entry = SerialViewerSettings()
                 # settings of window
-                if settings.contains("view/title"):
-                    entry.title = settings.value("view/title")
-                if settings.contains("view/size"):
-                    entry.size = settings.value("view/size")
-                if settings.contains("view/position"):
-                    entry.position = settings.value("view/position")
-                if settings.contains("view/autoscrollActive"):
-                    entry.autoscrollActive = settings.value("view/autoscrollActive", type=bool)
-                if settings.contains("view/autoscrollReactivate"):
-                    entry.autoscrollReactivate = settings.value("view/autoscrollReactivate", type=bool)
+                if settings.contains("title"):
+                    entry.title = settings.value("title")
+                if settings.contains("size"):
+                    entry.size = settings.value("size")
+                if settings.contains("position"):
+                    entry.position = settings.value("position")
+                if settings.contains("autoscrollActive"):
+                    entry.autoscrollActive = settings.value("autoscrollActive", type=bool)
+                if settings.contains("autoscrollReactivate"):
+                    entry.autoscrollReactivate = settings.value("autoscrollReactivate", type=bool)
+                settings.endGroup()
+
+                numberOfCounters = settings.beginReadArray('counter')
+                for counterIndex in range(numberOfCounters):
+                    settings.setArrayIndex(counterIndex)
+                    keys = settings.childKeys()
+                    if len(keys) == 1:
+                        entry.counters.append(CounterSettings(keys[0], settings.value(keys[0])))
+                settings.endArray()
 
                 # serial connection settings (mandatory)
+                settings.beginGroup('connection')
                 try:
-                    entry.connection.portName = Settings.loadMandatoryValue(settings, "connection/portName")
-                    entry.connection.baudrate = int(Settings.loadMandatoryValue(settings, "connection/baudrate"))
-                    entry.connection.dataBits = QSerialPort.DataBits(int(Settings.loadMandatoryValue(settings, "connection/dataBits")))
-                    entry.connection.parity = QSerialPort.Parity(int(Settings.loadMandatoryValue(settings, "connection/parity")))
-                    entry.connection.stopBits = QSerialPort.StopBits(int(Settings.loadMandatoryValue(settings, "connection/stopBits")))
+                    entry.connection.portName = Settings.loadMandatoryValue(settings, "portName")
+                    entry.connection.baudrate = int(Settings.loadMandatoryValue(settings, "baudrate"))
+                    entry.connection.dataBits = QSerialPort.DataBits(int(Settings.loadMandatoryValue(settings, "dataBits")))
+                    entry.connection.parity = QSerialPort.Parity(int(Settings.loadMandatoryValue(settings, "parity")))
+                    entry.connection.stopBits = QSerialPort.StopBits(int(Settings.loadMandatoryValue(settings, "stopBits")))
 
                     self.entries.append(entry)
                 except MandatorySettingsValueNotFound as e:
                     # we do not add this entry because at least one important parameter is missing
                     print(e)
+                settings.endGroup()
 
             settings.endArray()
 
@@ -151,17 +163,29 @@ class Settings:
             for index, entry in enumerate(self.entries):
                 settings.setArrayIndex(index)
 
-                settings.setValue("view/title", entry.title)
-                settings.setValue("view/size", entry.size)
-                settings.setValue("view/position", entry.position)
-                settings.setValue("view/autoscrollActive", entry.autoscrollActive)
-                settings.setValue("view/autoscrollReactivate", entry.autoscrollReactivate)
+                settings.beginGroup('view')
+                settings.setValue("title", entry.title)
+                settings.setValue("size", entry.size)
+                settings.setValue("position", entry.position)
+                settings.setValue("autoscrollActive", entry.autoscrollActive)
+                settings.setValue("autoscrollReactivate", entry.autoscrollReactivate)
+                settings.endGroup()
 
-                settings.setValue("connection/portName", entry.connection.portName)
-                settings.setValue("connection/baudrate", entry.connection.baudrate)
-                settings.setValue("connection/dataBits", entry.connection.dataBits.value)
-                settings.setValue("connection/parity", entry.connection.parity.value)
-                settings.setValue("connection/stopBits", entry.connection.stopBits.value)
+                settings.beginWriteArray('counter')
+                settings.remove("")  # remove all existing entries
+
+                for counterIndex, counter in enumerate(entry.counters):
+                    settings.setArrayIndex(counterIndex)
+                    settings.setValue(counter.name, counter.regex)
+                settings.endArray()
+
+                settings.beginGroup('connection')
+                settings.setValue("portName", entry.connection.portName)
+                settings.setValue("baudrate", entry.connection.baudrate)
+                settings.setValue("dataBits", entry.connection.dataBits.value)
+                settings.setValue("parity", entry.connection.parity.value)
+                settings.setValue("stopBits", entry.connection.stopBits.value)
+                settings.endGroup()
             settings.endArray()
 
 

@@ -10,7 +10,7 @@ from multiserialviewer.serial_data.serialDataReceiver import SerialDataReceiver
 from multiserialviewer.serial_data.serialDataProcessor import SerialDataProcessor
 from multiserialviewer.serial_data.serialConnectionSettings import SerialConnectionSettings
 from multiserialviewer.text_highlighter.textHighlighterSettings import TextHighlighterSettings
-from multiserialviewer.application.serialViewerSettings import SerialViewerSettings
+from multiserialviewer.application.serialViewerSettings import SerialViewerSettings, CounterSettings
 from multiserialviewer.application.serialViewerController import SerialViewerController
 from multiserialviewer.application.proxyStyle import ProxyStyle
 from multiserialviewer.icons.iconSet import IconSet
@@ -166,6 +166,9 @@ class Application(QApplication):
 
             settings.autoscrollActive = ctrl.view.autoscroll.autoscrollIsActive()
             settings.autoscrollReactivate = ctrl.view.autoscroll.autoReactivateIsActive()
+
+            settings.counters.append(CounterSettings('myCounter1', 'myRegex1'))
+            settings.counters.append(CounterSettings('myCounter2', 'myRegex2'))
 
             connection: SerialConnectionSettings = ctrl.receiver.getSettings()
             settings.connection.portName = connection.portName
