@@ -17,6 +17,7 @@ class TextHighlighterSettingsDialog(QDialog):
 
         self.setWindowTitle("Text Highlighter Settings")
         self.widget = createWidgetFromUiFile("textHighlighterSettingsDialog.ui")
+        QVBoxLayout(self).addWidget(self.widget)
 
         self.tableModel = TextHighlighterTableModel(settings)
         self.widget.tableView.setModel(self.tableModel)
@@ -28,7 +29,9 @@ class TextHighlighterSettingsDialog(QDialog):
         self.vertical_header = self.widget.tableView.verticalHeader()
 
         # size
-        self.horizontal_header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.horizontal_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.horizontal_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        self.horizontal_header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
         self.horizontal_header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
         self.horizontal_header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
 
@@ -39,7 +42,6 @@ class TextHighlighterSettingsDialog(QDialog):
         self.widget.pb_delete.clicked.connect(self.deleteSetting)
         self.widget.pb_applyDefaults.clicked.connect(self.applyDefaults)
 
-        QVBoxLayout(self).addWidget(self.widget)
 
     @Slot()
     def addSetting(self):
