@@ -68,4 +68,6 @@ python = ["3.13", "3.12", "3.11", "3.10"]
 addopts = [
     "--import-mode=importlib",
 ]
-
+filterwarnings = [
+    "once"
+]
