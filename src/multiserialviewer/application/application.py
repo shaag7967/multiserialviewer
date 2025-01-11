@@ -118,31 +118,29 @@ class Application(QApplication):
 
     @Slot(bool)
     def toggleCaptureState(self):
-        self.captureActive = not self.captureActive
-        targetCaptureState = self.captureActive and len(self.controller.values()) > 0
-
-        if targetCaptureState:
-            failedToConnectAll = (self.startAllSerialViewer() != len(self.controller))
-            if failedToConnectAll:
-                self.captureActive = False
-                self.stopAllSerialViewer()
-            else:
-                self.captureActive = True
-        else:
+        if self.captureActive:
             self.stopAllSerialViewer()
-        self.mainWindow.updateCaptureButton(self.captureActive)
+        elif len(self.controller.values()) > 0:
+            self.startAllSerialViewer()
 
-    def startAllSerialViewer(self) -> int:
+    def startAllSerialViewer(self):
         controller_started_count = 0
         for ctrl in self.controller.values():
             if ctrl.start():
                 controller_started_count += 1
-        return controller_started_count
+
+        if controller_started_count == len(self.controller):
+            self.captureActive = True
+            self.mainWindow.updateCaptureButton(self.captureActive)
+        else:
+            self.stopAllSerialViewer()
 
     @Slot()
     def stopAllSerialViewer(self):
         for ctrl in self.controller.values():
             ctrl.stop()
+        self.captureActive = False
+        self.mainWindow.updateCaptureButton(self.captureActive)
 
     def applySettings(self):
         self.mainWindow.resize(self.settings.mainWindow.size)
