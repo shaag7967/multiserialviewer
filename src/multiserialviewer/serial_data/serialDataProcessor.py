@@ -18,6 +18,8 @@ class SerialDataProcessor(QObject):
 
     @Slot(QByteArray)
     def handleRawData(self, rawData: QByteArray):
-        data: str = rawData.toStdString()
+        data : bytearray = bytearray(rawData)
+
         if len(data) > 0:
-            self.signal_asciiDataAvailable.emit(data)
+            self.signal_asciiDataAvailable.emit(data.decode(encoding='ascii', errors='ignore'))
+
