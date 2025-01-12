@@ -40,3 +40,6 @@ class IconSet:
 
     def getTileIcon(self) -> QIcon:
         return QIcon(str(self.icons_dir_name.joinpath('tile.png')))
+
+    def getCounterIcon(self) -> QIcon:
+        return QIcon(str(self.icons_dir_name.joinpath('counter.png')))

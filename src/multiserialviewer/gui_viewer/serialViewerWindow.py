@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, Slot, Signal
 from PySide6.QtGui import QTextCursor
-from PySide6.QtWidgets import QMdiSubWindow, QTabWidget, QScrollArea, QFrame, QSplitter
+from PySide6.QtWidgets import QMdiSubWindow, QTabWidget, QScrollArea, QFrame, QSplitter, QTabBar
 from typing import List
 
 from multiserialviewer.text_highlighter.textHighlighter import TextHighlighter, TextHighlighterSettings
@@ -18,6 +18,7 @@ from multiserialviewer.gui_viewer.searchHandler import SearchHandler
 class SerialViewerWindow(QMdiSubWindow):
     signal_closed = Signal()
     signal_createTextHighlightEntry = Signal(str)
+    signal_createCounter = Signal(str)
 
     def __init__(self, window_title: str, icon_set: IconSet):
         super().__init__()
@@ -45,6 +46,7 @@ class SerialViewerWindow(QMdiSubWindow):
 
         # connections
         self.textEdit.signal_createTextHighlightEntry.connect(self.signal_createTextHighlightEntry)
+        self.textEdit.signal_createCounter.connect(self.signal_createCounter)
         self.search.signal_foundString.connect(self.autoscroll.deactivateAutoscroll)
         self.settingsWidget.widget.ed_name.textChanged.connect(self.setWindowName)
 
@@ -70,6 +72,17 @@ class SerialViewerWindow(QMdiSubWindow):
         self.settingsScrollArea.setWidget(self.settingsWidget)
         tabWidget.addTab(self.settingsScrollArea, "Settings")
 
+    def getCurrentTab(self) -> str:
+        name = self.tabWidget.tabText(self.tabWidget.currentIndex())
+        return name
+
+    def setCurrentTab(self, name: str):
+        tabBar: QTabBar = self.tabWidget.tabBar()
+        for index in range(tabBar.count()):
+            if tabBar.tabText(index) == name:
+                self.tabWidget.setCurrentIndex(index)
+                break
+
     def closeEvent(self, event):
         # is not called when mainwindow is closed
         event.accept()
@@ -78,6 +91,10 @@ class SerialViewerWindow(QMdiSubWindow):
     @Slot()
     def clear(self):
         self.textEdit.clear()
+
+    @Slot()
+    def selectTab_Count(self):
+        self.setCurrentTab('Count')
 
     def setHighlighterSettings(self, settings: List[TextHighlighterSettings]):
         self.highlighter.setSettings(settings)

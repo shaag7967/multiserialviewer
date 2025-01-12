@@ -112,7 +112,7 @@ class MainWindow(QMainWindow):
                                  size: QSize = None,
                                  position: QPoint = None,
                                  splitterState: QByteArray = None,
-                                 currentTabIndex: int = None):
+                                 currentTabName: str = None):
         view = SerialViewerWindow(view_title, self.icon_set)
         if size:
             view.resize(size)
@@ -120,8 +120,8 @@ class MainWindow(QMainWindow):
             view.move(position)
         if splitterState:
             view.splitter.restoreState(splitterState)
-        if currentTabIndex != None:
-            view.tabWidget.setCurrentIndex(currentTabIndex)
+        if currentTabName:
+            view.setCurrentTab(currentTabName)
 
         self.mdiArea.addSubWindow(view)
         view.signal_createTextHighlightEntry.connect(self.signal_createTextHighlightEntry)

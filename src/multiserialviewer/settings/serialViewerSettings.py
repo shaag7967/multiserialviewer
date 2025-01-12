@@ -11,7 +11,7 @@ class SerialViewerSettings:
         self.size: Optional[QSize] = None
         self.position: Optional[QPoint] = None
         self.splitterState: Optional[QByteArray] = None
-        self.currentTabIndex: Optional[int] = None
+        self.currentTabName: Optional[str] = None
         self.autoscrollActive: bool = True
         self.autoscrollReactivate: bool = True
         self.counters: List[CounterSettings] = []
