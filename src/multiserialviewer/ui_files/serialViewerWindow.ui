@@ -69,7 +69,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <number>-1</number>
       </property>
       <property name="movable">
-       <bool>true</bool>
+       <bool>false</bool>
       </property>
      </widget>
     </widget>

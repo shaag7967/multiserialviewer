@@ -131,6 +131,8 @@ class Settings:
                     entry.autoscrollReactivate = settings.value("autoscrollReactivate", type=bool)
                 if settings.contains("splitterState"):
                     entry.splitterState = settings.value("splitterState")
+                if settings.contains("currentTabIndex"):
+                    entry.currentTabIndex = int(settings.value("currentTabIndex"))
                 settings.endGroup()
 
                 numberOfCounters = settings.beginReadArray('counter')
@@ -171,6 +173,7 @@ class Settings:
                 settings.setValue("autoscrollActive", entry.autoscrollActive)
                 settings.setValue("autoscrollReactivate", entry.autoscrollReactivate)
                 settings.setValue("splitterState", entry.splitterState)
+                settings.setValue("currentTabIndex", entry.currentTabIndex)
                 settings.endGroup()
 
                 settings.beginWriteArray('counter')

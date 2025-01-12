@@ -28,7 +28,9 @@ class SerialViewerWindow(QMdiSubWindow):
         self.setWindowTitle(window_title)
         self.setWindowIcon(icon_set.getSerialViewerIcon())
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-        self.__createTabWidget(widget.findChild(QTabWidget, 'tabWidget'))
+
+        self.tabWidget: QTabWidget = widget.findChild(QTabWidget, 'tabWidget')
+        self.__populateTabWidget(self.tabWidget)
 
         self.splitter: QSplitter = widget.findChild(QSplitter, 'splitter')
 
@@ -46,27 +48,27 @@ class SerialViewerWindow(QMdiSubWindow):
         self.search.signal_foundString.connect(self.autoscroll.deactivateAutoscroll)
         self.settingsWidget.widget.ed_name.textChanged.connect(self.setWindowName)
 
-    def __createTabWidget(self, tab_widget: QTabWidget):
+    def __populateTabWidget(self, tabWidget: QTabWidget):
         # search
-        self.searchScrollArea = QScrollArea(tab_widget)
+        self.searchScrollArea = QScrollArea(tabWidget)
         self.searchScrollArea.setFrameShape(QFrame.Shape.NoFrame)
         self.searchWidget: SearchWidget = SearchWidget(self.searchScrollArea)
         self.searchScrollArea.setWidget(self.searchWidget)
-        tab_widget.addTab(self.searchScrollArea, "Search")
+        tabWidget.addTab(self.searchScrollArea, "Search")
 
         # counter
-        self.counterScrollArea = QScrollArea(tab_widget)
+        self.counterScrollArea = QScrollArea(tabWidget)
         self.counterScrollArea.setFrameShape(QFrame.Shape.NoFrame)
         self.counterWidget: CounterWidget = CounterWidget(self.counterScrollArea)
         self.counterScrollArea.setWidget(self.counterWidget)
-        tab_widget.addTab(self.counterScrollArea, "Count")
+        tabWidget.addTab(self.counterScrollArea, "Count")
 
         # settings
-        self.settingsScrollArea = QScrollArea(tab_widget)
+        self.settingsScrollArea = QScrollArea(tabWidget)
         self.settingsScrollArea.setFrameShape(QFrame.Shape.NoFrame)
         self.settingsWidget: SerialViewerSettingsWidget = SerialViewerSettingsWidget(self.settingsScrollArea, readOnly=True)
         self.settingsScrollArea.setWidget(self.settingsWidget)
-        tab_widget.addTab(self.settingsScrollArea, "Settings")
+        tabWidget.addTab(self.settingsScrollArea, "Settings")
 
     def closeEvent(self, event):
         # is not called when mainwindow is closed

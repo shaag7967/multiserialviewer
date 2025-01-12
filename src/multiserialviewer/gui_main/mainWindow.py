@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMdiArea, QMainWindow, QToolBar, QMenu, QWidget, QSizePolicy
+from PySide6.QtWidgets import QMdiArea, QMainWindow, QToolBar, QMenu, QWidget, QSizePolicy, QScrollArea
 from PySide6.QtCore import Qt, QSize, QPoint, Signal, Slot, QByteArray
 from PySide6.QtGui import QAction
 from typing import List
@@ -107,7 +107,12 @@ class MainWindow(QMainWindow):
         if dialog.exec():
             self.signal_createSerialViewer.emit(dialog.getSerialViewerSettings())
 
-    def createSerialViewerWindow(self, view_title: str, size: QSize = None, position: QPoint = None, splitterState: QByteArray = None):
+    def createSerialViewerWindow(self,
+                                 view_title: str,
+                                 size: QSize = None,
+                                 position: QPoint = None,
+                                 splitterState: QByteArray = None,
+                                 currentTabIndex: int = None):
         view = SerialViewerWindow(view_title, self.icon_set)
         if size:
             view.resize(size)
@@ -115,6 +120,8 @@ class MainWindow(QMainWindow):
             view.move(position)
         if splitterState:
             view.splitter.restoreState(splitterState)
+        if currentTabIndex != None:
+            view.tabWidget.setCurrentIndex(currentTabIndex)
 
         self.mdiArea.addSubWindow(view)
         view.signal_createTextHighlightEntry.connect(self.signal_createTextHighlightEntry)

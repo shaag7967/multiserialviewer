@@ -91,7 +91,8 @@ class Application(QApplication):
         view = self.mainWindow.createSerialViewerWindow(settings.title,
                                                         size=settings.size,
                                                         position=settings.position,
-                                                        splitterState=settings.splitterState)
+                                                        splitterState=settings.splitterState,
+                                                        currentTabIndex=settings.currentTabIndex)
         view.setHighlighterSettings(self.settings.textHighlighter.entries)
         view.setSerialViewerSettings(settings)
         ctrl = SerialViewerController(settings, view)
@@ -161,6 +162,7 @@ class Application(QApplication):
             settings.size = ctrl.view.size()
             settings.position = ctrl.view.pos()
             settings.splitterState = ctrl.view.splitter.saveState()
+            settings.currentTabIndex = ctrl.view.tabWidget.currentIndex()
 
             settings.autoscrollActive = ctrl.view.autoscroll.autoscrollIsActive()
             settings.autoscrollReactivate = ctrl.view.autoscroll.autoReactivateIsActive()
