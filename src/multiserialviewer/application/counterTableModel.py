@@ -30,29 +30,6 @@ class CounterTableModel(QAbstractTableModel):
 
     def columnCount(self, parent=QModelIndex()):
         return 2  # pattern and value
-    
-    def setData(self, index: QModelIndex, value, role=Qt.ItemDataRole.EditRole):
-        if role not in [Qt.ItemDataRole.EditRole]:
-            return False
-
-        column = index.column()
-        row = index.row()
-        if row >= len(self.entries):
-            return False
-        if column >= 2:
-            return False
-
-        if column == 0:
-            self.entries[row].regex = value
-
-        self.dataChanged.emit(index, index)
-        return True
-
-    def flags(self, index):
-        f = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
-        if index.column() in [0]:
-            f |= Qt.ItemFlag.ItemIsEditable
-        return f
 
     def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
         if role != Qt.ItemDataRole.DisplayRole:
