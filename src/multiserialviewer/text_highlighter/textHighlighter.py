@@ -3,7 +3,7 @@ from PySide6.QtGui import QColor
 import re
 from typing import List
 
-from multiserialviewer.text_highlighter.textHighlighterSettings import TextHighlighterSettings
+from multiserialviewer.settings.textHighlighterSettings import TextHighlighterSettings
 
 
 class TextHighlighter(QSyntaxHighlighter):

@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QMdiArea, QMainWindow, QToolBar, QMenu, QWidget, QSizePolicy
-from PySide6.QtCore import Qt, QSize, QPoint, Signal, Slot
+from PySide6.QtCore import Qt, QSize, QPoint, Signal, Slot, QByteArray
 from PySide6.QtGui import QAction
 from typing import List
 
@@ -8,7 +8,7 @@ from multiserialviewer.gui_viewer.serialViewerWindow import SerialViewerWindow
 from multiserialviewer.gui_viewer.serialViewerCreateDialog import SerialViewerCreateDialog
 from multiserialviewer.gui_main.textHighlighterSettingsDialog import TextHighlighterSettingsDialog
 from multiserialviewer.text_highlighter.textHighlighter import TextHighlighterSettings
-from multiserialviewer.application.serialViewerSettings import SerialViewerSettings
+from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings
 from multiserialviewer.icons.iconSet import IconSet
 
 
@@ -107,12 +107,15 @@ class MainWindow(QMainWindow):
         if dialog.exec():
             self.signal_createSerialViewer.emit(dialog.getSerialViewerSettings())
 
-    def createSerialViewerWindow(self, view_title: str, size: QSize = None, position: QPoint = None):
+    def createSerialViewerWindow(self, view_title: str, size: QSize = None, position: QPoint = None, splitterState: QByteArray = None):
         view = SerialViewerWindow(view_title, self.icon_set)
         if size:
             view.resize(size)
         if position:
             view.move(position)
+        if splitterState:
+            view.splitter.restoreState(splitterState)
+
         self.mdiArea.addSubWindow(view)
         view.signal_createTextHighlightEntry.connect(self.signal_createTextHighlightEntry)
         view.show()

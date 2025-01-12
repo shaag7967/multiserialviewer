@@ -1,15 +1,16 @@
 from PySide6.QtCore import Qt, Slot, Signal
 from PySide6.QtGui import QTextCursor
-from PySide6.QtWidgets import QMdiSubWindow, QTabWidget, QScrollArea, QFrame
+from PySide6.QtWidgets import QMdiSubWindow, QTabWidget, QScrollArea, QFrame, QSplitter
 from typing import List
 
 from multiserialviewer.text_highlighter.textHighlighter import TextHighlighter, TextHighlighterSettings
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
 from multiserialviewer.gui_viewer.serialViewerTextEdit import SerialViewerTextEdit
 from multiserialviewer.gui_viewer.searchWidget import SearchWidget
+from multiserialviewer.gui_viewer.counterWidget import CounterWidget
 from multiserialviewer.gui_viewer.serialViewerSettingsWidget import SerialViewerSettingsWidget
 from multiserialviewer.icons.iconSet import IconSet
-from multiserialviewer.application.serialViewerSettings import SerialViewerSettings
+from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings
 from multiserialviewer.gui_viewer.autoscrollHandler import AutoscrollHandler
 from multiserialviewer.gui_viewer.searchHandler import SearchHandler
 
@@ -28,6 +29,8 @@ class SerialViewerWindow(QMdiSubWindow):
         self.setWindowIcon(icon_set.getSerialViewerIcon())
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.__createTabWidget(widget.findChild(QTabWidget, 'tabWidget'))
+
+        self.splitter: QSplitter = widget.findChild(QSplitter, 'splitter')
 
         self.textEdit: SerialViewerTextEdit = widget.findChild(SerialViewerTextEdit, 'textEdit')
         self.textEdit.setIconSet(icon_set)
@@ -50,6 +53,13 @@ class SerialViewerWindow(QMdiSubWindow):
         self.searchWidget: SearchWidget = SearchWidget(self.searchScrollArea)
         self.searchScrollArea.setWidget(self.searchWidget)
         tab_widget.addTab(self.searchScrollArea, "Search")
+
+        # counter
+        self.counterScrollArea = QScrollArea(tab_widget)
+        self.counterScrollArea.setFrameShape(QFrame.Shape.NoFrame)
+        self.counterWidget: CounterWidget = CounterWidget(self.counterScrollArea)
+        self.counterScrollArea.setWidget(self.counterWidget)
+        tab_widget.addTab(self.counterScrollArea, "Count")
 
         # settings
         self.settingsScrollArea = QScrollArea(tab_widget)

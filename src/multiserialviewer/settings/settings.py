@@ -1,10 +1,10 @@
-from PySide6.QtCore import Qt, QSettings, QSize, QPoint
+from PySide6.QtCore import Qt, QSettings, QSize
 from PySide6.QtSerialPort import QSerialPort
 from typing import List, Any
 from pathlib import PurePath
 
-from multiserialviewer.application.serialViewerSettings import SerialViewerSettings, CounterSettings
-from multiserialviewer.text_highlighter.textHighlighterSettings import TextHighlighterSettings
+from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings, CounterSettings
+from multiserialviewer.settings.textHighlighterSettings import TextHighlighterSettings
 
 
 class MandatorySettingsValueNotFound(Exception):
@@ -129,14 +129,15 @@ class Settings:
                     entry.autoscrollActive = settings.value("autoscrollActive", type=bool)
                 if settings.contains("autoscrollReactivate"):
                     entry.autoscrollReactivate = settings.value("autoscrollReactivate", type=bool)
+                if settings.contains("splitterState"):
+                    entry.splitterState = settings.value("splitterState")
                 settings.endGroup()
 
                 numberOfCounters = settings.beginReadArray('counter')
                 for counterIndex in range(numberOfCounters):
                     settings.setArrayIndex(counterIndex)
-                    keys = settings.childKeys()
-                    if len(keys) == 1:
-                        entry.counters.append(CounterSettings(keys[0], settings.value(keys[0])))
+                    counterSettings = CounterSettings(settings.value("regex"))
+                    entry.counters.append(counterSettings)
                 settings.endArray()
 
                 # serial connection settings (mandatory)
@@ -169,6 +170,7 @@ class Settings:
                 settings.setValue("position", entry.position)
                 settings.setValue("autoscrollActive", entry.autoscrollActive)
                 settings.setValue("autoscrollReactivate", entry.autoscrollReactivate)
+                settings.setValue("splitterState", entry.splitterState)
                 settings.endGroup()
 
                 settings.beginWriteArray('counter')
@@ -176,7 +178,7 @@ class Settings:
 
                 for counterIndex, counter in enumerate(entry.counters):
                     settings.setArrayIndex(counterIndex)
-                    settings.setValue(counter.name, counter.regex)
+                    settings.setValue('regex', counter.regex)
                 settings.endArray()
 
                 settings.beginGroup('connection')

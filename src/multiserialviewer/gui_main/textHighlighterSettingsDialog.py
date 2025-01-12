@@ -3,7 +3,7 @@ from PySide6.QtCore import Slot, Qt, QModelIndex
 from typing import List
 
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
-from multiserialviewer.text_highlighter.textHighlighterSettings import TextHighlighterSettings
+from multiserialviewer.settings.textHighlighterSettings import TextHighlighterSettings
 from multiserialviewer.text_highlighter.textHighlighterTableModel import TextHighlighterTableModel
 from multiserialviewer.text_highlighter.colorSelectorItemDelegate import ColorSelectorItemDelegate
 

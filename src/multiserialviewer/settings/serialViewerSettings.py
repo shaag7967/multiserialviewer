@@ -1,18 +1,16 @@
 from typing import Optional, List
-from PySide6.QtCore import QSize, QPoint
+from PySide6.QtCore import QSize, QPoint, QByteArray
 
-from multiserialviewer.serial_data.serialConnectionSettings import SerialConnectionSettings
+from multiserialviewer.settings.serialConnectionSettings import SerialConnectionSettings
+from multiserialviewer.settings.counterSettings import CounterSettings
 
-class CounterSettings:
-    def __init__(self, name: str = '', regex: str = ''):
-        self.name: str = name
-        self.regex: str = regex
 
 class SerialViewerSettings:
     def __init__(self):
         self.title: str = ''
         self.size: Optional[QSize] = None
         self.position: Optional[QPoint] = None
+        self.splitterState: Optional[QByteArray] = None
         self.autoscrollActive: bool = True
         self.autoscrollReactivate: bool = True
         self.counters: List[CounterSettings] = []

@@ -3,7 +3,7 @@ from PySide6.QtCore import Qt
 from typing import List
 
 from multiserialviewer.gui_viewer.serialViewerSettingsWidget import SerialViewerSettingsWidget
-from multiserialviewer.application.serialViewerSettings import SerialViewerSettings, SerialConnectionSettings
+from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings, SerialConnectionSettings
 
 
 class SerialViewerCreateDialog(QDialog):

@@ -1,6 +1,6 @@
 from PySide6.QtSerialPort import QSerialPort
 from PySide6.QtCore import Slot, Signal, QObject, QByteArray
-from .serialConnectionSettings import SerialConnectionSettings
+from multiserialviewer.settings.serialConnectionSettings import SerialConnectionSettings
 
 
 class SerialDataReceiver(QObject):

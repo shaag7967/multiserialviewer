@@ -6,15 +6,13 @@ from platformdirs import user_config_dir
 import copy
 
 from multiserialviewer.gui_main.mainWindow import MainWindow
-from multiserialviewer.serial_data.serialDataReceiver import SerialDataReceiver
-from multiserialviewer.serial_data.serialDataProcessor import SerialDataProcessor
-from multiserialviewer.serial_data.serialConnectionSettings import SerialConnectionSettings
-from multiserialviewer.text_highlighter.textHighlighterSettings import TextHighlighterSettings
-from multiserialviewer.application.serialViewerSettings import SerialViewerSettings, CounterSettings
+from multiserialviewer.settings.serialConnectionSettings import SerialConnectionSettings
+from multiserialviewer.settings.textHighlighterSettings import TextHighlighterSettings
+from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings, CounterSettings
 from multiserialviewer.application.serialViewerController import SerialViewerController
 from multiserialviewer.application.proxyStyle import ProxyStyle
 from multiserialviewer.icons.iconSet import IconSet
-from multiserialviewer.application.settings import Settings
+from multiserialviewer.settings.settings import Settings
 
 
 class Application(QApplication):
@@ -90,12 +88,13 @@ class Application(QApplication):
         if settings.connection.portName in self.controller:
             raise Exception(f"{settings.connection.portName} exists already")
 
-        receiver = SerialDataReceiver(settings.connection)
-        processor = SerialDataProcessor()
-        view = self.mainWindow.createSerialViewerWindow(settings.title, size=settings.size, position=settings.position)
+        view = self.mainWindow.createSerialViewerWindow(settings.title,
+                                                        size=settings.size,
+                                                        position=settings.position,
+                                                        splitterState=settings.splitterState)
         view.setHighlighterSettings(self.settings.textHighlighter.entries)
         view.setSerialViewerSettings(settings)
-        ctrl = SerialViewerController(receiver, processor, view)
+        ctrl = SerialViewerController(settings, view)
 
         ctrl.terminated.connect(self.deleteSerialViewer, type=Qt.ConnectionType.QueuedConnection)
         self.controller[settings.connection.portName] = ctrl
@@ -114,7 +113,7 @@ class Application(QApplication):
     @Slot()
     def clearAll(self):
         for ctrl in self.controller.values():
-            ctrl.view.clear()
+            ctrl.clearAll()
 
     @Slot(bool)
     def toggleCaptureState(self):
@@ -161,12 +160,12 @@ class Application(QApplication):
             settings.title = ctrl.view.windowTitle()
             settings.size = ctrl.view.size()
             settings.position = ctrl.view.pos()
+            settings.splitterState = ctrl.view.splitter.saveState()
 
             settings.autoscrollActive = ctrl.view.autoscroll.autoscrollIsActive()
             settings.autoscrollReactivate = ctrl.view.autoscroll.autoReactivateIsActive()
 
-            settings.counters.append(CounterSettings('myCounter1', 'myRegex1'))
-            settings.counters.append(CounterSettings('myCounter2', 'myRegex2'))
+            settings.counters = ctrl.counterHandler.getSettings()
 
             connection: SerialConnectionSettings = ctrl.receiver.getSettings()
             settings.connection.portName = connection.portName

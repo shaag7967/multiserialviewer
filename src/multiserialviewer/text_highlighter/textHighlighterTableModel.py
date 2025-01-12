@@ -3,7 +3,7 @@ from PySide6.QtGui import QColor
 from typing import List
 from collections import OrderedDict
 
-from multiserialviewer.text_highlighter.textHighlighterSettings import TextHighlighterSettings
+from multiserialviewer.settings.textHighlighterSettings import TextHighlighterSettings
 
 
 class TextHighlighterTableModel(QAbstractTableModel):

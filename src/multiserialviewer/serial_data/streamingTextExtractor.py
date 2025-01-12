@@ -20,6 +20,8 @@ class StreamingTextExtractor(QObject):
     @Slot(str)
     def processBytesFromStream(self, asciiString: str):
         self.delayedProcessing.stop()
+        self.alreadyProcessed = True
+
         self.buffer += asciiString
 
         lastPos = 0
@@ -34,14 +36,22 @@ class StreamingTextExtractor(QObject):
                 lastPos = match.end(0)
             else:
                 # wait some time to get all bytes that belong to this pattern
+                self.alreadyProcessed = False
                 self.delayedProcessing.start()
                 break
         if lastPos > 0:
             self.buffer = self.buffer[lastPos:]
 
+        if len(self.buffer) > 5000:
+            self.buffer = self.buffer[2000:]
+
     @Slot()
     def processTimeout(self):
-        # no more data was received for this pattern, so lets assume it is complete
+        if self.alreadyProcessed == True:
+            # processBytesFromStream was called in the meantime (event queue...)
+            return
+
+        # no more data was received for this pattern, so let's assume it is complete
         lastPos = 0
         for match in self.regex.finditer(self.buffer):
             self.signal_textExtracted.emit(self.name, [*match.groups()])

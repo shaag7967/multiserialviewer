@@ -5,7 +5,7 @@ from PySide6.QtSerialPort import QSerialPort, QSerialPortInfo
 from typing import List
 
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
-from multiserialviewer.application.serialViewerSettings import SerialViewerSettings
+from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings
 
 
 class SerialViewerSettingsWidget(QWidget):
