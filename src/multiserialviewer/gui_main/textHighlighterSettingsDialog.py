@@ -11,6 +11,7 @@ from multiserialviewer.text_highlighter.colorSelectorItemDelegate import ColorSe
 class TextHighlighterSettingsDialog(QDialog):
     __defaultPattern_MSG: str = r'\[MSG: .* :MSG\]'
     __defaultPattern_ERR: str = r'\[ERR: .* :ERR\]'
+    __defaultPattern_HEX: str = r'\[[0-9A-F]{2}\]'
 
     def __init__(self, parent, settings: List[TextHighlighterSettings]):
         super().__init__(parent)
@@ -76,10 +77,22 @@ class TextHighlighterSettingsDialog(QDialog):
         cfg.font_size = QApplication.font().pointSize()
         return cfg
 
+    @staticmethod
+    def getDefaultHighlighting_HEX() -> TextHighlighterSettings:
+        cfg = TextHighlighterSettings()
+        cfg.pattern = TextHighlighterSettingsDialog.__defaultPattern_HEX
+        cfg.color_foreground = 'mediumblue'
+        cfg.color_background = 'transparent'
+        cfg.italic = False
+        cfg.bold = False
+        cfg.font_size = QApplication.font().pointSize()
+        return cfg
+
     @Slot()
     def applyDefaults(self):
         defaultSettings: List[TextHighlighterSettings] = [TextHighlighterSettingsDialog.getDefaultHighlighting_MSG(),
-                                                          TextHighlighterSettingsDialog.getDefaultHighlighting_ERR()]
+                                                          TextHighlighterSettingsDialog.getDefaultHighlighting_ERR(),
+                                                          TextHighlighterSettingsDialog.getDefaultHighlighting_HEX()]
 
         for setting in defaultSettings:
             entriesFound: List[QModelIndex] = self.tableModel.match(self.tableModel.index(0, 0),
