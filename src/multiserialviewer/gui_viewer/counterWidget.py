@@ -30,7 +30,9 @@ class CounterWidget(QWidget):
         selectionModel.selectionChanged.connect(self.updateEnableState_buttonDeleteSelected)
 
         horizontal_header = self.widget.tableView.horizontalHeader()
-        horizontal_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        horizontal_header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        horizontal_header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        horizontal_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
         horizontal_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
 
     @Slot(str)

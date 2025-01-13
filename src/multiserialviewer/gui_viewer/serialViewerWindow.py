@@ -51,10 +51,13 @@ class SerialViewerWindow(QMdiSubWindow):
         self.settingsWidget.widget.ed_name.textChanged.connect(self.setWindowName)
 
     def __populateTabWidget(self, tabWidget: QTabWidget):
+        widgetMinimumWidth = 390
+
         # search
         self.searchScrollArea = QScrollArea(tabWidget)
         self.searchScrollArea.setFrameShape(QFrame.Shape.NoFrame)
         self.searchWidget: SearchWidget = SearchWidget(self.searchScrollArea)
+        self.searchWidget.setMinimumWidth(widgetMinimumWidth)
         self.searchScrollArea.setWidget(self.searchWidget)
         tabWidget.addTab(self.searchScrollArea, "Search")
 
@@ -62,6 +65,7 @@ class SerialViewerWindow(QMdiSubWindow):
         self.counterScrollArea = QScrollArea(tabWidget)
         self.counterScrollArea.setFrameShape(QFrame.Shape.NoFrame)
         self.counterWidget: CounterWidget = CounterWidget(self.counterScrollArea)
+        self.counterWidget.setMinimumWidth(widgetMinimumWidth)
         self.counterScrollArea.setWidget(self.counterWidget)
         tabWidget.addTab(self.counterScrollArea, "Count")
 
@@ -69,6 +73,7 @@ class SerialViewerWindow(QMdiSubWindow):
         self.settingsScrollArea = QScrollArea(tabWidget)
         self.settingsScrollArea.setFrameShape(QFrame.Shape.NoFrame)
         self.settingsWidget: SerialViewerSettingsWidget = SerialViewerSettingsWidget(self.settingsScrollArea, readOnly=True)
+        self.settingsWidget.setMinimumWidth(widgetMinimumWidth)
         self.settingsScrollArea.setWidget(self.settingsWidget)
         tabWidget.addTab(self.settingsScrollArea, "Settings")
 
@@ -104,7 +109,7 @@ class SerialViewerWindow(QMdiSubWindow):
         self.settingsWidget.setSerialViewerSettings(settings)
 
     @Slot()
-    def appendData(self, data):
+    def appendData(self, data: str):
         cursor: QTextCursor = QTextCursor(self.textEdit.document())
         cursor.movePosition(QTextCursor.MoveOperation.End)
         cursor.insertText(data)
