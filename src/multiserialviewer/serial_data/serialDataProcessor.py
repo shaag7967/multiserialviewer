@@ -10,12 +10,18 @@ class SerialDataProcessor(QObject):
         self.__thread: QThread = QThread()
         self.moveToThread(self.__thread)
 
+        self.convertNonPrintableCharsToHex: bool = False
+
     def start(self):
         self.__thread.start()
 
     def stop(self):
         self.__thread.quit()
         self.__thread.wait()
+
+    @Slot()
+    def setConvertNonPrintableCharsToHex(self, state: bool):
+        self.convertNonPrintableCharsToHex = state
 
     def __printableChar(self, b: int) -> bool:
         return b == 0x0D or b == 0x0A or 32 <= b <= 126
@@ -33,7 +39,7 @@ class SerialDataProcessor(QObject):
             for b in data:
                 if self.__printableChar(b):
                     asciiData += chr(b)
-                else:
+                elif self.convertNonPrintableCharsToHex:
                     nonPrintableCharsCount += 1
                     asciiData += self.__getPrintableReplacement(b)
 

@@ -16,3 +16,4 @@ class SerialViewerSettings:
         self.autoscrollReactivate: bool = True
         self.counters: List[CounterSettings] = []
         self.connection: SerialConnectionSettings = SerialConnectionSettings('')
+        self.showNonPrintableCharsAsHex = True

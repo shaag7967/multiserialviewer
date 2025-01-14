@@ -26,11 +26,12 @@ class Settings:
     settingsFileName_highlighter = 'highlighter.ini'
 
     def __init__(self, settingsDir: str):
-        self.__settingsDir = settingsDir
-        self.__mainSettingsFilePath = PurePath(self.__settingsDir, Settings.settingsFileName_main)
+        self.settingsDir = settingsDir
+        self.__mainSettingsFilePath = PurePath(self.settingsDir, Settings.settingsFileName_main)
         # highlighter settings are stored in a separate file, because then e.g. it can be copied separately to another PC
-        self.__highlighterSettingsFilePath = PurePath(self.__settingsDir, Settings.settingsFileName_highlighter)
+        self.__highlighterSettingsFilePath = PurePath(self.settingsDir, Settings.settingsFileName_highlighter)
 
+        self.application: Settings.Application = Settings.Application()
         self.mainWindow: Settings.MainWindow = Settings.MainWindow()
         self.serialViewer: Settings.SerialViewer = Settings.SerialViewer()
         self.textHighlighter: Settings.TextHighlighter = Settings.TextHighlighter()
@@ -38,22 +39,25 @@ class Settings:
         self.restoreDefaultValues()
 
     def restoreDefaultValues(self):
+        self.application.restoreDefaultValues()
         self.mainWindow.restoreDefaultValues()
         self.serialViewer.restoreDefaultValues()
         self.textHighlighter.restoreDefaultValues()
 
-    def loadFromDisk(self):
+    def loadSettings(self):
         self.restoreDefaultValues()
 
         settings = QSettings(str(self.__mainSettingsFilePath), QSettings.Format.IniFormat)
+        self.application.loadSettings(settings)
         self.mainWindow.loadSettings(settings)
         self.serialViewer.loadSettings(settings)
 
         settings = QSettings(str(self.__highlighterSettingsFilePath), QSettings.Format.IniFormat)
         self.textHighlighter.loadSettings(settings)
 
-    def saveToDisk(self):
+    def saveSettings(self):
         settings = QSettings(str(self.__mainSettingsFilePath), QSettings.Format.IniFormat)
+        self.application.saveSettings(settings)
         self.mainWindow.saveSettings(settings)
         self.serialViewer.saveSettings(settings)
 
@@ -66,6 +70,38 @@ class Settings:
             return settings.value(key)
         else:
             raise MandatorySettingsValueNotFound(settings.group(), key)
+
+    class Application:
+        SettingsName_v1: str = "Application"
+
+        def __init__(self):
+            self.restoreCaptureState = False
+            self.captureActive = False
+            self.restoreDefaultValues()
+
+        def restoreDefaultValues(self):
+            self.restoreCaptureState = False
+            self.captureActive = False
+
+        def loadSettings(self, settings: QSettings):
+            self.restoreDefaultValues()
+
+            if self.SettingsName_v1 in settings.childGroups():
+                self.__loadSettings_V1(settings)
+
+        def __loadSettings_V1(self, settings: QSettings):
+            settings.beginGroup(self.SettingsName_v1)
+            if settings.contains("restoreCaptureState"):
+                self.restoreCaptureState = settings.value("restoreCaptureState", type=bool)
+            if settings.contains("captureActive"):
+                self.captureActive = settings.value("captureActive", type=bool)
+            settings.endGroup()
+
+        def saveSettings(self, settings: QSettings):
+            settings.beginGroup(self.SettingsName_v1)
+            settings.setValue("restoreCaptureState", self.restoreCaptureState)
+            settings.setValue("captureActive", self.captureActive)
+            settings.endGroup()
 
     class MainWindow:
         SettingsName_v1: str = "MainWindow"
@@ -82,10 +118,10 @@ class Settings:
         def loadSettings(self, settings: QSettings):
             self.restoreDefaultValues()
 
-            if Settings.MainWindow.SettingsName_v1 in settings.childGroups():
-                self.loadSettings_V1(settings)
+            if self.SettingsName_v1 in settings.childGroups():
+                self.__loadSettings_V1(settings)
 
-        def loadSettings_V1(self, settings: QSettings):
+        def __loadSettings_V1(self, settings: QSettings):
             settings.beginGroup(self.SettingsName_v1)
             if settings.contains("size"):
                 self.size = settings.value("size")
@@ -133,6 +169,8 @@ class Settings:
                     entry.splitterState = settings.value("splitterState")
                 if settings.contains("currentTabName"):
                     entry.currentTabName = settings.value("currentTabName")
+                if settings.contains("showNonPrintableCharsAsHex"):
+                    entry.showNonPrintableCharsAsHex = settings.value("showNonPrintableCharsAsHex", type=bool)
                 settings.endGroup()
 
                 numberOfCounters = settings.beginReadArray('counter')
@@ -175,6 +213,7 @@ class Settings:
                 settings.setValue("autoscrollReactivate", entry.autoscrollReactivate)
                 settings.setValue("splitterState", entry.splitterState)
                 settings.setValue("currentTabName", entry.currentTabName)
+                settings.setValue("showNonPrintableCharsAsHex", entry.showNonPrintableCharsAsHex)
                 settings.endGroup()
 
                 settings.beginWriteArray('counter')

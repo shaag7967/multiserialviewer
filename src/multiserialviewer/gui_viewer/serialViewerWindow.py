@@ -19,6 +19,7 @@ class SerialViewerWindow(QMdiSubWindow):
     signal_closed = Signal()
     signal_createTextHighlightEntry = Signal(str)
     signal_createCounter = Signal(str)
+    signal_settingConvertNonPrintableCharsToHexChanged = Signal(bool)
 
     def __init__(self, window_title: str, icon_set: IconSet):
         super().__init__()
@@ -49,6 +50,8 @@ class SerialViewerWindow(QMdiSubWindow):
         self.textEdit.signal_createCounter.connect(self.signal_createCounter)
         self.search.signal_foundString.connect(self.autoscroll.deactivateAutoscroll)
         self.settingsWidget.widget.ed_name.textChanged.connect(self.setWindowName)
+        self.settingsWidget.signal_showNonPrintableAsHex.connect(self.handleSettingShowNonPrintableAsHexChanged)
+
 
     def __populateTabWidget(self, tabWidget: QTabWidget):
         widgetMinimumWidth = 390
@@ -122,4 +125,10 @@ class SerialViewerWindow(QMdiSubWindow):
     def setWindowName(self, name: str):
         self.setWindowTitle(name)
 
+    @Slot()
+    def handleSettingShowNonPrintableAsHexChanged(self, state: Qt.CheckState):
+        self.signal_settingConvertNonPrintableCharsToHexChanged.emit(state == Qt.CheckState.Checked)
+
+    def getSettingConvertNonPrintableCharsToHex(self) -> bool:
+        return self.settingsWidget.getSettingShowNonPrintableAsHex()
 

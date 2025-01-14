@@ -23,7 +23,7 @@ class Application(QApplication):
 
         self.configDir = user_config_dir(appname=Application.NAME, roaming=False, ensure_exists=True, appauthor=False)
         self.settings: Settings = Settings(self.configDir)
-        self.settings.loadFromDisk()
+        self.settings.loadSettings()
 
         self.captureActive: bool = False
         self.controller = {}
@@ -43,10 +43,9 @@ class Application(QApplication):
         self.mainWindow.signal_toggleCaptureState.connect(self.toggleCaptureState)
         self.mainWindow.signal_aboutToBeClosed.connect(self.persistCurrentSettings)
         self.mainWindow.signal_aboutToBeClosed.connect(self.stopAllSerialViewer)
-        self.mainWindow.signal_editHighlighterSettings.connect(self.showHighlighterSettingsDialog)
-        self.mainWindow.signal_applyHighlighterSettings.connect(self.setHighlighterSettings)
+        self.mainWindow.signal_editSettings.connect(self.showSettingsDialog)
+        self.mainWindow.signal_applySettings.connect(self.applyModifiedSettings)
         self.mainWindow.signal_createTextHighlightEntry.connect(self.createTextHighlightEntry)
-        self.mainWindow.signal_openSettingsDirectory.connect(self.openSettingsDirectoryInFileBrowser)
 
         self.applySettings()
         self.setStyle(ProxyStyle())
@@ -55,20 +54,14 @@ class Application(QApplication):
         if len(self.controller) == 0:
             self.showSerialViewerCreateDialog()
 
-    @Slot(object)
-    def setHighlighterSettings(self, settings: List[TextHighlighterSettings]):
-        self.settings.textHighlighter.entries = settings
-        for ctrl in self.controller.values():
-            ctrl.view.setHighlighterSettings(self.settings.textHighlighter.entries)
-
     @Slot(str)
     def createTextHighlightEntry(self, text_to_highlight: str):
-        settings = TextHighlighterSettings()
-        settings.pattern = text_to_highlight
+        highlighterSettings = TextHighlighterSettings()
+        highlighterSettings.pattern = text_to_highlight
 
-        highlighter_settings = copy.deepcopy(self.settings.textHighlighter.entries)
-        highlighter_settings.append(settings)
-        self.mainWindow.showHighlighterSettingsDialog(highlighter_settings)
+        settings = copy.deepcopy(self.settings)
+        settings.textHighlighter.entries.append(highlighterSettings)
+        self.mainWindow.showSettingsDialog(settings)
 
     @Slot()
     def showSerialViewerCreateDialog(self):
@@ -76,12 +69,16 @@ class Application(QApplication):
         self.mainWindow.showSerialViewerCreateDialog(already_used_ports)
 
     @Slot()
-    def showHighlighterSettingsDialog(self):
-        self.mainWindow.showHighlighterSettingsDialog(copy.deepcopy(self.settings.textHighlighter.entries))
+    def showSettingsDialog(self):
+        self.mainWindow.showSettingsDialog(copy.deepcopy(self.settings))
 
     @Slot()
-    def openSettingsDirectoryInFileBrowser(self):
-        QDesktopServices.openUrl(QUrl.fromLocalFile(self.configDir))
+    def applyModifiedSettings(self, modifiedSettings: Settings):
+        # this could cause some bugs if new values are added to Settings, but not here... -> refactor it
+        self.settings.application = modifiedSettings.application
+        self.settings.textHighlighter = modifiedSettings.textHighlighter
+        for ctrl in self.controller.values():
+            ctrl.view.setHighlighterSettings(self.settings.textHighlighter.entries)
 
     @Slot(str, SerialConnectionSettings)
     def createSerialViewer(self, settings: SerialViewerSettings):
@@ -89,11 +86,11 @@ class Application(QApplication):
             raise Exception(f"{settings.connection.portName} exists already")
 
         view = self.mainWindow.createSerialViewerWindow(settings.title,
+                                                        self.settings.textHighlighter.entries,
                                                         size=settings.size,
                                                         position=settings.position,
                                                         splitterState=settings.splitterState,
                                                         currentTabName=settings.currentTabName)
-        view.setHighlighterSettings(self.settings.textHighlighter.entries)
         view.setSerialViewerSettings(settings)
         ctrl = SerialViewerController(settings, view)
 
@@ -151,11 +148,21 @@ class Application(QApplication):
         # note: highlighter settings do not need to be applied here, because this is
         #       done inside function createSerialViewer
 
+        if self.settings.application.restoreCaptureState:
+            if self.settings.application.captureActive:
+                self.startAllSerialViewer()
+            else:
+                self.stopAllSerialViewer()
+
     def persistCurrentSettings(self):
+        self.settings.application.captureActive = self.captureActive
+
         self.settings.mainWindow.size = self.mainWindow.size()
         self.settings.mainWindow.toolBarArea = self.mainWindow.toolBarArea(self.mainWindow.toolBar)
 
         self.settings.serialViewer.entries.clear()
+
+        ctrl: SerialViewerController
         for ctrl in self.controller.values():
             settings = SerialViewerSettings()
             settings.title = ctrl.view.windowTitle()
@@ -163,6 +170,7 @@ class Application(QApplication):
             settings.position = ctrl.view.pos()
             settings.splitterState = ctrl.view.splitter.saveState()
             settings.currentTabName = ctrl.view.getCurrentTab()
+            settings.showNonPrintableCharsAsHex = ctrl.view.getSettingConvertNonPrintableCharsToHex()
 
             settings.autoscrollActive = ctrl.view.autoscroll.autoscrollIsActive()
             settings.autoscrollReactivate = ctrl.view.autoscroll.autoReactivateIsActive()
@@ -178,4 +186,4 @@ class Application(QApplication):
 
             self.settings.serialViewer.entries.append(settings)
 
-        self.settings.saveToDisk()
+        self.settings.saveSettings()

@@ -18,12 +18,15 @@ class SerialViewerController(QObject):
         self.processor: SerialDataProcessor = SerialDataProcessor()
         self.counterHandler: CounterHandler = CounterHandler(settings.counters, self.processor)
 
+        self.processor.setConvertNonPrintableCharsToHex(settings.showNonPrintableCharsAsHex)
+
         self.view: SerialViewerWindow = view
         self.view.counterWidget.setCounterTableModel(self.counterHandler.counterTableModel)
         self.view.textEdit.signal_createCounter.connect(self.counterHandler.createCounter)
         self.view.textEdit.signal_createCounter.connect(self.view.selectTab_Count)
         self.view.counterWidget.signal_createCounter.connect(self.counterHandler.createCounter)
         self.view.counterWidget.signal_removeCounter.connect(self.counterHandler.removeCounter)
+        self.view.signal_settingConvertNonPrintableCharsToHexChanged.connect(self.processor.setConvertNonPrintableCharsToHex)
 
         self.processor.signal_asciiDataAvailable.connect(self.view.appendData)
         self.receiver.signal_rawDataAvailable.connect(self.processor.handleRawData)
