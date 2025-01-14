@@ -24,6 +24,7 @@ class SearchWidget(QWidget):
         layout.addWidget(self.widget)
 
         self.widget.ed_search.textChanged.connect(self.handleSearchStringChange)
+        self.widget.ed_search.returnPressed.connect(self.handleSearchButtonClick)
         self.widget.pb_search.clicked.connect(self.handleSearchButtonClick)
         self.widget.pb_previous.clicked.connect(self.signal_previousClicked)
         self.widget.pb_next.clicked.connect(self.signal_nextClicked)
@@ -35,5 +36,6 @@ class SearchWidget(QWidget):
     @Slot()
     def handleSearchButtonClick(self):
         text: str = self.widget.ed_search.text()
-        backwards: bool = self.widget.cb_backwardsSearch.isChecked()
-        self.signal_searchString.emit(text, backwards)
+        if len(text):
+            backwards: bool = self.widget.cb_backwardsSearch.isChecked()
+            self.signal_searchString.emit(text, backwards)

@@ -138,8 +138,9 @@ class Settings:
                 numberOfCounters = settings.beginReadArray('counter')
                 for counterIndex in range(numberOfCounters):
                     settings.setArrayIndex(counterIndex)
-                    counterSettings = CounterSettings(settings.value("regex"))
-                    entry.counters.append(counterSettings)
+                    if settings.contains("pattern"):
+                        counterSettings = CounterSettings(settings.value("pattern"))
+                        entry.counters.append(counterSettings)
                 settings.endArray()
 
                 # serial connection settings (mandatory)
@@ -181,7 +182,7 @@ class Settings:
 
                 for counterIndex, counter in enumerate(entry.counters):
                     settings.setArrayIndex(counterIndex)
-                    settings.setValue('regex', counter.regex)
+                    settings.setValue('pattern', counter.pattern)
                 settings.endArray()
 
                 settings.beginGroup('connection')

@@ -4,8 +4,8 @@ from multiserialviewer.settings.counterSettings import CounterSettings
 
 class CounterTableModel(QAbstractTableModel):
     class CounterEntry:
-        def __init__(self, regex: str, initialValue: int = 0):
-            self.regex: str = regex
+        def __init__(self, pattern: str, initialValue: int = 0):
+            self.pattern: str = pattern
             self.value: int = initialValue
 
         def increment(self):
@@ -16,12 +16,12 @@ class CounterTableModel(QAbstractTableModel):
 
         self.settings: list[CounterSettings] = []
         self.entries: list[CounterTableModel.CounterEntry] = []
-        self.regexToIndex: dict[str, int] = {}
+        self.patternToIndex: dict[str, int] = {}
 
     @Slot()
-    def incrementCounterValue(self, regex: str, unused: object):
-        if regex in self.regexToIndex:
-            rowIndex = self.regexToIndex[regex]
+    def incrementCounterValue(self, pattern: str, unused: object):
+        if pattern in self.patternToIndex:
+            rowIndex = self.patternToIndex[pattern]
             self.entries[rowIndex].increment()
             self.dataChanged.emit(self.index(rowIndex, 1), self.index(rowIndex, 1))
 
@@ -45,7 +45,7 @@ class CounterTableModel(QAbstractTableModel):
 
         if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
             if column == 0:
-                return self.entries[row].regex
+                return self.entries[row].pattern
             elif column == 1:
                 return str(self.entries[row].value)
         return None
@@ -57,10 +57,10 @@ class CounterTableModel(QAbstractTableModel):
 
     def addCounterEntry(self, pattern) -> int:
         rowIdx = -1
-        if pattern not in self.regexToIndex.keys():
+        if pattern not in self.patternToIndex.keys():
             rowIdx = len(self.settings)
             self.beginInsertRows(QModelIndex(), rowIdx, rowIdx)
-            self.regexToIndex[pattern] = rowIdx
+            self.patternToIndex[pattern] = rowIdx
             self.settings.append(CounterSettings(pattern))
             self.entries.append(CounterTableModel.CounterEntry(pattern))
             self.endInsertRows()
@@ -74,7 +74,7 @@ class CounterTableModel(QAbstractTableModel):
         if index < len(self.settings):
             self.beginRemoveRows(QModelIndex(), index, index)
             del self.settings[index]
-            del self.regexToIndex[self.entries[index].regex]
+            del self.patternToIndex[self.entries[index].pattern]
             del self.entries[index]
             self.endRemoveRows()
             return True

@@ -14,7 +14,7 @@ class CounterHandler(QObject):
         self.counterTableModel: CounterTableModel = CounterTableModel()
 
         for counterSettings in settings:
-            self.createCounter(counterSettings.regex)
+            self.createCounter(counterSettings.pattern)
 
     def getSettings(self) -> list[CounterSettings]:
         return self.counterTableModel.settings
@@ -23,10 +23,10 @@ class CounterHandler(QObject):
         self.counterTableModel.resetCounters()
 
     @Slot(str)
-    def createCounter(self, regex: str):
-        idx = self.counterTableModel.addCounterEntry(regex)
+    def createCounter(self, pattern: str):
+        idx = self.counterTableModel.addCounterEntry(pattern)
         if idx >= 0:
-            textExtractor = StreamingTextExtractor(regex, regex)
+            textExtractor = StreamingTextExtractor(pattern, pattern)
             self.dataSource.signal_asciiDataAvailable.connect(textExtractor.processBytesFromStream)
             textExtractor.signal_textExtracted.connect(self.counterTableModel.incrementCounterValue)
             self.textExtractors.append(textExtractor)

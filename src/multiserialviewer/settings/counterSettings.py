@@ -1,6 +1,6 @@
 
 
 class CounterSettings:
-    def __init__(self, regex: str = ''):
-        self.regex: str = regex
+    def __init__(self, pattern: str = ''):
+        self.pattern: str = pattern
 

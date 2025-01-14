@@ -20,6 +20,7 @@ class CounterWidget(QWidget):
         layout.addWidget(self.widget)
 
         self.widget.ed_textToCount.textChanged.connect(self.updateEnableState_buttonCreate)
+        self.widget.ed_textToCount.returnPressed.connect(self.handleCreateButtonClick)
         self.widget.pb_create.clicked.connect(self.handleCreateButtonClick)
         self.widget.pb_deleteSelected.clicked.connect(self.handleDeleteSelectedButtonClick)
 
@@ -45,7 +46,9 @@ class CounterWidget(QWidget):
 
     @Slot()
     def handleCreateButtonClick(self):
-        self.signal_createCounter.emit(self.widget.ed_textToCount.text())
+        text = self.widget.ed_textToCount.text()
+        if len(text):
+            self.signal_createCounter.emit(text)
 
     @Slot()
     def handleDeleteSelectedButtonClick(self):
