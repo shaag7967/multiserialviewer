@@ -78,7 +78,7 @@ class MainWindow(QMainWindow):
     def __createToolBar(self) -> QToolBar:
         toolBar: QToolBar = QToolBar(self)
         toolBar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
-        toolBar.setIconSize(QSize(48, 48))
+        toolBar.setIconSize(QSize(32, 32))
 
         toolBar.addAction(self.actions['createSerialViewer'])
         toolBar.addAction(self.actions['capture'])
