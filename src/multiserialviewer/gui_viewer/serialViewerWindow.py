@@ -92,7 +92,7 @@ class SerialViewerWindow(QMdiSubWindow):
                 break
 
     @Slot()
-    def setPatternToCreate(self, pattern: str):
+    def setCounterPatternToCreate(self, pattern: str):
         self.selectTab_Count()
         self.counterScrollArea.verticalScrollBar().setValue(self.counterScrollArea.verticalScrollBar().maximum())
         self.counterWidget.setPatternToCreate(pattern)

@@ -22,7 +22,7 @@ class SerialViewerController(QObject):
 
         self.view: SerialViewerWindow = view
         self.view.counterWidget.setCounterTableModel(self.counterHandler.counterTableModel)
-        self.view.textEdit.signal_createCounter.connect(self.view.setPatternToCreate)
+        self.view.textEdit.signal_createCounter.connect(self.view.setCounterPatternToCreate)
         self.view.counterWidget.signal_createCounter.connect(self.counterHandler.createCounter)
         self.view.counterWidget.signal_removeCounter.connect(self.counterHandler.removeCounter)
         self.view.signal_settingConvertNonPrintableCharsToHexChanged.connect(self.processor.setConvertNonPrintableCharsToHex)
@@ -37,7 +37,6 @@ class SerialViewerController(QObject):
             self.receiver.start()
 
             self.show_message(f'Opened {self.receiver.getSettings().portName}')
-
             return True
         else:
             self.show_error(f'Failed to open {self.receiver.getSettings().portName}')
