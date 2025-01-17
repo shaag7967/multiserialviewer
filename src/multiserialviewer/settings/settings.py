@@ -86,10 +86,6 @@ class Settings:
         def loadSettings(self, settings: QSettings):
             self.restoreDefaultValues()
 
-            if self.SettingsName_v1 in settings.childGroups():
-                self.__loadSettings_V1(settings)
-
-        def __loadSettings_V1(self, settings: QSettings):
             settings.beginGroup(self.SettingsName_v1)
             if settings.contains("restoreCaptureState"):
                 self.restoreCaptureState = settings.value("restoreCaptureState", type=bool)
@@ -118,10 +114,6 @@ class Settings:
         def loadSettings(self, settings: QSettings):
             self.restoreDefaultValues()
 
-            if self.SettingsName_v1 in settings.childGroups():
-                self.__loadSettings_V1(settings)
-
-        def __loadSettings_V1(self, settings: QSettings):
             settings.beginGroup(self.SettingsName_v1)
             if settings.contains("size"):
                 self.size = settings.value("size")
