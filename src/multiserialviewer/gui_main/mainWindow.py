@@ -140,9 +140,5 @@ class MainWindow(QMainWindow):
         event.accept()
 
     @Slot()
-    def arrangeWindowsInCascade(self):
-        self.mdiArea.cascadeSubWindows()
-
-    @Slot()
     def arrangeWindowsInTile(self):
         self.mdiArea.tileSubWindows()
