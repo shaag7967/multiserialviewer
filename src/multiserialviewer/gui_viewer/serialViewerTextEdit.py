@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QTextEdit, QMenu, QWidget
 from PySide6.QtGui import QContextMenuEvent, QAction, QMouseEvent, QWheelEvent
 from PySide6.QtCore import Signal, Slot, QPoint
 import typing
+import re
 
 from multiserialviewer.icons.iconSet import IconSet
 
@@ -54,7 +55,7 @@ class SerialViewerTextEdit(QTextEdit):
 
     @Slot()
     def action_triggeredCreateCounter(self):
-        selected_text = self.textCursor().selectedText()
+        selected_text = re.escape(self.textCursor().selectedText())
         assert len(selected_text) > 0
         self.signal_createCounter.emit(selected_text)
 
