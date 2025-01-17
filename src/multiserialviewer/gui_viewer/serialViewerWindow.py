@@ -91,6 +91,12 @@ class SerialViewerWindow(QMdiSubWindow):
                 self.tabWidget.setCurrentIndex(index)
                 break
 
+    @Slot()
+    def setPatternToCreate(self, pattern: str):
+        self.selectTab_Count()
+        self.counterScrollArea.verticalScrollBar().setValue(self.counterScrollArea.verticalScrollBar().maximum())
+        self.counterWidget.setPatternToCreate(pattern)
+
     def closeEvent(self, event):
         # is not called when mainwindow is closed
         event.accept()

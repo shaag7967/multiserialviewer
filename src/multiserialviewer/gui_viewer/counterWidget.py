@@ -36,6 +36,10 @@ class CounterWidget(QWidget):
         horizontal_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
         horizontal_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
 
+    def setPatternToCreate(self, pattern: str):
+        self.widget.ed_textToCount.setText(pattern)
+        self.widget.ed_textToCount.setFocus()
+
     @Slot(str)
     def updateEnableState_buttonCreate(self, text):
         self.widget.pb_create.setEnabled(len(self.widget.ed_textToCount.text()) > 0)
@@ -48,6 +52,7 @@ class CounterWidget(QWidget):
     def handleCreateButtonClick(self):
         text = self.widget.ed_textToCount.text()
         if len(text):
+            self.widget.ed_textToCount.setText('')
             self.signal_createCounter.emit(text)
 
     @Slot()
