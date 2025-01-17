@@ -6,15 +6,9 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>673</width>
-    <height>613</height>
+    <width>658</width>
+    <height>516</height>
    </rect>
-  </property>
-  <property name="minimumSize">
-   <size>
-    <width>600</width>
-    <height>0</height>
-   </size>
   </property>
   <property name="windowTitle">
    <string>Form</string>
@@ -55,14 +49,20 @@
           <widget class="QTableView" name="tableView">
            <property name="minimumSize">
             <size>
-             <width>500</width>
-             <height>300</height>
+             <width>600</width>
+             <height>250</height>
             </size>
            </property>
            <property name="sizeAdjustPolicy">
             <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContentsOnFirstShow</enum>
            </property>
+           <property name="tabKeyNavigation">
+            <bool>false</bool>
+           </property>
            <property name="showDropIndicator" stdset="0">
+            <bool>false</bool>
+           </property>
+           <property name="dragDropOverwriteMode">
             <bool>false</bool>
            </property>
            <property name="selectionMode">
