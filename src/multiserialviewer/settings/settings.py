@@ -57,12 +57,16 @@ class Settings:
 
     def saveSettings(self):
         settings = QSettings(str(self.__mainSettingsFilePath), QSettings.Format.IniFormat)
+        settings.clear()
+
         self.application.saveSettings(settings)
         self.mainWindow.saveSettings(settings)
         self.serialViewer.saveSettings(settings)
+        settings.sync()
 
         settings = QSettings(str(self.__highlighterSettingsFilePath), QSettings.Format.IniFormat)
         self.textHighlighter.saveSettings(settings)
+        settings.sync()
 
     @staticmethod
     def loadMandatoryValue(settings: QSettings, key: str) -> Any:
@@ -95,6 +99,7 @@ class Settings:
 
         def saveSettings(self, settings: QSettings):
             settings.beginGroup(self.SettingsName_v1)
+            settings.remove("")
             settings.setValue("restoreCaptureState", self.restoreCaptureState)
             settings.setValue("captureActive", self.captureActive)
             settings.endGroup()
@@ -124,6 +129,7 @@ class Settings:
         def saveSettings(self, settings: QSettings):
             """ Writes settings to disk. We always use the latest version."""
             settings.beginGroup(self.SettingsName_v1)
+            settings.remove("")
             settings.setValue("size", self.size)
             settings.setValue("toolBarArea", self.toolBarArea.value)
             settings.endGroup()
