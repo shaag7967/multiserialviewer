@@ -1,4 +1,6 @@
-from PySide6.QtCore import QObject, Qt, Signal, Slot, QMetaObject, QCoreApplication, QCommandLineParser, QThread
+from time import sleep
+
+from PySide6.QtCore import QObject, Qt, Signal, Slot, QMetaObject, QCoreApplication, QCommandLineParser, QThread, QByteArray
 from PySide6.QtSerialPort import QSerialPort
 import sys
 import typing
@@ -7,7 +9,8 @@ import typing
 
 class Writer(QObject):
     signal_writerFinished: Signal= Signal()
-    TEXT_TO_WRITE: bytes = b"test\ntest2"
+    # TEXT_TO_WRITE: str = "\nabcdefghijk"
+    TEXT_TO_WRITE: str = "test\ntest2"
 
     def __init__(self, portName: str, baudrate: int):
         super(Writer, self).__init__()
@@ -21,15 +24,33 @@ class Writer(QObject):
         self.__serialPort.open(QSerialPort.OpenModeFlag.WriteOnly)
 
         self.__serialPort.bytesWritten.connect(self.write)
-        self.__maxWriteCount = 100
+        self.__maxWriteCount = 100000
         self.__writeCounter = 0
+
+        self.__printCnt_col = 0
+        self.__printCnt_row = 0
+
+        self.__data: QByteArray = QByteArray.fromStdString(Writer.TEXT_TO_WRITE)
+        self.__data += '\x00'
 
     @Slot()
     def write(self):
         if self.__writeCounter < self.__maxWriteCount:
-            self.__serialPort.write(Writer.TEXT_TO_WRITE)
             self.__writeCounter += 1
+            self.__printCnt_col += 1
+            if self.__printCnt_col == 100:
+                print('.', end='', flush=True)
+                self.__printCnt_col = 0
+                self.__printCnt_row += 1
+                if self.__printCnt_row == 100:
+                    print('')
+                    self.__printCnt_row = 0
+
+            result = self.__serialPort.write(self.__data)
+            if result != self.__data.size():
+                print(self.__writeCounter)
         else:
+            sleep(1)
             self.signal_writerFinished.emit()
 
 
