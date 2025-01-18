@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMdiArea, QMainWindow, QToolBar, QMenu, QWidget, QSizePolicy, QScrollArea
+from PySide6.QtWidgets import QMdiArea, QMainWindow, QToolBar, QWidget, QSizePolicy
 from PySide6.QtCore import Qt, QSize, QPoint, Signal, Slot, QByteArray
 from PySide6.QtGui import QAction
 from typing import List

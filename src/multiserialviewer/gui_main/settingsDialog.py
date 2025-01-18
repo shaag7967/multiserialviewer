@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QApplication, QDialog, QVBoxLayout, QHeaderView, QDialogButtonBox
-from PySide6.QtCore import Signal, Slot, Qt, QModelIndex, QUrl, QItemSelectionModel, QItemSelection
+from PySide6.QtCore import Slot, Qt, QModelIndex, QUrl, QItemSelectionModel, QItemSelection
 from PySide6.QtGui import QDesktopServices
 from typing import List
 import copy

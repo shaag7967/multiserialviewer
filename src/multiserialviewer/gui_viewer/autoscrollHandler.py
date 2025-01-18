@@ -52,7 +52,7 @@ class AutoscrollHandler(QObject):
             if self.__textEdit.verticalScrollBar().value() < self.__textEdit.verticalScrollBar().maximum():
                 # note: clicking down arrow will cause checkIfScrolledToBottom to enable autoscroll at some
                 #       point. If you then click again the down arrow (while you are already at the bottom),
-                #       autoscroll will be deactivated again. This is not what you expect. Therefore we only
+                #       autoscroll will be deactivated again. This is not what you expect. Therefore, we only
                 #       deactivate autoscroll while not at the bottom (when using down arrow).
                 self.deactivateAutoscroll()
         elif action in [QAbstractSlider.SliderAction.SliderPageStepSub.value,
