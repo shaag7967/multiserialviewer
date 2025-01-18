@@ -14,20 +14,19 @@ class SerialViewerController(QObject):
     def __init__(self, settings: SerialViewerSettings, view: SerialViewerWindow):
         super(SerialViewerController, self).__init__()
 
-        self.receiver: SerialDataReceiver = SerialDataReceiver(settings.connection)
-        self.receiverThread: QThread = QThread(self)
-        self.receiverThread.setObjectName('SerialDataReceiver thread')
-        self.receiver.moveToThread(self.receiverThread)
-        self.receiverThread.start()
+        self.serialDataThread: QThread = QThread(self)
+        self.serialDataThread.setObjectName('SerialData thread')
+        self.serialDataThread.setPriority(QThread.Priority.HighPriority)
 
+        self.receiver: SerialDataReceiver = SerialDataReceiver(settings.connection)
         self.processor: SerialDataProcessor = SerialDataProcessor()
         self.processor.setConvertNonPrintableCharsToHex(settings.showNonPrintableCharsAsHex)
-        self.processorThread: QThread = QThread(self)
-        self.processorThread.setObjectName('SerialDataProcessor thread')
-        self.processor.moveToThread(self.processorThread)
-        self.processorThread.start()
-
         self.counterHandler: CounterHandler = CounterHandler(settings.counters, self.processor)
+
+        self.receiver.moveToThread(self.serialDataThread)
+        self.processor.moveToThread(self.serialDataThread)
+        self.counterHandler.moveToThread(self.serialDataThread)
+        self.serialDataThread.start()
 
         self.view: SerialViewerWindow = view
         self.view.counterWidget.setCounterTableModel(self.counterHandler.counterTableModel)
@@ -69,12 +68,9 @@ class SerialViewerController(QObject):
     def destruct(self):
         self.receiver.closePort()
 
-        if self.receiverThread.isRunning():
-            self.receiverThread.quit()
-            self.receiverThread.wait()
-        if self.processorThread.isRunning():
-            self.processorThread.quit()
-            self.processorThread.wait()
+        if self.serialDataThread.isRunning():
+            self.serialDataThread.quit()
+            self.serialDataThread.wait()
 
     @Slot()
     def onViewClosed(self):

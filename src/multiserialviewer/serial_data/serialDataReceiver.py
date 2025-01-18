@@ -38,8 +38,6 @@ class SerialDataReceiver(QObject):
 
     @Slot()
     def __handleData(self):
-        receivedData : QByteArray = self.__serialPort.readAll()
-        size = len(receivedData)
-        if size > 0:
-            print(size)
+        receivedData: QByteArray = self.__serialPort.readAll()
+        if receivedData.size() > 0:
             self.signal_rawDataAvailable.emit(receivedData)
