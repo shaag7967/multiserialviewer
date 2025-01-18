@@ -1,18 +1,18 @@
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import Slot, Qt, QUrl
-from PySide6.QtGui import QDesktopServices, QGuiApplication
-from typing import List
+from PySide6.QtCore import Slot, Qt
+from PySide6.QtGui import QGuiApplication
 from platformdirs import user_config_dir
 import copy
 
-from multiserialviewer.gui_main.mainWindow import MainWindow
-from multiserialviewer.settings.serialConnectionSettings import SerialConnectionSettings
-from multiserialviewer.settings.textHighlighterSettings import TextHighlighterSettings
-from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings, CounterSettings
 from multiserialviewer.application.serialViewerController import SerialViewerController
 from multiserialviewer.application.proxyStyle import ProxyStyle
+from multiserialviewer.gui_main.mainWindow import MainWindow
+from multiserialviewer.application.serialViewerControllerPool import SerialViewerControllerPool
 from multiserialviewer.icons.iconSet import IconSet
 from multiserialviewer.settings.settings import Settings
+from multiserialviewer.settings.serialConnectionSettings import SerialConnectionSettings
+from multiserialviewer.settings.textHighlighterSettings import TextHighlighterSettings
+from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings
 
 
 class Application(QApplication):
@@ -26,7 +26,7 @@ class Application(QApplication):
         self.settings.loadSettings()
 
         self.captureActive: bool = False
-        self.controller = {}
+        self.controllerPool: SerialViewerControllerPool = SerialViewerControllerPool()
 
         colorScheme: Qt.ColorScheme = QGuiApplication.styleHints().colorScheme()
         if colorScheme == Qt.ColorScheme.Dark:
@@ -41,8 +41,7 @@ class Application(QApplication):
         self.mainWindow.signal_createSerialViewer.connect(self.createSerialViewer)
         self.mainWindow.signal_clearAll.connect(self.clearAll)
         self.mainWindow.signal_toggleCaptureState.connect(self.toggleCaptureState)
-        self.mainWindow.signal_aboutToBeClosed.connect(self.persistCurrentSettings)
-        self.mainWindow.signal_aboutToBeClosed.connect(self.stopAllSerialViewer)
+        self.mainWindow.signal_aboutToBeClosed.connect(self.onAboutToBeClosed)
         self.mainWindow.signal_editSettings.connect(self.showSettingsDialog)
         self.mainWindow.signal_applySettings.connect(self.applyModifiedSettings)
         self.mainWindow.signal_createTextHighlightEntry.connect(self.createTextHighlightEntry)
@@ -51,7 +50,7 @@ class Application(QApplication):
         self.setStyle(ProxyStyle())
         self.mainWindow.show()
 
-        if len(self.controller) == 0:
+        if self.controllerPool.count() == 0:
             self.showSerialViewerCreateDialog()
 
     @Slot(str)
@@ -65,8 +64,8 @@ class Application(QApplication):
 
     @Slot()
     def showSerialViewerCreateDialog(self):
-        already_used_ports = list(self.controller.keys())
-        self.mainWindow.showSerialViewerCreateDialog(already_used_ports)
+        alreadyUsedPorts = self.controllerPool.getUsedPorts()
+        self.mainWindow.showSerialViewerCreateDialog(alreadyUsedPorts)
 
     @Slot()
     def showSettingsDialog(self):
@@ -77,12 +76,11 @@ class Application(QApplication):
         # this could cause some bugs if new values are added to Settings, but not here... -> refactor it
         self.settings.application = modifiedSettings.application
         self.settings.textHighlighter = modifiedSettings.textHighlighter
-        for ctrl in self.controller.values():
-            ctrl.view.setHighlighterSettings(self.settings.textHighlighter.entries)
+        self.controllerPool.setHighlighterSettings(self.settings.textHighlighter.entries)
 
-    @Slot(str, SerialConnectionSettings)
+    @Slot(SerialViewerSettings)
     def createSerialViewer(self, settings: SerialViewerSettings):
-        if settings.connection.portName in self.controller:
+        if settings.connection.portName in self.controllerPool.getUsedPorts():
             raise Exception(f"{settings.connection.portName} exists already")
 
         view = self.mainWindow.createSerialViewerWindow(settings.title,
@@ -92,50 +90,36 @@ class Application(QApplication):
                                                         splitterState=settings.splitterState,
                                                         currentTabName=settings.currentTabName)
         view.setSerialViewerSettings(settings)
-        ctrl = SerialViewerController(settings, view)
 
-        ctrl.terminated.connect(self.deleteSerialViewer, type=Qt.ConnectionType.QueuedConnection)
-        self.controller[settings.connection.portName] = ctrl
+        ctrl = SerialViewerController(settings, view)
+        ctrl.signal_deleteController.connect(self.controllerPool.deleteController, type=Qt.ConnectionType.QueuedConnection)
+        self.controllerPool.add(ctrl)
 
         if self.captureActive:
-            if not ctrl.start():
-                self.stopAllSerialViewer()
-
-    @Slot()
-    def deleteSerialViewer(self, portName):
-        if portName in self.controller:
-            del self.controller[portName]
-        else:
-            raise Exception("Controller to remove does not exist in list")
+            if not ctrl.startCapture():
+                self.stopCapture()
 
     @Slot()
     def clearAll(self):
-        for ctrl in self.controller.values():
-            ctrl.clearAll()
+        self.controllerPool.resetReceivedData()
 
     @Slot(bool)
     def toggleCaptureState(self):
         if self.captureActive:
-            self.stopAllSerialViewer()
-        elif len(self.controller.values()) > 0:
-            self.startAllSerialViewer()
+            self.stopCapture()
+        elif self.controllerPool.count() > 0:
+            self.startCapture()
 
-    def startAllSerialViewer(self):
-        controller_started_count = 0
-        for ctrl in self.controller.values():
-            if ctrl.start():
-                controller_started_count += 1
-
-        if controller_started_count == len(self.controller):
+    def startCapture(self):
+        if self.controllerPool.startCapture():
             self.captureActive = True
             self.mainWindow.updateCaptureButton(self.captureActive)
         else:
-            self.stopAllSerialViewer()
+            self.stopCapture()
 
     @Slot()
-    def stopAllSerialViewer(self):
-        for ctrl in self.controller.values():
-            ctrl.stop()
+    def stopCapture(self):
+        self.controllerPool.stopCapture()
         self.captureActive = False
         self.mainWindow.updateCaptureButton(self.captureActive)
 
@@ -150,9 +134,7 @@ class Application(QApplication):
 
         if self.settings.application.restoreCaptureState:
             if self.settings.application.captureActive:
-                self.startAllSerialViewer()
-            else:
-                self.stopAllSerialViewer()
+                self.startCapture()
 
     def persistCurrentSettings(self):
         self.settings.application.captureActive = self.captureActive
@@ -163,7 +145,7 @@ class Application(QApplication):
         self.settings.serialViewer.entries.clear()
 
         ctrl: SerialViewerController
-        for ctrl in self.controller.values():
+        for ctrl in self.controllerPool.entries():
             settings = SerialViewerSettings()
             settings.title = ctrl.view.windowTitle()
             settings.size = ctrl.view.size()
@@ -187,3 +169,8 @@ class Application(QApplication):
             self.settings.serialViewer.entries.append(settings)
 
         self.settings.saveSettings()
+
+    def onAboutToBeClosed(self):
+        self.persistCurrentSettings()
+        self.stopCapture()
+        self.controllerPool.destruct()

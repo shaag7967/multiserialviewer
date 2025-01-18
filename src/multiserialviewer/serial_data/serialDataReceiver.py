@@ -8,43 +8,38 @@ class SerialDataReceiver(QObject):
 
     def __init__(self, settings: SerialConnectionSettings):
         super(SerialDataReceiver, self).__init__()
-        self.__serialPort: QSerialPort = QSerialPort(settings.portName)
+
+        self.__serialPort: QSerialPort = QSerialPort(self)
+        self.__serialPort.setPortName(settings.portName)
         self.__serialPort.setBaudRate(settings.baudrate)
         self.__serialPort.setParity(settings.parity)
         self.__serialPort.setStopBits(settings.stopBits)
         self.__serialPort.setDataBits(settings.dataBits)
         self.__settings = settings
 
-    def openPort(self) -> bool:
+        self.__serialPort.readyRead.connect(self.__handleData)
+
+    def openPort(self) -> tuple[bool, str]:
         if not self.__serialPort.isOpen():
-            return self.__serialPort.open(QSerialPort.OpenModeFlag.ReadOnly)
+            self.__serialPort.clear(QSerialPort.Direction.AllDirections)
+            self.__serialPort.clearError()
+
+            openedSuccessfully = self.__serialPort.open(QSerialPort.OpenModeFlag.ReadOnly)
+            return openedSuccessfully, self.__serialPort.error().name
         else:
-            return False
+            return True, QSerialPort.SerialPortError.NoError.name
 
     def closePort(self):
         if self.__serialPort.isOpen():
             self.__serialPort.close()
 
-    def start(self):
-        self.__serialPort.readyRead.connect(self.__handleReadableData)
-
-    def stop(self):
-        if self.__isSignalConnected():
-            self.__serialPort.readyRead.disconnect(self.__handleReadableData)
-
     def getSettings(self) -> SerialConnectionSettings:
         return self.__settings
 
-    def isReceiving(self) -> bool:
-        return (self.__serialPort.isOpen() and self.__isSignalConnected())
-    
-    def __isSignalConnected(self) -> bool:
-        meta = self.__serialPort.metaObject()
-        return self.__serialPort.isSignalConnected(meta.method(meta.indexOfSignal('readyRead()')))
-
     @Slot()
-    def __handleReadableData(self):
-        received_data : QByteArray = self.__serialPort.readAll()
-        if len(received_data) > 0:
-            self.signal_rawDataAvailable.emit(received_data)
-
+    def __handleData(self):
+        receivedData : QByteArray = self.__serialPort.readAll()
+        size = len(receivedData)
+        if size > 0:
+            print(size)
+            self.signal_rawDataAvailable.emit(receivedData)

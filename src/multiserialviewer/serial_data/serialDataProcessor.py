@@ -1,4 +1,4 @@
-from PySide6.QtCore import Signal, Slot, QObject, QThread, QByteArray
+from PySide6.QtCore import Signal, Slot, QObject, QByteArray
 
 
 class SerialDataProcessor(QObject):
@@ -7,21 +7,11 @@ class SerialDataProcessor(QObject):
 
     def __init__(self):
         super(SerialDataProcessor, self).__init__()
-        self.__thread: QThread = QThread()
-        self.moveToThread(self.__thread)
-
-        self.convertNonPrintableCharsToHex: bool = False
-
-    def start(self):
-        self.__thread.start()
-
-    def stop(self):
-        self.__thread.quit()
-        self.__thread.wait()
+        self.__convertNonPrintableCharsToHex: bool = False
 
     @Slot()
     def setConvertNonPrintableCharsToHex(self, state: bool):
-        self.convertNonPrintableCharsToHex = state
+        self.__convertNonPrintableCharsToHex = state
 
     def __printableChar(self, b: int) -> bool:
         return b == 0x0D or b == 0x0A or 32 <= b <= 126
@@ -39,7 +29,7 @@ class SerialDataProcessor(QObject):
             for b in data:
                 if self.__printableChar(b):
                     asciiData += chr(b)
-                elif self.convertNonPrintableCharsToHex:
+                elif self.__convertNonPrintableCharsToHex:
                     nonPrintableCharsCount += 1
                     asciiData += self.__getPrintableReplacement(b)
 

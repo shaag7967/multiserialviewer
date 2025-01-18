@@ -1,4 +1,4 @@
-from PySide6.QtCore import QObject, Slot, Signal
+from PySide6.QtCore import QObject, Slot, Signal, QThread
 from datetime import datetime
 
 from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings
@@ -9,16 +9,25 @@ from multiserialviewer.application.counterHandler import CounterHandler
 
 
 class SerialViewerController(QObject):
-    terminated = Signal(str)
+    signal_deleteController: Signal = Signal(str)
 
     def __init__(self, settings: SerialViewerSettings, view: SerialViewerWindow):
-        super().__init__()
+        super(SerialViewerController, self).__init__()
 
         self.receiver: SerialDataReceiver = SerialDataReceiver(settings.connection)
-        self.processor: SerialDataProcessor = SerialDataProcessor()
-        self.counterHandler: CounterHandler = CounterHandler(settings.counters, self.processor)
+        self.receiverThread: QThread = QThread(self)
+        self.receiverThread.setObjectName('SerialDataReceiver thread')
+        self.receiver.moveToThread(self.receiverThread)
+        self.receiverThread.start()
 
+        self.processor: SerialDataProcessor = SerialDataProcessor()
         self.processor.setConvertNonPrintableCharsToHex(settings.showNonPrintableCharsAsHex)
+        self.processorThread: QThread = QThread(self)
+        self.processorThread.setObjectName('SerialDataProcessor thread')
+        self.processor.moveToThread(self.processorThread)
+        self.processorThread.start()
+
+        self.counterHandler: CounterHandler = CounterHandler(settings.counters, self.processor)
 
         self.view: SerialViewerWindow = view
         self.view.counterWidget.setCounterTableModel(self.counterHandler.counterTableModel)
@@ -29,25 +38,23 @@ class SerialViewerController(QObject):
 
         self.processor.signal_asciiDataAvailable.connect(self.view.appendData)
         self.receiver.signal_rawDataAvailable.connect(self.processor.handleRawData)
-        self.view.signal_closed.connect(self.terminate)
+        self.view.signal_closed.connect(self.onViewClosed)
 
-    def start(self) -> bool:
-        if self.receiver.openPort():
-            self.processor.start()
-            self.receiver.start()
+    def getPortName(self) -> str:
+        return self.receiver.getSettings().portName
 
+    def startCapture(self) -> bool:
+        opened, msg = self.receiver.openPort()
+        if opened:
             self.show_message(f'Opened {self.receiver.getSettings().portName}')
             return True
         else:
-            self.show_error(f'Failed to open {self.receiver.getSettings().portName}')
+            self.show_error(f'Failed to open {self.receiver.getSettings().portName} ({msg})')
             return False
 
-    def stop(self):
-        if self.receiver.isReceiving():
-            self.receiver.stop()
-            self.receiver.closePort()
-            self.processor.stop()
-            self.show_message(f'Closed {self.receiver.getSettings().portName}')
+    def stopCapture(self):
+        self.receiver.closePort()
+        self.show_message(f'Closed {self.receiver.getSettings().portName}')
 
     def clearAll(self):
         self.view.clear()
@@ -59,10 +66,17 @@ class SerialViewerController(QObject):
     def show_error(self, text):
         self.view.appendData(f'\n[ERR: {datetime.now().strftime("%Y/%b/%d %H:%M:%S")}: {text} :ERR]\n')
 
-    @Slot()
-    def terminate(self):
-        # view is already closed
-        self.receiver.stop()
+    def destruct(self):
         self.receiver.closePort()
-        self.processor.stop()
-        self.terminated.emit(self.receiver.getSettings().portName)
+
+        if self.receiverThread.isRunning():
+            self.receiverThread.quit()
+            self.receiverThread.wait()
+        if self.processorThread.isRunning():
+            self.processorThread.quit()
+            self.processorThread.wait()
+
+    @Slot()
+    def onViewClosed(self):
+        # view is already closed
+        self.signal_deleteController.emit(self.receiver.getSettings().portName)
