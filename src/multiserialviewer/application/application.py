@@ -158,6 +158,7 @@ class Application(QApplication):
             settings.autoscrollReactivate = ctrl.view.autoscroll.autoReactivateIsActive()
 
             settings.counters = ctrl.counterHandler.getSettings()
+            settings.watches = ctrl.watchHandler.getSettings()
 
             connection: SerialConnectionSettings = ctrl.receiver.getSettings()
             settings.connection.portName = connection.portName

@@ -10,7 +10,7 @@ import typing
 class Writer(QObject):
     signal_writerFinished: Signal= Signal()
     # TEXT_TO_WRITE: str = "\nabcdefghijk"
-    TEXT_TO_WRITE: str = "test\ntest2"
+    TEXT_TO_WRITE: str = "test\nnumber: 123\nzaehler=zwei"
 
     def __init__(self, portName: str, baudrate: int):
         super(Writer, self).__init__()
@@ -21,10 +21,11 @@ class Writer(QObject):
         self.__serialPort.setParity(QSerialPort.Parity.NoParity)
         self.__serialPort.setStopBits(QSerialPort.StopBits.OneStop)
         self.__serialPort.setDataBits(QSerialPort.DataBits.Data8)
-        self.__serialPort.open(QSerialPort.OpenModeFlag.WriteOnly)
+        if not self.__serialPort.open(QSerialPort.OpenModeFlag.WriteOnly):
+            raise Exception(self.__serialPort.error().name)
 
         self.__serialPort.bytesWritten.connect(self.write)
-        self.__maxWriteCount = 100000
+        self.__maxWriteCount = 1000
         self.__writeCounter = 0
 
         self.__printCnt_col = 0

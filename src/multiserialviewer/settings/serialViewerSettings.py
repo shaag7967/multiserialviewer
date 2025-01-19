@@ -3,6 +3,7 @@ from PySide6.QtCore import QSize, QPoint, QByteArray
 
 from multiserialviewer.settings.serialConnectionSettings import SerialConnectionSettings
 from multiserialviewer.settings.counterSettings import CounterSettings
+from multiserialviewer.settings.watchSettings import WatchSettings
 
 
 class SerialViewerSettings:
@@ -15,5 +16,6 @@ class SerialViewerSettings:
         self.autoscrollActive: bool = True
         self.autoscrollReactivate: bool = True
         self.counters: List[CounterSettings] = []
+        self.watches: List[WatchSettings] = []
         self.connection: SerialConnectionSettings = SerialConnectionSettings('')
         self.showNonPrintableCharsAsHex = True

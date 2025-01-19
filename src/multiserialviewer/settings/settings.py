@@ -4,7 +4,7 @@ from typing import List, Any
 from pathlib import PurePath
 import os
 
-from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings, CounterSettings
+from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings, CounterSettings, WatchSettings
 from multiserialviewer.settings.textHighlighterSettings import TextHighlighterSettings
 
 
@@ -183,6 +183,14 @@ class Settings:
                         entry.counters.append(counterSettings)
                 settings.endArray()
 
+                numberOfWatches = settings.beginReadArray('watches')
+                for watchIndex in range(numberOfWatches):
+                    settings.setArrayIndex(watchIndex)
+                    if settings.contains("name") and settings.contains("pattern"):
+                        watchSettings = WatchSettings(settings.value("name"), settings.value("pattern"))
+                        entry.watches.append(watchSettings)
+                settings.endArray()
+
                 # serial connection settings (mandatory)
                 settings.beginGroup('connection')
                 try:
@@ -218,10 +226,16 @@ class Settings:
                 settings.endGroup()
 
                 settings.beginWriteArray('counter')
-
                 for counterIndex, counter in enumerate(entry.counters):
                     settings.setArrayIndex(counterIndex)
                     settings.setValue('pattern', counter.pattern)
+                settings.endArray()
+
+                settings.beginWriteArray('watches')
+                for watchIndex, watch in enumerate(entry.watches):
+                    settings.setArrayIndex(watchIndex)
+                    settings.setValue('name', watch.name)
+                    settings.setValue('pattern', watch.pattern)
                 settings.endArray()
 
                 settings.beginGroup('connection')

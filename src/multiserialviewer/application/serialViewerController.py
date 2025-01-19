@@ -6,6 +6,7 @@ from multiserialviewer.gui_viewer.serialViewerWindow import SerialViewerWindow
 from multiserialviewer.serial_data.serialDataReceiver import SerialDataReceiver
 from multiserialviewer.serial_data.serialDataProcessor import SerialDataProcessor
 from multiserialviewer.application.counterHandler import CounterHandler
+from multiserialviewer.application.watchHandler import WatchHandler
 
 
 class SerialViewerController(QObject):
@@ -22,17 +23,25 @@ class SerialViewerController(QObject):
         self.processor: SerialDataProcessor = SerialDataProcessor()
         self.processor.setConvertNonPrintableCharsToHex(settings.showNonPrintableCharsAsHex)
         self.counterHandler: CounterHandler = CounterHandler(settings.counters, self.processor)
+        self.watchHandler: WatchHandler = WatchHandler(settings.watches, self.processor)
 
         self.receiver.moveToThread(self.serialDataThread)
         self.processor.moveToThread(self.serialDataThread)
         self.counterHandler.moveToThread(self.serialDataThread)
+        self.watchHandler.moveToThread(self.serialDataThread)
         self.serialDataThread.start()
 
         self.view: SerialViewerWindow = view
+        # counter
         self.view.counterWidget.setCounterTableModel(self.counterHandler.counterTableModel)
         self.view.textEdit.signal_createCounter.connect(self.view.setCounterPatternToCreate)
         self.view.counterWidget.signal_createCounter.connect(self.counterHandler.createCounter)
         self.view.counterWidget.signal_removeCounter.connect(self.counterHandler.removeCounter)
+        # watch
+        self.view.watchWidget.setWatchTableModel(self.watchHandler.watchTableModel)
+        self.view.watchWidget.signal_createWatch.connect(self.watchHandler.createWatch)
+        self.view.watchWidget.signal_removeWatch.connect(self.watchHandler.removeWatch)
+
         self.view.signal_settingConvertNonPrintableCharsToHexChanged.connect(self.processor.setConvertNonPrintableCharsToHex)
 
         self.processor.signal_asciiDataAvailable.connect(self.view.appendData)
@@ -58,6 +67,7 @@ class SerialViewerController(QObject):
     def clearAll(self):
         self.view.clear()
         self.counterHandler.clear()
+        self.watchHandler.clear()
 
     def show_message(self, text):
         self.view.appendData(f'\n[MSG: {datetime.now().strftime("%Y/%b/%d %H:%M:%S")}: {text} :MSG]\n')

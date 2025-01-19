@@ -8,6 +8,7 @@ from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
 from multiserialviewer.gui_viewer.serialViewerTextEdit import SerialViewerTextEdit
 from multiserialviewer.gui_viewer.searchWidget import SearchWidget
 from multiserialviewer.gui_viewer.counterWidget import CounterWidget
+from multiserialviewer.gui_viewer.watchWidget import WatchWidget
 from multiserialviewer.gui_viewer.serialViewerSettingsWidget import SerialViewerSettingsWidget
 from multiserialviewer.icons.iconSet import IconSet
 from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings
@@ -63,6 +64,14 @@ class SerialViewerWindow(QMdiSubWindow):
         self.searchWidget.setMinimumWidth(widgetMinimumWidth)
         self.searchScrollArea.setWidget(self.searchWidget)
         tabWidget.addTab(self.searchScrollArea, "Search")
+
+        # watches
+        self.watchScrollArea = QScrollArea(tabWidget)
+        self.watchScrollArea.setFrameShape(QFrame.Shape.NoFrame)
+        self.watchWidget: WatchWidget = WatchWidget(self.watchScrollArea)
+        self.watchWidget.setMinimumWidth(widgetMinimumWidth)
+        self.watchScrollArea.setWidget(self.watchWidget)
+        tabWidget.addTab(self.watchScrollArea, "Watch")
 
         # counter
         self.counterScrollArea = QScrollArea(tabWidget)
