@@ -28,6 +28,7 @@ class WatchWidget(QWidget):
         layout.setContentsMargins(0,0,0,0)
         layout.addWidget(self.widget)
 
+        self.widget.ed_name.textChanged.connect(self.updateEnableState_buttonCreate)
         self.widget.cb_type.currentTextChanged.connect(self.updateEnableState_buttonCreate)
         self.widget.ed_setOfWords.textChanged.connect(self.updateEnableState_buttonCreate)
         self.widget.ed_textToWatch.textChanged.connect(self.updateEnableState_buttonCreate)
@@ -86,6 +87,7 @@ class WatchWidget(QWidget):
         enabled = (len(self.widget.ed_name.text()) > 0
                    and len(self.widget.ed_textToWatch.text()) > 0
                    and (self.widget.cb_type.currentText() != WatchWidget.CB_TEXT_WORDS or len(self.widget.ed_setOfWords.text()) > 0))
+        print(enabled)
         self.widget.pb_create.setEnabled(enabled)
 
     @Slot(str)
