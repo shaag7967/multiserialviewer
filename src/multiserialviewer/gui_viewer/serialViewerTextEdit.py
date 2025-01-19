@@ -2,14 +2,14 @@ from PySide6.QtWidgets import QTextEdit, QMenu, QWidget
 from PySide6.QtGui import QContextMenuEvent, QAction, QMouseEvent, QWheelEvent
 from PySide6.QtCore import Signal, Slot, QPoint
 import typing
-import re
 
 from multiserialviewer.icons.iconSet import IconSet
 
 
 class SerialViewerTextEdit(QTextEdit):
     signal_createTextHighlightEntry: Signal = Signal(str)
-    signal_createCounter: Signal = Signal(str)
+    signal_createWatchFromSelectedText: Signal = Signal(str)
+    signal_createCounterFromSelectedText: Signal = Signal(str)
     signal_mousePressed: Signal = Signal(QPoint)
     signal_wheelEvent: Signal = Signal(QPoint)
 
@@ -29,12 +29,17 @@ class SerialViewerTextEdit(QTextEdit):
         action_highlight.setEnabled(len(self.textCursor().selectedText()) > 0)
         action_highlight.triggered.connect(self.action_triggeredHighlight)
 
-        action_createCounter: QAction = QAction(icon=self.icon_set.getCounterIcon(), text="Create counter using selected text",  parent=menu)
+        action_createWatch: QAction = QAction(icon=self.icon_set.getWatchIcon(), text="Create watch",  parent=menu)
+        action_createWatch.setEnabled(len(self.textCursor().selectedText()) > 0)
+        action_createWatch.triggered.connect(self.action_triggeredCreateWatch)
+
+        action_createCounter: QAction = QAction(icon=self.icon_set.getCounterIcon(), text="Create counter",  parent=menu)
         action_createCounter.setEnabled(len(self.textCursor().selectedText()) > 0)
         action_createCounter.triggered.connect(self.action_triggeredCreateCounter)
 
         menu.insertAction(menu.actions()[0], action_highlight)
         menu.insertAction(menu.actions()[0], action_createCounter)
+        menu.insertAction(menu.actions()[0], action_createWatch)
         menu.insertSeparator(menu.actions()[2])
         menu.exec(event.globalPos())
         del menu
@@ -54,10 +59,16 @@ class SerialViewerTextEdit(QTextEdit):
         self.signal_createTextHighlightEntry.emit(selected_text)
 
     @Slot()
-    def action_triggeredCreateCounter(self):
-        selected_text = re.escape(self.textCursor().selectedText())
+    def action_triggeredCreateWatch(self):
+        selected_text = self.textCursor().selectedText()
         assert len(selected_text) > 0
-        self.signal_createCounter.emit(selected_text)
+        self.signal_createWatchFromSelectedText.emit(selected_text)
+
+    @Slot()
+    def action_triggeredCreateCounter(self):
+        selected_text = self.textCursor().selectedText()
+        assert len(selected_text) > 0
+        self.signal_createCounterFromSelectedText.emit(selected_text)
 
 
 

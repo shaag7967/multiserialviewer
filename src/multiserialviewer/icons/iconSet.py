@@ -43,3 +43,6 @@ class IconSet:
 
     def getCounterIcon(self) -> QIcon:
         return QIcon(str(self.icons_dir_name.joinpath('counter.png')))
+
+    def getWatchIcon(self) -> QIcon:
+        return QIcon(str(self.icons_dir_name.joinpath('watch.png')))

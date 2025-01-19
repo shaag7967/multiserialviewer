@@ -34,7 +34,6 @@ class SerialViewerController(QObject):
         self.view: SerialViewerWindow = view
         # counter
         self.view.counterWidget.setCounterTableModel(self.counterHandler.counterTableModel)
-        self.view.textEdit.signal_createCounter.connect(self.view.setCounterPatternToCreate)
         self.view.counterWidget.signal_createCounter.connect(self.counterHandler.createCounter)
         self.view.counterWidget.signal_removeCounter.connect(self.counterHandler.removeCounter)
         # watch
@@ -42,6 +41,8 @@ class SerialViewerController(QObject):
         self.view.watchWidget.signal_createWatch.connect(self.watchHandler.createWatch)
         self.view.watchWidget.signal_removeWatch.connect(self.watchHandler.removeWatch)
 
+        self.view.textEdit.signal_createCounterFromSelectedText.connect(self.view.setCounterPatternToCreate)
+        self.view.textEdit.signal_createWatchFromSelectedText.connect(self.view.createWatchFromText)
         self.view.signal_settingConvertNonPrintableCharsToHexChanged.connect(self.processor.setConvertNonPrintableCharsToHex)
 
         self.processor.signal_asciiDataAvailable.connect(self.view.appendData)

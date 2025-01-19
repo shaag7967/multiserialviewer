@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHeaderView
 from PySide6.QtCore import Qt, Slot, Signal, QItemSelectionModel, QItemSelection
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
+import re
 
 
 class CounterWidget(QWidget):
@@ -36,8 +37,9 @@ class CounterWidget(QWidget):
         horizontal_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
         horizontal_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
 
-    def setPatternToCreate(self, pattern: str):
-        self.widget.ed_textToCount.setText(pattern)
+    def setPatternToCreate(self, text: str):
+        text = re.escape(text)
+        self.widget.ed_textToCount.setText(text)
         self.widget.ed_textToCount.setFocus()
 
     @Slot(str)
@@ -46,7 +48,8 @@ class CounterWidget(QWidget):
 
     @Slot(str)
     def updateEnableState_buttonDeleteSelected(self, selected: QItemSelection, deselected: QItemSelection):
-        self.widget.pb_deleteSelected.setEnabled(selected.count() > 0)
+        selectionModel: QItemSelectionModel = self.widget.tableView.selectionModel()
+        self.widget.pb_deleteSelected.setEnabled(selectionModel.hasSelection())
 
     @Slot()
     def handleCreateButtonClick(self):

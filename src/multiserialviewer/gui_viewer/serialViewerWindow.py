@@ -19,6 +19,7 @@ from multiserialviewer.gui_viewer.searchHandler import SearchHandler
 class SerialViewerWindow(QMdiSubWindow):
     signal_closed = Signal()
     signal_createTextHighlightEntry = Signal(str)
+    signal_createWatchFromSelectedText = Signal(str)
     signal_createCounter = Signal(str)
     signal_settingConvertNonPrintableCharsToHexChanged = Signal(bool)
 
@@ -48,14 +49,15 @@ class SerialViewerWindow(QMdiSubWindow):
 
         # connections
         self.textEdit.signal_createTextHighlightEntry.connect(self.signal_createTextHighlightEntry)
-        self.textEdit.signal_createCounter.connect(self.signal_createCounter)
+        self.textEdit.signal_createWatchFromSelectedText.connect(self.signal_createWatchFromSelectedText)
+        self.textEdit.signal_createCounterFromSelectedText.connect(self.signal_createCounter)
         self.search.signal_foundString.connect(self.autoscroll.deactivateAutoscroll)
         self.settingsWidget.widget.ed_name.textChanged.connect(self.setWindowName)
         self.settingsWidget.signal_showNonPrintableAsHex.connect(self.handleSettingShowNonPrintableAsHexChanged)
 
 
     def __populateTabWidget(self, tabWidget: QTabWidget):
-        widgetMinimumWidth = 390
+        widgetMinimumWidth = 430
 
         # search
         self.searchScrollArea = QScrollArea(tabWidget)
@@ -100,6 +102,12 @@ class SerialViewerWindow(QMdiSubWindow):
                 self.tabWidget.setCurrentIndex(index)
                 break
 
+    @Slot(str)
+    def createWatchFromText(self, text: str):
+        self.selectTab_Watch()
+        self.watchScrollArea.verticalScrollBar().setValue(self.watchScrollArea.verticalScrollBar().maximum())
+        self.watchWidget.setTextForWatchCreation(text)
+
     @Slot()
     def setCounterPatternToCreate(self, pattern: str):
         self.selectTab_Count()
@@ -114,6 +122,10 @@ class SerialViewerWindow(QMdiSubWindow):
     @Slot()
     def clear(self):
         self.textEdit.clear()
+
+    @Slot()
+    def selectTab_Watch(self):
+        self.setCurrentTab('Watch')
 
     @Slot()
     def selectTab_Count(self):

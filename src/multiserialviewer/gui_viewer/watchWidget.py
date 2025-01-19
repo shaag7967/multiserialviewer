@@ -22,7 +22,7 @@ class WatchWidget(QWidget):
         self.widget.cb_type.currentTextChanged.connect(self.handleTypeChanged)
         self.widget.cb_type.addItem(WatchWidget.CB_TEXT_NUMBER)
         self.widget.cb_type.addItem(WatchWidget.CB_TEXT_WORDS)
-        self.widget.cb_type.setCurrentIndex(0)
+        self.widget.cb_type.setCurrentText(WatchWidget.CB_TEXT_NUMBER)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
@@ -48,6 +48,33 @@ class WatchWidget(QWidget):
         horizontal_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
         horizontal_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
 
+    def setTextForWatchCreation(self, text: str):
+        text = text.strip()
+
+        # number
+        pattern = r'^(\w+)[\s:=]*([-+]?(?:\d*[.])?\d+(?:[eE][-+]?\d+)?)$'
+        m = re.match(pattern, text)
+        if m:
+            self.widget.ed_name.setText(m.group(1))
+            self.widget.ed_textToWatch.setText(m.group(1))
+            self.widget.cb_type.setCurrentText(WatchWidget.CB_TEXT_NUMBER)
+            return
+
+        # set of words
+        pattern = r'^(\w+)[\s:=]+(\w+)$'
+        m = re.match(pattern, text)
+        if m:
+            self.widget.ed_name.setText(m.group(1))
+            self.widget.ed_textToWatch.setText(m.group(1))
+            self.widget.cb_type.setCurrentText(WatchWidget.CB_TEXT_WORDS)
+            self.widget.ed_setOfWords.setText(m.group(2))
+            return
+
+        # nothing matched
+        self.widget.ed_name.setText(text)
+        self.widget.ed_textToWatch.setText(re.escape(text))
+        self.widget.cb_type.setCurrentText(WatchWidget.CB_TEXT_NUMBER)
+
     @Slot(str)
     def handleTypeChanged(self, typeText: str):
         visible = typeText == WatchWidget.CB_TEXT_WORDS
@@ -63,7 +90,8 @@ class WatchWidget(QWidget):
 
     @Slot(str)
     def updateEnableState_buttonDeleteSelected(self, selected: QItemSelection, deselected: QItemSelection):
-        self.widget.pb_deleteSelected.setEnabled(selected.count() > 0)
+        selectionModel: QItemSelectionModel = self.widget.tableView.selectionModel()
+        self.widget.pb_deleteSelected.setEnabled(selectionModel.hasSelection())
 
     @Slot()
     def handleCreateButtonClick(self):
