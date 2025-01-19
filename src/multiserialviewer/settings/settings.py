@@ -2,6 +2,7 @@ from PySide6.QtCore import Qt, QSettings, QSize
 from PySide6.QtSerialPort import QSerialPort
 from typing import List, Any
 from pathlib import PurePath
+import os
 
 from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings, CounterSettings
 from multiserialviewer.settings.textHighlighterSettings import TextHighlighterSettings
@@ -56,8 +57,13 @@ class Settings:
         self.textHighlighter.loadSettings(settings)
 
     def saveSettings(self):
+        try:
+            # delete existing file to prevent incompatibility issues/QSettings problems
+            os.remove(str(self.__mainSettingsFilePath))
+        except OSError:
+            pass
+
         settings = QSettings(str(self.__mainSettingsFilePath), QSettings.Format.IniFormat)
-        settings.clear()
 
         self.application.saveSettings(settings)
         self.mainWindow.saveSettings(settings)
@@ -99,7 +105,6 @@ class Settings:
 
         def saveSettings(self, settings: QSettings):
             settings.beginGroup(self.SettingsName_v1)
-            settings.remove("")
             settings.setValue("restoreCaptureState", self.restoreCaptureState)
             settings.setValue("captureActive", self.captureActive)
             settings.endGroup()
@@ -129,7 +134,6 @@ class Settings:
         def saveSettings(self, settings: QSettings):
             """ Writes settings to disk. We always use the latest version."""
             settings.beginGroup(self.SettingsName_v1)
-            settings.remove("")
             settings.setValue("size", self.size)
             settings.setValue("toolBarArea", self.toolBarArea.value)
             settings.endGroup()
@@ -198,7 +202,6 @@ class Settings:
 
         def saveSettings(self, settings: QSettings):
             settings.beginWriteArray(self.ArrayName_v1)
-            settings.remove("")  # remove all existing entries
 
             for index, entry in enumerate(self.entries):
                 settings.setArrayIndex(index)
@@ -215,7 +218,6 @@ class Settings:
                 settings.endGroup()
 
                 settings.beginWriteArray('counter')
-                settings.remove("")  # remove all existing entries
 
                 for counterIndex, counter in enumerate(entry.counters):
                     settings.setArrayIndex(counterIndex)
@@ -267,7 +269,6 @@ class Settings:
 
         def saveSettings(self, settings: QSettings):
             settings.beginWriteArray(self.ArrayName_v1)
-            settings.remove("")  # remove all existing entries
 
             for index, entry in enumerate(self.entries):
                 settings.setArrayIndex(index)
