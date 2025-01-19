@@ -4,6 +4,7 @@ from PySide6.QtCore import QObject, Qt, Signal, Slot, QMetaObject, QCoreApplicat
 from PySide6.QtSerialPort import QSerialPort
 import sys
 import typing
+import numpy as np
 
 
 
@@ -25,14 +26,20 @@ class Writer(QObject):
             raise Exception(self.__serialPort.error().name)
 
         self.__serialPort.bytesWritten.connect(self.write)
-        self.__maxWriteCount = 1000
+        self.__maxWriteCount = 100
         self.__writeCounter = 0
 
         self.__printCnt_col = 0
         self.__printCnt_row = 0
 
-        self.__data: QByteArray = QByteArray.fromStdString(Writer.TEXT_TO_WRITE)
-        self.__data += '\x00'
+        # self.__data: QByteArray = QByteArray.fromStdString(Writer.TEXT_TO_WRITE)
+        # self.__data += '\x00'
+
+        self.__data: QByteArray = QByteArray()
+        length = np.pi * 2
+        sineWave = np.sin(np.arange(0, length, length / 20))
+        for val in sineWave:
+            self.__data += QByteArray.fromStdString(f'\nmyValue: {val}')
 
     @Slot()
     def write(self):
