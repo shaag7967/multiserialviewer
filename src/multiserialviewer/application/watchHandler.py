@@ -13,8 +13,8 @@ class WatchHandler(QObject):
         self.textExtractors: list[StreamingTextExtractor] = []
         self.watchTableModel: WatchTableModel = WatchTableModel()
 
-        for counterSettings in settings:
-            self.createWatch(counterSettings.name, counterSettings.pattern)
+        for watchSettings in settings:
+            self.createWatch(watchSettings.name, watchSettings.pattern)
 
     def getSettings(self) -> list[WatchSettings]:
         return self.watchTableModel.settings

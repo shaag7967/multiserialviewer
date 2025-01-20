@@ -43,7 +43,7 @@ class CounterTableModel(QAbstractTableModel):
         column = index.column()
         row = index.row()
 
-        if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             if column == 0:
                 return self.entries[row].pattern
             elif column == 1:
