@@ -13,7 +13,7 @@ class StreamingTextExtractor(QObject):
         self.buffer: str = ''
 
         self.delayedProcessing: QTimer = QTimer(self)
-        self.delayedProcessing.setInterval(200)
+        self.delayedProcessing.setInterval(100)
         self.delayedProcessing.setSingleShot(True)
         self.delayedProcessing.timeout.connect(self.processTimeout)
 
@@ -26,12 +26,16 @@ class StreamingTextExtractor(QObject):
 
         lastPos = 0
         for match in self.regex.finditer(self.buffer):
-            if match.end(0) != len(self.buffer):
+            if (len(self.buffer) - match.end(0)) > 5:
                 # a match is only processed if not at the end of the buffer, because
                 # there could be coming more bytes, that belong to this pattern,
                 # and we don't want to miss them. E.g. an integer matches after the first
                 # number (char), but we want to be greedy and get all numbers (which could
                 # arrive some time later).
+                # We require to have received at least 5 more bytes that do not belong to
+                # the regex pattern. Because a string like '1.2246467991473532e' would otherwise
+                # be interpreted immediately as a float (without 'e' at the end), but the exponent
+                # was just not received yet... (-> 1.2246467991473532e-16)
                 self.signal_textExtracted.emit(self.name, [*match.groups()])
                 lastPos = match.end(0)
             else:

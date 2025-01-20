@@ -26,7 +26,7 @@ class Writer(QObject):
             raise Exception(self.__serialPort.error().name)
 
         self.__serialPort.bytesWritten.connect(self.write)
-        self.__maxWriteCount = 100
+        self.__maxWriteCount = 100     # <<<=== change here number of writes
         self.__writeCounter = 0
 
         self.__printCnt_col = 0
