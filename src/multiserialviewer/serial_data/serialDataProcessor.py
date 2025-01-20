@@ -21,12 +21,11 @@ class SerialDataProcessor(QObject):
 
     @Slot(QByteArray)
     def handleRawData(self, rawData: QByteArray):
-        data : bytearray = bytearray(rawData)
-
-        if len(data) > 0:
+        if rawData.size() > 0:
             nonPrintableCharsCount = 0
             asciiData: str = ''
-            for b in data:
+
+            for b in rawData.data():
                 if self.__printableChar(b):
                     asciiData += chr(b)
                 elif self.__convertNonPrintableCharsToHex:

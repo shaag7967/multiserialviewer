@@ -174,4 +174,4 @@ class Application(QApplication):
     def onAboutToBeClosed(self):
         self.persistCurrentSettings()
         self.stopCapture()
-        self.controllerPool.destruct()
+        self.controllerPool.deleteAll()

@@ -62,8 +62,9 @@ class SerialViewerController(QObject):
             return False
 
     def stopCapture(self):
-        self.receiver.closePort()
-        self.show_message(f'Closed {self.receiver.getSettings().portName}')
+        if self.receiver.portIsOpen():
+            self.receiver.closePort()
+            self.show_message(f'Closed {self.receiver.getSettings().portName}')
 
     def clearAll(self):
         self.view.clear()

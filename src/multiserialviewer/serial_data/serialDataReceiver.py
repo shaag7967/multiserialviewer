@@ -33,6 +33,9 @@ class SerialDataReceiver(QObject):
         if self.__serialPort.isOpen():
             self.__serialPort.close()
 
+    def portIsOpen(self):
+        return self.__serialPort.isOpen()
+
     def getSettings(self) -> SerialConnectionSettings:
         return self.__settings
 

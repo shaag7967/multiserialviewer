@@ -50,6 +50,7 @@ class SerialViewerControllerPool(QObject):
                 self.__controller.remove(ctrl)
                 break
 
-    def destruct(self):
+    def deleteAll(self):
         for ctrl in self.__controller:
             ctrl.destruct()
+        self.__controller = []
