@@ -1,38 +1,92 @@
 from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex, Slot
-from multiserialviewer.settings.watchSettings import WatchSettings
 from typing import Optional
 
 
-class WatchTableModel(QAbstractTableModel):
-    class WatchEntry:
-        def __init__(self, name: str, pattern: str):
-            self.name: str = name
-            self.pattern: str = pattern
-            self.value: str = ''
-            self.minValue: Optional[float | None] = None
-            self.maxValue: Optional[float | None] = None
-            self.updateCount: int = 0
+class WatchEntryNumber:
+    def __init__(self, variableName: str, pattern: str):
+        self.name: str = variableName
+        self.pattern: str = pattern
+        self.value: Optional[float | None] = None
+        self.minValue: Optional[float | None] = None
+        self.maxValue: Optional[float | None] = None
+        self.updateCount: int = 0
 
-        def setValue(self, value: str):
-            self.value = value
-            self.__updateMinMaxValues(value)
+    def setValue(self, value: str):
+        try:
+            self.value = float(value)
+        except:
+            pass
+        else:
+            self.minValue = self.value if self.minValue is None else min(self.minValue, self.value)
+            self.maxValue = self.value if self.maxValue is None else max(self.maxValue, self.value)
             self.updateCount += 1
 
-        def __updateMinMaxValues(self, value: str):
-            try:
-                # is it a number?
-                number = float(value)
-            except:
-                pass
-            else:
-                self.minValue = number if self.minValue is None else min(self.minValue, number)
-                self.maxValue = number if self.maxValue is None else max(self.maxValue, number)
+    def getValue(self):
+        return '' if self.value is None else str(self.value)
 
+    def reset(self):
+        self.value = None
+        self.minValue = None
+        self.maxValue = None
+        self.updateCount = 0
+
+    def getTooltipPrimary(self):
+        if self.updateCount > 0:
+            return f"Received {str(self.updateCount)} time{'s' if self.updateCount != 1 else ''}"
+        else:
+            return ""
+
+    def getTooltipSecondary(self):
+        toolTips = []
+        if self.minValue is not None:
+            toolTips.append(f"Min: {str(self.minValue)}")
+        if self.maxValue is not None:
+            toolTips.append(f"Max: {str(self.maxValue)}")
+        return '\n'.join(toolTips)
+
+
+class WatchEntryWord:
+    def __init__(self, variableName: str, description: str, pattern: str):
+        self.name: str = variableName
+        self.description: str = description
+        self.pattern: str = pattern
+        self.value: Optional[str | None] = None
+        self.receivedWords: list[str] = []
+        self.updateCount: int = 0
+
+    def setValue(self, value: str):
+        self.value = value
+        if value not in self.receivedWords:
+            self.receivedWords.append(value)
+        self.updateCount += 1
+
+    def getValue(self):
+        return '' if self.value is None else self.value
+
+    def reset(self):
+        self.value = None
+        self.receivedWords = []
+        self.updateCount = 0
+
+    def getTooltipPrimary(self):
+        hint = f"Recognized words: {self.description}"
+        if self.updateCount > 0:
+            return f"Received {str(self.updateCount)} time{'s' if self.updateCount != 1 else ''}\n{hint}"
+        else:
+            return hint
+
+    def getTooltipSecondary(self):
+        if len(self.receivedWords) > 0:
+            words = ', '.join(self.receivedWords)
+            return f"Received words '{words}'"
+        else:
+            return ""
+
+class WatchTableModel(QAbstractTableModel):
     def __init__(self):
         QAbstractTableModel.__init__(self)
 
-        self.settings: list[WatchSettings] = []
-        self.entries: list[WatchTableModel.WatchEntry] = []
+        self.entries: list[WatchEntryNumber | WatchEntryWord] = []
         self.nameToIndex: dict[str, int] = {}
 
     @Slot()
@@ -52,9 +106,9 @@ class WatchTableModel(QAbstractTableModel):
         if role != Qt.ItemDataRole.DisplayRole:
             return None
         if orientation == Qt.Orientation.Horizontal:
-            return ("Name", "Value")[section]
+            return ("Name of variable", "Value")[section]
         else:  # vertical
-            return f"{section}"
+            return None
 
     def data(self, index: QModelIndex, role=Qt.ItemDataRole.DisplayRole):
         column = index.column()
@@ -64,47 +118,41 @@ class WatchTableModel(QAbstractTableModel):
             if column == 0:
                 return self.entries[row].name
             elif column == 1:
-                return self.entries[row].value
+                return self.entries[row].getValue()
 
         if role == Qt.ItemDataRole.ToolTipRole:
             if column == 0:
-                return f"Received {str(self.entries[row].updateCount)} value{'s' if self.entries[row].updateCount != 1 else ''}"
+                return self.entries[row].getTooltipPrimary()
             elif column == 1:
-                toolTips = []
-                if self.entries[row].minValue is not None:
-                    toolTips.append(f"Min: {str(self.entries[row].minValue)}")
-                if self.entries[row].maxValue is not None:
-                    toolTips.append(f"Max: {str(self.entries[row].maxValue)}")
-                return '\n'.join(toolTips)
+                return self.entries[row].getTooltipSecondary()
         return None
 
     def reset(self):
         for idx, entry in enumerate(self.entries):
-            entry.value = ''
-            entry.minValue = None
-            entry.maxValue = None
-            entry.updateCount = 0
-            self.dataChanged.emit(self.index(idx, 1), self.index(idx, 1))
+            entry.reset()
+        self.dataChanged.emit(self.index(0, 1), self.index(len(self.entries)-1, 1))
 
-    def addWatchEntry(self, name: str, pattern) -> int:
+    def addWatchEntry(self, entry: WatchEntryNumber | WatchEntryWord) -> int:
         rowIdx = -1
-        if name not in self.nameToIndex.keys():
-            rowIdx = len(self.settings)
+
+        if entry.name not in self.nameToIndex.keys():
+            rowIdx = len(self.entries)
             self.beginInsertRows(QModelIndex(), rowIdx, rowIdx)
-            self.nameToIndex[name] = rowIdx
-            self.settings.append(WatchSettings(name, pattern))
-            self.entries.append(WatchTableModel.WatchEntry(name, pattern))
+            self.nameToIndex[entry.name] = rowIdx
+            self.entries.append(entry)
             self.endInsertRows()
 
-            assert len(self.entries) == len(self.settings)
         return rowIdx
 
-    def removeWatchEntry(self, index: int) -> bool:
-        assert len(self.entries) == len(self.settings)
+    def getWatchIndex(self, variableName: str) -> int:
+        if variableName in self.nameToIndex.keys():
+            return self.nameToIndex[variableName]
+        else:
+            return -1
 
+    def removeWatchEntry(self, index: int) -> bool:
         if index < len(self.settings):
             self.beginRemoveRows(QModelIndex(), index, index)
-            del self.settings[index]
             del self.nameToIndex[self.entries[index].name]
             del self.entries[index]
             self.endRemoveRows()

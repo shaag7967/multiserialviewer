@@ -5,7 +5,7 @@ import re
 
 
 class WatchWidget(QWidget):
-    signal_createWatch: Signal = Signal(str, str)
+    signal_createWatch: Signal = Signal(str, str, str, str)
     signal_removeWatch: Signal = Signal(int)
 
     CB_TEXT_NUMBER = 'Number'
@@ -28,12 +28,11 @@ class WatchWidget(QWidget):
         layout.setContentsMargins(0,0,0,0)
         layout.addWidget(self.widget)
 
-        self.widget.ed_name.textChanged.connect(self.updateEnableState_buttonCreate)
         self.widget.cb_type.currentTextChanged.connect(self.updateEnableState_buttonCreate)
         self.widget.ed_setOfWords.textChanged.connect(self.updateEnableState_buttonCreate)
-        self.widget.ed_textToWatch.textChanged.connect(self.updateEnableState_buttonCreate)
+        self.widget.ed_variableName.textChanged.connect(self.updateEnableState_buttonCreate)
 
-        self.widget.ed_textToWatch.returnPressed.connect(self.handleCreateButtonClick)
+        self.widget.ed_variableName.returnPressed.connect(self.handleCreateButtonClick)
         self.widget.pb_create.clicked.connect(self.handleCreateButtonClick)
         self.widget.pb_deleteSelected.clicked.connect(self.handleDeleteSelectedButtonClick)
 
@@ -53,27 +52,24 @@ class WatchWidget(QWidget):
         text = text.strip()
 
         # number
-        pattern = r'^(\w+)[\s:=]*([-+]?(?:\d*[.])?\d+(?:[eE][-+]?\d+)?)$'
+        pattern = r'^((?:[\w\-\_]+\s*)+)[\s:=]+([-+]?(?:\d*[.])?\d+(?:[eE][-+]?\d+)?)$'
         m = re.match(pattern, text)
         if m:
-            self.widget.ed_name.setText(m.group(1))
-            self.widget.ed_textToWatch.setText(m.group(1))
+            self.widget.ed_variableName.setText(m.group(1))
             self.widget.cb_type.setCurrentText(WatchWidget.CB_TEXT_NUMBER)
             return
 
         # set of words
-        pattern = r'^(\w+)[\s:=]+(\w+)$'
+        pattern = r'^((?:[\w\-\_]+\s*)+)[\s:=]+(\w+)$'
         m = re.match(pattern, text)
         if m:
-            self.widget.ed_name.setText(m.group(1))
-            self.widget.ed_textToWatch.setText(m.group(1))
+            self.widget.ed_variableName.setText(m.group(1))
             self.widget.cb_type.setCurrentText(WatchWidget.CB_TEXT_WORDS)
             self.widget.ed_setOfWords.setText(m.group(2))
             return
 
         # nothing matched
-        self.widget.ed_name.setText(text)
-        self.widget.ed_textToWatch.setText(re.escape(text))
+        self.widget.ed_variableName.setText(re.escape(text))
         self.widget.cb_type.setCurrentText(WatchWidget.CB_TEXT_NUMBER)
 
     @Slot(str)
@@ -84,8 +80,7 @@ class WatchWidget(QWidget):
 
     @Slot(str)
     def updateEnableState_buttonCreate(self, text):
-        enabled = (len(self.widget.ed_name.text()) > 0
-                   and len(self.widget.ed_textToWatch.text()) > 0
+        enabled = (len(self.widget.ed_variableName.text()) > 0
                    and (self.widget.cb_type.currentText() != WatchWidget.CB_TEXT_WORDS or len(self.widget.ed_setOfWords.text()) > 0))
         self.widget.pb_create.setEnabled(enabled)
 
@@ -96,22 +91,18 @@ class WatchWidget(QWidget):
 
     @Slot()
     def handleCreateButtonClick(self):
-        name = self.widget.ed_name.text()
-        text = self.widget.ed_textToWatch.text()
-        if len(name) > 0 and len(text) > 0:
-
+        variableName = self.widget.ed_variableName.text()
+        if len(variableName) > 0:
             if self.widget.cb_type.currentText() == WatchWidget.CB_TEXT_NUMBER:
-                pattern = text + r'[\s:=]*' + r'([-+]?(?:\d*[.])?\d+(?:[eE][-+]?\d+)?)'
-                self.signal_createWatch.emit(name, pattern)
+                pattern = r'([-+]?(?:\d*[.])?\d+(?:[eE][-+]?\d+)?)'
+                self.signal_createWatch.emit(variableName, '', 'number', pattern)
             elif self.widget.cb_type.currentText() == WatchWidget.CB_TEXT_WORDS:
                 setOfWords = re.split(r'\s+|;|,|/', self.widget.ed_setOfWords.text())
-                words = [re.escape(w) for w in setOfWords if len(w) > 0]
-                words = list(set(words)) # remove duplicates
-                pattern = text + r'[\s:=]*' + f'({"|".join(words)})'
-                self.signal_createWatch.emit(name, pattern)
+                words = list(set([re.escape(w) for w in setOfWords if len(w) > 0]))
+                pattern = f'({"|".join(words)})'
+                self.signal_createWatch.emit(variableName, ', '.join(words), 'word', pattern)
 
-            self.widget.ed_name.setText('')
-            self.widget.ed_textToWatch.setText('')
+            self.widget.ed_variableName.setText('')
             self.widget.ed_setOfWords.setText('')
 
     @Slot()

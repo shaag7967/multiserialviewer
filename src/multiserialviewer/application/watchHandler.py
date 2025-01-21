@@ -1,9 +1,11 @@
+import re
+
 from PySide6.QtCore import QObject, Slot
 
 from multiserialviewer.settings.watchSettings import WatchSettings
 from multiserialviewer.serial_data.streamingTextExtractor import StreamingTextExtractor
 from multiserialviewer.serial_data.serialDataProcessor import SerialDataProcessor
-from multiserialviewer.application.watchTableModel import WatchTableModel
+from multiserialviewer.application.watchTableModel import WatchTableModel, WatchEntryNumber, WatchEntryWord
 
 
 class WatchHandler(QObject):
@@ -14,25 +16,58 @@ class WatchHandler(QObject):
         self.watchTableModel: WatchTableModel = WatchTableModel()
 
         for watchSettings in settings:
-            self.createWatch(watchSettings.name, watchSettings.pattern)
+            self.createWatch(watchSettings.name, watchSettings.description, watchSettings.variableType.name, watchSettings.pattern)
 
     def getSettings(self) -> list[WatchSettings]:
-        return self.watchTableModel.settings
+        assert len(self.textExtractors) == len(self.watchTableModel.entries)
+
+        settings: list[WatchSettings] = []
+        for index, entry in enumerate(self.watchTableModel.entries):
+            assert isinstance(entry, (WatchEntryNumber, WatchEntryWord))
+            assert entry.name == self.textExtractors[index].name
+
+            if isinstance(self.watchTableModel.entries[index], WatchEntryNumber):
+                settings.append(WatchSettings(entry.name, '', WatchSettings.VariableType.number, entry.pattern))
+            elif isinstance(self.watchTableModel.entries[index], WatchEntryWord):
+                settings.append(WatchSettings(entry.name, entry.description, WatchSettings.VariableType.word, entry.pattern))
+
+        return settings
 
     def clear(self):
         self.watchTableModel.reset()
 
+    @staticmethod
+    def __createWatchPattern(variableName: str, pattern: str) -> str:
+        return re.escape(variableName) + r"[\s:=]+" + pattern
+
     @Slot(str)
-    def createWatch(self, name: str, pattern: str):
-        idx = self.watchTableModel.addWatchEntry(name, pattern)
+    def createWatch(self, variableName: str, description: str, variableType: str, pattern: str):
+        varTypeSettings = WatchSettings.VariableType[variableType]
+
+        self.removeWatchByVariableName(variableName)
+
+        idx = -1
+        if varTypeSettings == WatchSettings.VariableType.number:
+            entry = WatchEntryNumber(variableName, pattern)
+            idx = self.watchTableModel.addWatchEntry(entry)
+        elif varTypeSettings == WatchSettings.VariableType.word:
+            entry = WatchEntryWord(variableName, description, pattern)
+            idx = self.watchTableModel.addWatchEntry(entry)
+
         if idx >= 0:
-            textExtractor = StreamingTextExtractor(name, pattern)
+            watchPattern = self.__createWatchPattern(variableName, pattern)
+            textExtractor = StreamingTextExtractor(variableName, watchPattern)
             self.dataSource.signal_asciiDataAvailable.connect(textExtractor.processBytesFromStream)
             textExtractor.signal_textExtracted.connect(self.watchTableModel.setWatchValue)
             self.textExtractors.append(textExtractor)
 
+    def removeWatchByVariableName(self, variableName: str):
+        index = self.watchTableModel.getWatchIndex(variableName)
+        if index >= 0:
+            self.removeWatchByIndex(index)
+
     @Slot(int)
-    def removeWatch(self, index: int):
+    def removeWatchByIndex(self, index: int):
         if self.watchTableModel.removeWatchEntry(index):
             textExtractor = self.textExtractors[index]
             self.dataSource.signal_asciiDataAvailable.disconnect(textExtractor.processBytesFromStream)

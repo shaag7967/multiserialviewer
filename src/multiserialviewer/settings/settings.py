@@ -186,8 +186,12 @@ class Settings:
                 numberOfWatches = settings.beginReadArray('watches')
                 for watchIndex in range(numberOfWatches):
                     settings.setArrayIndex(watchIndex)
-                    if settings.contains("name") and settings.contains("pattern"):
-                        watchSettings = WatchSettings(settings.value("name"), settings.value("pattern"))
+                    if (settings.contains("variableName") and settings.contains("description") and settings.contains("type")
+                            and settings.contains("pattern")):
+                        watchSettings = WatchSettings(settings.value("variableName"),
+                                                      settings.value("description"),
+                                                      WatchSettings.VariableType(int(settings.value("type"))),
+                                                      settings.value("pattern"))
                         entry.watches.append(watchSettings)
                 settings.endArray()
 
@@ -234,7 +238,9 @@ class Settings:
                 settings.beginWriteArray('watches')
                 for watchIndex, watch in enumerate(entry.watches):
                     settings.setArrayIndex(watchIndex)
-                    settings.setValue('name', watch.name)
+                    settings.setValue('variableName', watch.name)
+                    settings.setValue('description', watch.description)
+                    settings.setValue('type', watch.variableType.value)
                     settings.setValue('pattern', watch.pattern)
                 settings.endArray()
 

@@ -39,7 +39,7 @@ class SerialViewerController(QObject):
         # watch
         self.view.watchWidget.setWatchTableModel(self.watchHandler.watchTableModel)
         self.view.watchWidget.signal_createWatch.connect(self.watchHandler.createWatch)
-        self.view.watchWidget.signal_removeWatch.connect(self.watchHandler.removeWatch)
+        self.view.watchWidget.signal_removeWatch.connect(self.watchHandler.removeWatchByIndex)
 
         self.view.textEdit.signal_createCounterFromSelectedText.connect(self.view.setCounterPatternToCreate)
         self.view.textEdit.signal_createWatchFromSelectedText.connect(self.view.createWatchFromText)
