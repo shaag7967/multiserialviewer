@@ -14,7 +14,7 @@ class WatchEntryNumber:
     def setValue(self, value: str):
         try:
             self.value = float(value)
-        except:
+        except ValueError:
             pass
         else:
             self.minValue = self.value if self.minValue is None else min(self.minValue, self.value)
@@ -151,7 +151,7 @@ class WatchTableModel(QAbstractTableModel):
             return -1
 
     def removeWatchEntry(self, index: int) -> bool:
-        if index < len(self.settings):
+        if index < len(self.entries):
             self.beginRemoveRows(QModelIndex(), index, index)
             del self.nameToIndex[self.entries[index].name]
             del self.entries[index]

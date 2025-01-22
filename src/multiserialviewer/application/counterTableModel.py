@@ -37,7 +37,7 @@ class CounterTableModel(QAbstractTableModel):
         if orientation == Qt.Orientation.Horizontal:
             return ("Text/Pattern", "Counted")[section]
         else:  # vertical
-            return f"{section}"
+            return None
 
     def data(self, index: QModelIndex, role=Qt.ItemDataRole.DisplayRole):
         column = index.column()

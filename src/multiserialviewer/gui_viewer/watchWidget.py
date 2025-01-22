@@ -1,5 +1,5 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHeaderView, QComboBox
-from PySide6.QtCore import Qt, Slot, Signal, QItemSelectionModel, QItemSelection
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHeaderView
+from PySide6.QtCore import Slot, Signal, QItemSelectionModel, QItemSelection
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
 import re
 
@@ -69,7 +69,7 @@ class WatchWidget(QWidget):
             return
 
         # nothing matched
-        self.widget.ed_variableName.setText(re.escape(text))
+        self.widget.ed_variableName.setText(text)
         self.widget.cb_type.setCurrentText(WatchWidget.CB_TEXT_NUMBER)
 
     @Slot(str)
