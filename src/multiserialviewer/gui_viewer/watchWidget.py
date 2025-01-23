@@ -11,10 +11,13 @@ class WatchWidget(QWidget):
     CB_TEXT_NUMBER = 'Number'
     CB_TEXT_WORDS = 'Set of words'
 
-    def __init__(self, parent: QWidget):
+    def __init__(self, parent: QWidget | None):
         super().__init__(parent)
         self.widget = createWidgetFromUiFile("watchWidget.ui")
-        self.widget.setParent(self)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+        layout.addWidget(self.widget)
 
         self.widget.pb_create.setEnabled(False)
         self.widget.pb_deleteSelected.setEnabled(False)
@@ -23,10 +26,6 @@ class WatchWidget(QWidget):
         self.widget.cb_type.addItem(WatchWidget.CB_TEXT_NUMBER)
         self.widget.cb_type.addItem(WatchWidget.CB_TEXT_WORDS)
         self.widget.cb_type.setCurrentText(WatchWidget.CB_TEXT_NUMBER)
-
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-        layout.addWidget(self.widget)
 
         self.widget.cb_type.currentTextChanged.connect(self.updateEnableState_buttonCreate)
         self.widget.ed_setOfWords.textChanged.connect(self.updateEnableState_buttonCreate)

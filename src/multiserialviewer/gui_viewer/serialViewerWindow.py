@@ -57,35 +57,43 @@ class SerialViewerWindow(QMdiSubWindow):
 
 
     def __populateTabWidget(self, tabWidget: QTabWidget):
-        widgetMinimumWidth = 430
+        widgetMinimumWidth = 400
 
         # search
         self.searchScrollArea = QScrollArea(tabWidget)
         self.searchScrollArea.setFrameShape(QFrame.Shape.NoFrame)
+        self.searchScrollArea.setWidgetResizable(True)
+
         self.searchWidget: SearchWidget = SearchWidget(self.searchScrollArea)
         self.searchWidget.setMinimumWidth(widgetMinimumWidth)
         self.searchScrollArea.setWidget(self.searchWidget)
         tabWidget.addTab(self.searchScrollArea, "Search")
 
         # watches
-        self.watchScrollArea = QScrollArea(tabWidget)
+        self.watchScrollArea = QScrollArea(None)
         self.watchScrollArea.setFrameShape(QFrame.Shape.NoFrame)
-        self.watchWidget: WatchWidget = WatchWidget(self.watchScrollArea)
+        self.watchScrollArea.setWidgetResizable(True)
+
+        self.watchWidget: WatchWidget = WatchWidget(None)
         self.watchWidget.setMinimumWidth(widgetMinimumWidth)
         self.watchScrollArea.setWidget(self.watchWidget)
         tabWidget.addTab(self.watchScrollArea, "Watch")
 
         # counter
-        self.counterScrollArea = QScrollArea(tabWidget)
+        self.counterScrollArea = QScrollArea(None)
         self.counterScrollArea.setFrameShape(QFrame.Shape.NoFrame)
+        self.counterScrollArea.setWidgetResizable(True)
+
         self.counterWidget: CounterWidget = CounterWidget(self.counterScrollArea)
         self.counterWidget.setMinimumWidth(widgetMinimumWidth)
         self.counterScrollArea.setWidget(self.counterWidget)
         tabWidget.addTab(self.counterScrollArea, "Count")
 
         # settings
-        self.settingsScrollArea = QScrollArea(tabWidget)
+        self.settingsScrollArea = QScrollArea(None)
         self.settingsScrollArea.setFrameShape(QFrame.Shape.NoFrame)
+        self.settingsScrollArea.setWidgetResizable(True)
+
         self.settingsWidget: SerialViewerSettingsWidget = SerialViewerSettingsWidget(self.settingsScrollArea, readOnly=True)
         self.settingsWidget.setMinimumWidth(widgetMinimumWidth)
         self.settingsScrollArea.setWidget(self.settingsWidget)

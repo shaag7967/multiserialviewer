@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>420</width>
-    <height>524</height>
+    <width>506</width>
+    <height>639</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
     <horstretch>1</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -19,7 +19,10 @@
   <property name="windowTitle">
    <string/>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3">
+  <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,0">
+   <property name="sizeConstraint">
+    <enum>QLayout::SizeConstraint::SetNoConstraint</enum>
+   </property>
    <property name="leftMargin">
     <number>6</number>
    </property>
@@ -45,6 +48,9 @@
           <horstretch>0</horstretch>
           <verstretch>2</verstretch>
          </sizepolicy>
+        </property>
+        <property name="sizeAdjustPolicy">
+         <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustIgnored</enum>
         </property>
         <property name="editTriggers">
          <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
@@ -201,19 +207,6 @@
       </item>
      </layout>
     </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>0</height>
-      </size>
-     </property>
-    </spacer>
    </item>
   </layout>
  </widget>

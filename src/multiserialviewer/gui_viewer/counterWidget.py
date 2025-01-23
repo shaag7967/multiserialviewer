@@ -8,17 +8,16 @@ class CounterWidget(QWidget):
     signal_createCounter: Signal = Signal(str)
     signal_removeCounter: Signal = Signal(int)
 
-    def __init__(self, parent: QWidget):
+    def __init__(self, parent: QWidget | None):
         super().__init__(parent)
         self.widget = createWidgetFromUiFile("counterWidget.ui")
-        self.widget.setParent(self)
-
-        self.widget.pb_create.setEnabled(False)
-        self.widget.pb_deleteSelected.setEnabled(False)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
         layout.addWidget(self.widget)
+
+        self.widget.pb_create.setEnabled(False)
+        self.widget.pb_deleteSelected.setEnabled(False)
 
         self.widget.ed_textToCount.textChanged.connect(self.updateEnableState_buttonCreate)
         self.widget.ed_textToCount.returnPressed.connect(self.handleCreateButtonClick)

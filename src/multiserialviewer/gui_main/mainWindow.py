@@ -124,6 +124,7 @@ class MainWindow(QMainWindow):
 
     def showSettingsDialog(self, settings: Settings):
         dialog = SettingsDialog(self, settings, self.iconSet)
+        dialog.resize(800, 600)
         if dialog.exec():
             self.signal_applySettings.emit(dialog.settings)
 

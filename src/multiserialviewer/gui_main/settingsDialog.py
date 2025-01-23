@@ -37,10 +37,13 @@ class SettingsDialog(QDialog):
 
         horizontal_header = self.widget.tableView.horizontalHeader()
         horizontal_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        horizontal_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        horizontal_header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+        horizontal_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
+        self.widget.tableView.setColumnWidth(1, 170)
+        horizontal_header.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
+        self.widget.tableView.setColumnWidth(2, 170)
         horizontal_header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
         horizontal_header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
+        horizontal_header.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
 
         self.widget.pb_add.clicked.connect(self.addHighlighterSetting)
         self.widget.pb_delete.clicked.connect(self.deleteHighlighterSetting)
