@@ -9,6 +9,7 @@ from multiserialviewer.gui_viewer.serialViewerTextEdit import SerialViewerTextEd
 from multiserialviewer.gui_viewer.searchWidget import SearchWidget
 from multiserialviewer.gui_viewer.counterWidget import CounterWidget
 from multiserialviewer.gui_viewer.watchWidget import WatchWidget
+from multiserialviewer.gui_viewer.statisticsWidget import StatisticsWidget
 from multiserialviewer.gui_viewer.serialViewerSettingsWidget import SerialViewerSettingsWidget
 from multiserialviewer.icons.iconSet import IconSet
 from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings
@@ -98,6 +99,17 @@ class SerialViewerWindow(QMdiSubWindow):
         self.settingsWidget.setMinimumWidth(widgetMinimumWidth)
         self.settingsScrollArea.setWidget(self.settingsWidget)
         tabWidget.addTab(self.settingsScrollArea, "Settings")
+
+        # statistics
+        self.statisticsScrollArea = QScrollArea(None)
+        self.statisticsScrollArea.setFrameShape(QFrame.Shape.NoFrame)
+        self.statisticsScrollArea.setWidgetResizable(True)
+
+        self.statisticsWidget: StatisticsWidget = StatisticsWidget(None)
+        self.statisticsWidget.setMinimumWidth(widgetMinimumWidth)
+        self.statisticsScrollArea.setWidget(self.statisticsWidget)
+        tabWidget.addTab(self.statisticsScrollArea, "Statistics")
+
 
     def __scrollToBottom(self):
         self.textEdit.moveCursor(QTextCursor.MoveOperation.End)

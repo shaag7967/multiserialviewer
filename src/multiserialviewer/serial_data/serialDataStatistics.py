@@ -1,5 +1,5 @@
 from multiserialviewer.settings.serialConnectionSettings import SerialConnectionSettings
-from PySide6.QtCore import Signal, Slot, QObject, QByteArray, QThread, QTimer, Qt
+from PySide6.QtCore import Signal, Slot, QObject, QByteArray, QMetaObject, QTimer, Qt
 from PySide6.QtSerialPort import QSerialPort
 
 class Translator:
@@ -35,7 +35,6 @@ class SerialDataStatistics(QObject):
     signal_curUsageChanged = Signal(int)
     signal_maxUsageChanged = Signal(int)
     signal_receivedBytesIncremented = Signal(int)
-    __signal_stop = Signal()
 
     def __init__(self, settings: SerialConnectionSettings):
         super(SerialDataStatistics, self).__init__()
@@ -52,38 +51,32 @@ class SerialDataStatistics(QObject):
         self.__overallReceivedBytes: int = 0
         self.__maxUsage: int = 0
 
-        self.__thread = QThread()
-        self.moveToThread(self.__thread)
-
-        self.__refreshSignalsTimer = QTimer()
+        self.__refreshSignalsTimer = QTimer(self)
         self.__refreshSignalsTimer.setTimerType(Qt.TimerType.PreciseTimer)
         self.__refreshSignalsTimer.setInterval(int(__REFRESH_SIGNALS_PERIOD_S * 1000))
         self.__refreshSignalsTimer.setSingleShot(False)
         self.__refreshSignalsTimer.timeout.connect(self.__handleTimeoutRefreshSignals)
 
-        self.__settledUsageTimer = QTimer()
+        self.__settledUsageTimer = QTimer(self)
         self.__settledUsageTimer.setTimerType(Qt.TimerType.PreciseTimer)
         self.__settledUsageTimer.setInterval(int(__USAGE_SETTLED_TIME_S * 1000))
         self.__settledUsageTimer.setSingleShot(True)
         self.__settledUsageTimer.timeout.connect(self.__handleTimeoutUsageSettled)
 
-        self.__signal_stop.connect(self.__handleStop)
-
         self.__usageSettled = False
 
-        self.__thread.start()
         self.__refreshSignalsTimer.start()
 
     def __del__(self):
         self.__refreshSignalsTimer.stop()
-        self.__thread.quit()
-        self.__thread.wait()
 
+    @Slot()
     def start(self):
-        self.__settledUsageTimer.start()
+        QMetaObject.invokeMethod(self.__settledUsageTimer, 'start', Qt.ConnectionType.QueuedConnection)
 
+    @Slot()
     def stop(self):
-        self.__signal_stop.emit()
+        QMetaObject.invokeMethod(self, '__handleStop', Qt.ConnectionType.QueuedConnection)
 
     @Slot(QByteArray)
     def handleRawData(self, rawData: QByteArray):
