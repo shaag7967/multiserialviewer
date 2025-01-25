@@ -8,6 +8,17 @@ class IconSet:
         if not self.icons_dir_name.exists():
             raise Exception(f"Directory of IconSet '{self.icons_dir_name}' does not exist")
 
+    # paths
+    def getCaptureStartIconPath(self) -> str:
+        return str(self.icons_dir_name.joinpath('capture_start.png'))
+
+    def getCaptureStopIconPath(self) -> str:
+        return str(self.icons_dir_name.joinpath('capture_stop.png'))
+
+    def getErrorIconPath(self) -> str:
+        return str(self.icons_dir_name.joinpath('error.png'))
+
+    # icons
     def getHighlighterIcon(self) -> QIcon:
         return QIcon(str(self.icons_dir_name.joinpath('highlighter.png')))
 

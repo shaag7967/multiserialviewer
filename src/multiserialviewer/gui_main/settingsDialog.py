@@ -102,28 +102,6 @@ class SettingsDialog(QDialog):
             self.tableModel.removeRows(index, 1)
 
     @staticmethod
-    def getDefaultHighlighting_MSG() -> TextHighlighterSettings:
-        cfg = TextHighlighterSettings()
-        cfg.pattern = r'\[MSG: .* :MSG\]'
-        cfg.color_foreground = 'darkgreen'
-        cfg.color_background = 'transparent'
-        cfg.italic = False
-        cfg.bold = True
-        cfg.font_size = QApplication.font().pointSize()
-        return cfg
-
-    @staticmethod
-    def getDefaultHighlighting_ERR() -> TextHighlighterSettings:
-        cfg = TextHighlighterSettings()
-        cfg.pattern = r'\[ERR: .* :ERR\]'
-        cfg.color_foreground = 'darkred'
-        cfg.color_background = 'transparent'
-        cfg.italic = False
-        cfg.bold = True
-        cfg.font_size = QApplication.font().pointSize()
-        return cfg
-
-    @staticmethod
     def getDefaultHighlighting_HEX() -> TextHighlighterSettings:
         cfg = TextHighlighterSettings()
         cfg.pattern = r'\[[0-9A-F]{2}\]'
@@ -136,9 +114,7 @@ class SettingsDialog(QDialog):
 
     @Slot()
     def applyHighlighterRecommendations(self):
-        defaultSettings: List[TextHighlighterSettings] = [SettingsDialog.getDefaultHighlighting_MSG(),
-                                                          SettingsDialog.getDefaultHighlighting_ERR(),
-                                                          SettingsDialog.getDefaultHighlighting_HEX()]
+        defaultSettings: List[TextHighlighterSettings] = [SettingsDialog.getDefaultHighlighting_HEX()]
 
         for setting in defaultSettings:
             entriesFound: List[QModelIndex] = self.tableModel.match(self.tableModel.index(0, 0),

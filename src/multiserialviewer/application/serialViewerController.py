@@ -55,27 +55,30 @@ class SerialViewerController(QObject):
     def startCapture(self) -> bool:
         opened, msg = self.receiver.openPort()
         if opened:
-            self.show_message(f'Opened {self.receiver.getSettings().portName}')
+            self.showStartMessage(f'Opened {self.receiver.getSettings().portName}')
             return True
         else:
-            self.show_error(f'Failed to open {self.receiver.getSettings().portName} ({msg})')
+            self.showErrorMessage(f'Failed to open {self.receiver.getSettings().portName} ({msg})')
             return False
 
     def stopCapture(self):
         if self.receiver.portIsOpen():
             self.receiver.closePort()
-            self.show_message(f'Closed {self.receiver.getSettings().portName}')
+            self.showStopMessage(f'Closed {self.receiver.getSettings().portName}')
 
     def clearAll(self):
         self.view.clear()
         self.counterHandler.clear()
         self.watchHandler.clear()
 
-    def show_message(self, text):
-        self.view.appendData(f'\n[MSG: {datetime.now().strftime("%Y/%b/%d %H:%M:%S")}: {text} :MSG]\n')
+    def showErrorMessage(self, text):
+        self.view.appendErrorMessage(text)
 
-    def show_error(self, text):
-        self.view.appendData(f'\n[ERR: {datetime.now().strftime("%Y/%b/%d %H:%M:%S")}: {text} :ERR]\n')
+    def showStartMessage(self, text):
+        self.view.appendStartMessage(text)
+
+    def showStopMessage(self, text):
+        self.view.appendStopMessage(text)
 
     def destruct(self):
         self.receiver.closePort()

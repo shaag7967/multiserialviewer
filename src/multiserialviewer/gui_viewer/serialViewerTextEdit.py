@@ -1,7 +1,8 @@
 from PySide6.QtWidgets import QTextEdit, QMenu, QWidget
-from PySide6.QtGui import QContextMenuEvent, QAction, QMouseEvent, QWheelEvent
+from PySide6.QtGui import QContextMenuEvent, QAction, QMouseEvent, QWheelEvent, QTextCursor
 from PySide6.QtCore import Signal, Slot, QPoint
 import typing
+from datetime import datetime
 
 from multiserialviewer.icons.iconSet import IconSet
 
@@ -15,25 +16,74 @@ class SerialViewerTextEdit(QTextEdit):
 
     def __init__(self, parent: QWidget):
         super(SerialViewerTextEdit, self).__init__(parent)
-        self.icon_set: typing.Optional[IconSet] = None
+        self.iconSet: typing.Optional[IconSet] = None
 
-    def setIconSet(self, icon_set: IconSet):
-        self.icon_set = icon_set
+    def __getHtmlMessage(self, imagePath: str, message: str) -> str:
+        return ('<table border=0 cellspacing=10><tr>'
+                f'<td align=left valign=middle><img src="{imagePath}" width=24 height=24></td>'
+                f'<td align=left valign=middle>{datetime.now().strftime("%Y/%b/%d %H:%M:%S")}:</td>'
+                f'<td align=left valign=middle><b>{message}</b></td></tr></table>')
+
+    def __getHtmlErrorMessage(self, message: str) -> str:
+        return '<font color=darkred>' + self.__getHtmlMessage(self.iconSet.getErrorIconPath(), message) + '</font>'
+    def __getHtmlStartMessage(self, message: str) -> str:
+        return self.__getHtmlMessage(self.iconSet.getCaptureStartIconPath(), message)
+    def __getHtmlStopMessage(self, message: str) -> str:
+        return self.__getHtmlMessage(self.iconSet.getCaptureStopIconPath(), message)
+
+    def appendData(self, data: str, scrollToBottom: bool):
+        cursor: QTextCursor = QTextCursor(self.document())
+        cursor.movePosition(QTextCursor.MoveOperation.End)
+        cursor.insertText(data)
+
+        if scrollToBottom:
+            self.scrollToBottom()
+
+    def appendErrorMessage(self, message: str, scrollToBottom: bool):
+        cursor: QTextCursor = QTextCursor(self.document())
+        cursor.movePosition(QTextCursor.MoveOperation.End)
+        cursor.insertHtml(self.__getHtmlErrorMessage(message))
+
+        if scrollToBottom:
+            self.scrollToBottom()
+
+    def appendStartMessage(self, message: str, scrollToBottom: bool):
+        cursor: QTextCursor = QTextCursor(self.document())
+        cursor.movePosition(QTextCursor.MoveOperation.End)
+        cursor.insertHtml(self.__getHtmlStartMessage(message))
+
+        if scrollToBottom:
+            self.scrollToBottom()
+
+    def appendStopMessage(self, message: str, scrollToBottom: bool):
+        cursor: QTextCursor = QTextCursor(self.document())
+        cursor.movePosition(QTextCursor.MoveOperation.End)
+        cursor.insertHtml(self.__getHtmlStopMessage(message))
+
+        if scrollToBottom:
+            self.scrollToBottom()
+
+    def scrollToBottom(self):
+        self.moveCursor(QTextCursor.MoveOperation.End)
+        self.ensureCursorVisible()
+
+    def setIconSet(self, iconSet: IconSet):
+        self.iconSet = iconSet
 
     def contextMenuEvent(self, event: QContextMenuEvent):
-        assert self.icon_set is not None
+        assert self.iconSet is not None
 
         menu: QMenu = self.createStandardContextMenu()
 
-        action_highlight: QAction = QAction(icon=self.icon_set.getHighlighterIcon(), text="Highlight selected text",  parent=menu)
+        action_highlight: QAction = QAction(icon=self.iconSet.getHighlighterIcon(), text="Highlight selected text", parent=menu)
         action_highlight.setEnabled(len(self.textCursor().selectedText()) > 0)
         action_highlight.triggered.connect(self.action_triggeredHighlight)
 
-        action_createWatch: QAction = QAction(icon=self.icon_set.getWatchIcon(), text="Create watch",  parent=menu)
+        action_createWatch: QAction = QAction(icon=self.iconSet.getWatchIcon(), text="Create watch", parent=menu)
         action_createWatch.setEnabled(len(self.textCursor().selectedText()) > 0)
         action_createWatch.triggered.connect(self.action_triggeredCreateWatch)
 
-        action_createCounter: QAction = QAction(icon=self.icon_set.getCounterIcon(), text="Create counter",  parent=menu)
+        action_createCounter: QAction = QAction(icon=self.iconSet.getCounterIcon(), text="Create counter", parent=menu)
         action_createCounter.setEnabled(len(self.textCursor().selectedText()) > 0)
         action_createCounter.triggered.connect(self.action_triggeredCreateCounter)
 
