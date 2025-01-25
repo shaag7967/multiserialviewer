@@ -1,4 +1,4 @@
-from .serialConnectionSettings import SerialConnectionSettings
+from multiserialviewer.settings.serialConnectionSettings import SerialConnectionSettings
 from PySide6.QtCore import Signal, Slot, QObject, QByteArray, QThread, QTimer, Qt
 from PySide6.QtSerialPort import QSerialPort
 
@@ -44,7 +44,7 @@ class SerialDataStatistics(QObject):
         __USAGE_SETTLED_TIME_S = 0.25
 
         self.__bitsPerFrame: float = Translator.datasToBits(settings.dataBits) + \
-                                     Translator.stopsToBits(settings.stopbits) + \
+                                     Translator.stopsToBits(settings.stopBits) + \
                                      Translator.parityToBits(settings.parity)
         self.__baudrate: int = settings.baudrate
         self.__maxBitsPerPeriod: float = self.__baudrate * __REFRESH_SIGNALS_PERIOD_S
@@ -57,13 +57,13 @@ class SerialDataStatistics(QObject):
 
         self.__refreshSignalsTimer = QTimer()
         self.__refreshSignalsTimer.setTimerType(Qt.TimerType.PreciseTimer)
-        self.__refreshSignalsTimer.setInterval(__REFRESH_SIGNALS_PERIOD_S * 1000)
+        self.__refreshSignalsTimer.setInterval(int(__REFRESH_SIGNALS_PERIOD_S * 1000))
         self.__refreshSignalsTimer.setSingleShot(False)
         self.__refreshSignalsTimer.timeout.connect(self.__handleTimeoutRefreshSignals)
 
         self.__settledUsageTimer = QTimer()
         self.__settledUsageTimer.setTimerType(Qt.TimerType.PreciseTimer)
-        self.__settledUsageTimer.setInterval(__USAGE_SETTLED_TIME_S * 1000)
+        self.__settledUsageTimer.setInterval(int(__USAGE_SETTLED_TIME_S * 1000))
         self.__settledUsageTimer.setSingleShot(True)
         self.__settledUsageTimer.timeout.connect(self.__handleTimeoutUsageSettled)
 
@@ -87,14 +87,12 @@ class SerialDataStatistics(QObject):
 
     @Slot(QByteArray)
     def handleRawData(self, rawData: QByteArray):
-        bytesCount : int = len(rawData)
-
         if self.__usageSettled:
-            self.__bitsPerPeriod += (bytesCount * self.__bitsPerFrame)
+            self.__bitsPerPeriod += (rawData.size() * self.__bitsPerFrame)
         else:
             self.__bitsPerPeriod = 0
 
-        self.__overallReceivedBytes += bytesCount
+        self.__overallReceivedBytes += rawData.size()
 
     @Slot()
     def handleReset(self):
