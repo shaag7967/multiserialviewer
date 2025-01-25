@@ -99,6 +99,10 @@ class SerialViewerWindow(QMdiSubWindow):
         self.settingsScrollArea.setWidget(self.settingsWidget)
         tabWidget.addTab(self.settingsScrollArea, "Settings")
 
+    def __scrollToBottom(self):
+        self.textEdit.moveCursor(QTextCursor.MoveOperation.End)
+        self.textEdit.ensureCursorVisible()
+
     def getCurrentTab(self) -> str:
         name = self.tabWidget.tabText(self.tabWidget.currentIndex())
         return name
@@ -148,13 +152,19 @@ class SerialViewerWindow(QMdiSubWindow):
 
     @Slot()
     def appendData(self, data: str):
-        cursor: QTextCursor = QTextCursor(self.textEdit.document())
-        cursor.movePosition(QTextCursor.MoveOperation.End)
-        cursor.insertText(data)
+        self.textEdit.appendData(data, self.autoscroll.autoscrollIsActive())
 
-        if self.autoscroll.autoscrollIsActive():
-            self.textEdit.moveCursor(QTextCursor.MoveOperation.End)
-            self.textEdit.ensureCursorVisible()
+    @Slot()
+    def appendErrorMessage(self, message: str):
+        self.textEdit.appendErrorMessage(message, self.autoscroll.autoscrollIsActive())
+
+    @Slot()
+    def appendStartMessage(self, message: str):
+        self.textEdit.appendStartMessage(message, self.autoscroll.autoscrollIsActive())
+
+    @Slot()
+    def appendStopMessage(self, message: str):
+        self.textEdit.appendStopMessage(message, self.autoscroll.autoscrollIsActive())
 
     @Slot()
     def setWindowName(self, name: str):
