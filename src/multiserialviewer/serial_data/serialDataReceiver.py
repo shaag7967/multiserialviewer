@@ -43,6 +43,8 @@ class SerialDataReceiver(QObject):
     @Slot()
     def __handleData(self):
         timestamp: int = time.perf_counter_ns()
+        # timestamp is an 32 byte integer and cannot be emitted directly as an int type
+        # Therefore we pack it into a QByteArray, which has to be unpacked with int.from_bytes on the other side
         timestampData: QByteArray = QByteArray(timestamp.to_bytes(sys.getsizeof(timestamp),
                                                byteorder='big',
                                                signed=False))

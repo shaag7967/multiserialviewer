@@ -72,6 +72,12 @@ class SerialDataStatistics(QObject):
     @Slot()
     def __handleTimeoutRefreshSignals(self):
         curUtilization: int = int(round((self.__receivedBytesPerPeriod / self.__maxBytesPerPeriod) * 100))
+
+        # curUtilization is not very accurate for two reasons:
+        # 1. QTimer has a jitter
+        # 2. We receive multiple bytes at once which could (partly) belong to the previous period.
+        #    That's why we calculate sometimes a utilization > 100%. On the other side, we could get a
+        #    utilization which is too small, because the received bytes are not processed/forwarded yet.
         curUtilization = min(curUtilization, 100)
         self.signal_curUsageChanged.emit(curUtilization)
         self.signal_receivedBytesIncremented.emit(self.__overallReceivedBytes)
