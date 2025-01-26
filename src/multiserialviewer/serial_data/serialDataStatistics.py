@@ -2,8 +2,6 @@ from multiserialviewer.settings.serialConnectionSettings import SerialConnection
 from PySide6.QtCore import Signal, Slot, QObject, QByteArray, QTimer, Qt
 from PySide6.QtSerialPort import QSerialPort
 
-import time
-
 
 class Translator:
     @staticmethod
@@ -42,46 +40,39 @@ class SerialDataStatistics(QObject):
     def __init__(self, settings: SerialConnectionSettings):
         super(SerialDataStatistics, self).__init__()
 
-        __REFRESH_SIGNALS_PERIOD_S = 0.1
-        __USAGE_SETTLED_TIME_S = 0.25
-
         self.__bitsPerFrame: float = Translator.datasToBits(settings.dataBits) + \
                                      Translator.stopsToBits(settings.stopBits) + \
                                      Translator.parityToBits(settings.parity)
-        self.__baudrate: int = settings.baudrate
-        self.__maxBytesPerPeriod: float = (self.__baudrate * __REFRESH_SIGNALS_PERIOD_S) / self.__bitsPerFrame
+        self.__period: float = round(10000.0 / settings.baudrate, 5)
+
+        self.__maxBytesPerPeriod: int = round((settings.baudrate * self.__period) / self.__bitsPerFrame)
         self.__receivedBytesPerPeriod: int = 0
         self.__overallReceivedBytes: int = 0
         self.__maxUsage: int = 0
 
         self.__refreshSignalsTimer = QTimer(self)
         self.__refreshSignalsTimer.setTimerType(Qt.TimerType.PreciseTimer)
-        self.__refreshSignalsTimer.setInterval(int(__REFRESH_SIGNALS_PERIOD_S * 1000))
+        self.__refreshSignalsTimer.setInterval(int(self.__period * 1000))
         self.__refreshSignalsTimer.setSingleShot(False)
         self.__refreshSignalsTimer.timeout.connect(self.__handleTimeoutRefreshSignals)
 
         self.__refreshSignalsTimer.start()
-        self.lastTimestamp = 0
 
     @Slot(QByteArray, QByteArray)
     def handleRawData(self, timestampData: QByteArray, rawData: QByteArray):
-        # timestamp: int = int.from_bytes(timestampData.data(), byteorder='big', signed=False)
-
         self.__receivedBytesPerPeriod += rawData.size()
         self.__overallReceivedBytes += rawData.size()
 
     @Slot()
     def handleReset(self):
+        self.__refreshSignalsTimer.start()
         self.__overallReceivedBytes = 0
         self.__maxUsage = 0
 
     @Slot()
     def __handleTimeoutRefreshSignals(self):
-        timestamp = time.perf_counter_ns()
-        # print(timestamp - self.lastTimestamp)
-        self.lastTimestamp = timestamp
-
         curUtilization: int = int(round((self.__receivedBytesPerPeriod / self.__maxBytesPerPeriod) * 100))
+        curUtilization = min(curUtilization, 100)
         self.signal_curUsageChanged.emit(curUtilization)
         self.signal_receivedBytesIncremented.emit(self.__overallReceivedBytes)
 

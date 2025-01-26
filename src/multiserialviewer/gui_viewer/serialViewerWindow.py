@@ -90,16 +90,6 @@ class SerialViewerWindow(QMdiSubWindow):
         self.counterScrollArea.setWidget(self.counterWidget)
         tabWidget.addTab(self.counterScrollArea, "Count")
 
-        # settings
-        self.settingsScrollArea = QScrollArea(None)
-        self.settingsScrollArea.setFrameShape(QFrame.Shape.NoFrame)
-        self.settingsScrollArea.setWidgetResizable(True)
-
-        self.settingsWidget: SerialViewerSettingsWidget = SerialViewerSettingsWidget(self.settingsScrollArea, readOnly=True)
-        self.settingsWidget.setMinimumWidth(widgetMinimumWidth)
-        self.settingsScrollArea.setWidget(self.settingsWidget)
-        tabWidget.addTab(self.settingsScrollArea, "Settings")
-
         # statistics
         self.statisticsScrollArea = QScrollArea(None)
         self.statisticsScrollArea.setFrameShape(QFrame.Shape.NoFrame)
@@ -109,6 +99,16 @@ class SerialViewerWindow(QMdiSubWindow):
         self.statisticsWidget.setMinimumWidth(widgetMinimumWidth)
         self.statisticsScrollArea.setWidget(self.statisticsWidget)
         tabWidget.addTab(self.statisticsScrollArea, "Statistics")
+
+        # settings
+        self.settingsScrollArea = QScrollArea(None)
+        self.settingsScrollArea.setFrameShape(QFrame.Shape.NoFrame)
+        self.settingsScrollArea.setWidgetResizable(True)
+
+        self.settingsWidget: SerialViewerSettingsWidget = SerialViewerSettingsWidget(self.settingsScrollArea, readOnly=True)
+        self.settingsWidget.setMinimumWidth(widgetMinimumWidth)
+        self.settingsScrollArea.setWidget(self.settingsWidget)
+        tabWidget.addTab(self.settingsScrollArea, "Settings")
 
 
     def __scrollToBottom(self):

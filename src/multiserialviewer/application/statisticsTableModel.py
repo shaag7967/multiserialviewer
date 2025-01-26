@@ -15,8 +15,8 @@ class StatisticsTableModel(QAbstractTableModel):
         self.entries: list[StatisticsTableModel.DataEntry] = []
         self.entries.append(StatisticsTableModel.DataEntry('Current bandwidth usage'))
         self.entries.append(StatisticsTableModel.DataEntry('Max bandwidth usage'))
-        self.entries.append(StatisticsTableModel.DataEntry('Number of bytes received'))
-        self.entries.append(StatisticsTableModel.DataEntry('Number of invalid bytes received'))
+        self.entries.append(StatisticsTableModel.DataEntry('Bytes received'))
+        self.entries.append(StatisticsTableModel.DataEntry('Non-printable bytes'))
 
     def setCurrentUsage(self, usage: int):
         self.entries[0].value = usage
@@ -51,7 +51,10 @@ class StatisticsTableModel(QAbstractTableModel):
             if column == 0:
                 return self.entries[row].name
             elif column == 1:
-                return str(self.entries[row].value)
+                if row < 2:
+                    return str(self.entries[row].value) + ' %'
+                else:
+                    return str(self.entries[row].value)
         return None
 
     def reset(self):
