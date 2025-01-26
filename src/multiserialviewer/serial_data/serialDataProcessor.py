@@ -13,24 +13,26 @@ class SerialDataProcessor(QObject):
     def setConvertNonPrintableCharsToHex(self, state: bool):
         self.__convertNonPrintableCharsToHex = state
 
-    def __printableChar(self, b: int) -> bool:
+    @staticmethod
+    def __charIsPrintable(b: int) -> bool:
         return b == 0x0D or b == 0x0A or 32 <= b <= 126
 
-    def __getPrintableReplacement(self, b: int) -> str:
+    @staticmethod
+    def __getPrintableReplacement(b: int) -> str:
         return f'[{b:02X}]'
 
-    @Slot(QByteArray)
-    def handleRawData(self, rawData: QByteArray):
+    @Slot(QByteArray, QByteArray)
+    def handleRawData(self, timestampData: QByteArray, rawData: QByteArray):
         if rawData.size() > 0:
             nonPrintableCharsCount = 0
             asciiData: str = ''
 
             for b in rawData.data():
-                if self.__printableChar(b):
+                if SerialDataProcessor.__charIsPrintable(b):
                     asciiData += chr(b)
                 elif self.__convertNonPrintableCharsToHex:
                     nonPrintableCharsCount += 1
-                    asciiData += self.__getPrintableReplacement(b)
+                    asciiData += SerialDataProcessor.__getPrintableReplacement(b)
 
             self.signal_asciiDataAvailable.emit(asciiData)
             if nonPrintableCharsCount > 0:

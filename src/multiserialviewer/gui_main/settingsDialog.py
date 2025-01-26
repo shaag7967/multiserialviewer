@@ -105,7 +105,7 @@ class SettingsDialog(QDialog):
     def getDefaultHighlighting_HEX() -> TextHighlighterSettings:
         cfg = TextHighlighterSettings()
         cfg.pattern = r'\[[0-9A-F]{2}\]'
-        cfg.color_foreground = 'mediumblue'
+        cfg.color_foreground = 'darkred'
         cfg.color_background = 'transparent'
         cfg.italic = False
         cfg.bold = False

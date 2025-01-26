@@ -42,6 +42,10 @@ class StatisticsWidget(QWidget):
 
         self.__minimizeHeightOfTableView()
 
+    def clear(self):
+        self.pbar_curUsage.setValue(0)
+        self.pbar_maxUsage.setValue(0)
+
     @Slot(int)
     def handleCurUsageChanged(self, value: int):
         self.pbar_curUsage.setValue(value)

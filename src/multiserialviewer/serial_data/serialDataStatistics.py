@@ -1,6 +1,9 @@
 from multiserialviewer.settings.serialConnectionSettings import SerialConnectionSettings
-from PySide6.QtCore import Signal, Slot, QObject, QByteArray, QMetaObject, QTimer, Qt
+from PySide6.QtCore import Signal, Slot, QObject, QByteArray, QTimer, Qt
 from PySide6.QtSerialPort import QSerialPort
+
+import time
+
 
 class Translator:
     @staticmethod
@@ -46,8 +49,8 @@ class SerialDataStatistics(QObject):
                                      Translator.stopsToBits(settings.stopBits) + \
                                      Translator.parityToBits(settings.parity)
         self.__baudrate: int = settings.baudrate
-        self.__maxBitsPerPeriod: float = self.__baudrate * __REFRESH_SIGNALS_PERIOD_S
-        self.__bitsPerPeriod: float = 0
+        self.__maxBytesPerPeriod: float = (self.__baudrate * __REFRESH_SIGNALS_PERIOD_S) / self.__bitsPerFrame
+        self.__receivedBytesPerPeriod: int = 0
         self.__overallReceivedBytes: int = 0
         self.__maxUsage: int = 0
 
@@ -57,34 +60,14 @@ class SerialDataStatistics(QObject):
         self.__refreshSignalsTimer.setSingleShot(False)
         self.__refreshSignalsTimer.timeout.connect(self.__handleTimeoutRefreshSignals)
 
-        self.__settledUsageTimer = QTimer(self)
-        self.__settledUsageTimer.setTimerType(Qt.TimerType.PreciseTimer)
-        self.__settledUsageTimer.setInterval(int(__USAGE_SETTLED_TIME_S * 1000))
-        self.__settledUsageTimer.setSingleShot(True)
-        self.__settledUsageTimer.timeout.connect(self.__handleTimeoutUsageSettled)
-
-        self.__usageSettled = False
-
         self.__refreshSignalsTimer.start()
+        self.lastTimestamp = 0
 
-    def __del__(self):
-        self.__refreshSignalsTimer.stop()
+    @Slot(QByteArray, QByteArray)
+    def handleRawData(self, timestampData: QByteArray, rawData: QByteArray):
+        # timestamp: int = int.from_bytes(timestampData.data(), byteorder='big', signed=False)
 
-    @Slot()
-    def start(self):
-        QMetaObject.invokeMethod(self.__settledUsageTimer, 'start', Qt.ConnectionType.QueuedConnection)
-
-    @Slot()
-    def stop(self):
-        QMetaObject.invokeMethod(self, '__handleStop', Qt.ConnectionType.QueuedConnection)
-
-    @Slot(QByteArray)
-    def handleRawData(self, rawData: QByteArray):
-        if self.__usageSettled:
-            self.__bitsPerPeriod += (rawData.size() * self.__bitsPerFrame)
-        else:
-            self.__bitsPerPeriod = 0
-
+        self.__receivedBytesPerPeriod += rawData.size()
         self.__overallReceivedBytes += rawData.size()
 
     @Slot()
@@ -94,20 +77,16 @@ class SerialDataStatistics(QObject):
 
     @Slot()
     def __handleTimeoutRefreshSignals(self):
-        curUtilization: int = int( round(( self.__bitsPerPeriod / self.__maxBitsPerPeriod) * 100) )
-        curUtilization = min(curUtilization, 100)
-        self.__maxUsage = max(curUtilization, self.__maxUsage)
-        self.__bitsPerPeriod = 0
+        timestamp = time.perf_counter_ns()
+        # print(timestamp - self.lastTimestamp)
+        self.lastTimestamp = timestamp
 
+        curUtilization: int = int(round((self.__receivedBytesPerPeriod / self.__maxBytesPerPeriod) * 100))
         self.signal_curUsageChanged.emit(curUtilization)
-        self.signal_maxUsageChanged.emit(self.__maxUsage)
         self.signal_receivedBytesIncremented.emit(self.__overallReceivedBytes)
 
-    @Slot()
-    def __handleTimeoutUsageSettled(self):
-        self.__usageSettled = True 
+        if curUtilization > self.__maxUsage:
+            self.__maxUsage = curUtilization
+            self.signal_maxUsageChanged.emit(self.__maxUsage)
 
-    @Slot()
-    def __handleStop(self):
-        self.__usageSettled = False    
-
+        self.__receivedBytesPerPeriod = 0

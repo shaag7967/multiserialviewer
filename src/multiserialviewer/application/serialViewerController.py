@@ -1,5 +1,4 @@
 from PySide6.QtCore import QObject, Slot, Signal, QThread
-from datetime import datetime
 
 from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings
 from multiserialviewer.gui_viewer.serialViewerWindow import SerialViewerWindow
@@ -70,19 +69,16 @@ class SerialViewerController(QObject):
         return self.receiver.getSettings().portName
 
     def startCapture(self) -> bool:
-        self.statistics.start()
         opened, msg = self.receiver.openPort()
         if opened:
             self.showStartMessage(f'Opened {self.receiver.getSettings().portName}')
             return True
         else:
-            self.statistics.stop()
             self.showErrorMessage(f'Failed to open {self.receiver.getSettings().portName} ({msg})')
             return False
 
     def stopCapture(self):
         if self.receiver.portIsOpen():
-            self.statistics.stop()
             self.receiver.closePort()
             self.showStopMessage(f'Closed {self.receiver.getSettings().portName}')
 
@@ -90,6 +86,7 @@ class SerialViewerController(QObject):
         self.view.clear()
         self.counterHandler.clear()
         self.watchHandler.clear()
+        self.statisticsHandler.clear()
         self.statistics.handleReset()
 
     def showErrorMessage(self, text):
