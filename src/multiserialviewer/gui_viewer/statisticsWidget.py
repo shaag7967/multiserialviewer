@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QProgressBar, QHeaderView
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QProgressBar, QTableView, QHeaderView, QGroupBox
 from PySide6.QtCore import Slot, Signal, QItemSelectionModel, QItemSelection
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
 
@@ -17,14 +17,30 @@ class StatisticsWidget(QWidget):
         layout.setContentsMargins(0,0,0,0)
         layout.addWidget(self.widget)
 
-    def setStatisticsTableModel(self, model):
-        self.widget.tableView.setModel(model)
+    def __minimizeHeightOfTableView(self):
+        tableView: QTableView = self.widget.tableView
+        tableView.resizeRowsToContents()
 
-        # horizontal_header = self.widget.tableView.horizontalHeader()
-        # horizontal_header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        # horizontal_header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-        # horizontal_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
-        # horizontal_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        totalHeight = 0
+        for row in range(tableView.model().rowCount()):
+            totalHeight += tableView.rowHeight(row)
+
+        totalHeight += tableView.horizontalHeader().height()
+        totalHeight += tableView.contentsMargins().top() + tableView.contentsMargins().bottom()
+        tableView.setMaximumHeight(totalHeight)
+
+        groupBox: QGroupBox = self.widget.findChild(QGroupBox, 'gb_stats')
+        groupBox.setMaximumHeight(totalHeight + groupBox.contentsMargins().top() + groupBox.contentsMargins().bottom())
+
+    def setStatisticsTableModel(self, model):
+        tableView: QTableView = self.widget.tableView
+        tableView.setModel(model)
+
+        tableView.resizeColumnsToContents()
+        horizontal_header = tableView.horizontalHeader()
+        horizontal_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+
+        self.__minimizeHeightOfTableView()
 
     @Slot(int)
     def handleCurUsageChanged(self, value: int):
