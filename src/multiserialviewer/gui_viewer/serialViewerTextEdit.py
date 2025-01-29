@@ -64,8 +64,7 @@ class SerialViewerTextEdit(QTextEdit):
             self.scrollToBottom()
 
     def scrollToBottom(self):
-        self.moveCursor(QTextCursor.MoveOperation.End)
-        self.ensureCursorVisible()
+        self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
 
     def setIconSet(self, iconSet: IconSet):
         self.iconSet = iconSet
