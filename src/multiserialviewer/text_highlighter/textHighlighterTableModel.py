@@ -103,7 +103,7 @@ class TextHighlighterTableModel(QAbstractTableModel):
                 return self.color_map[self.settings[row].color_foreground][2]
         elif role == Qt.ItemDataRole.TextAlignmentRole:
             if column == 0:
-                return Qt.AlignmentFlag.AlignRight
+                return Qt.AlignmentFlag.AlignRight + Qt.AlignmentFlag.AlignVCenter
         return None
 
     def replaceRow(self, row, content: TextHighlighterSettings):
