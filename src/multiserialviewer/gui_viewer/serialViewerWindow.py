@@ -24,14 +24,15 @@ class SerialViewerWindow(QMdiSubWindow):
     signal_createCounter = Signal(str)
     signal_settingConvertNonPrintableCharsToHexChanged = Signal(bool)
 
-    def __init__(self, window_title: str, icon_set: IconSet):
+    def __init__(self, windowTitle: str, iconSet: IconSet):
         super().__init__()
 
+        self.iconSet = iconSet
         widget = createWidgetFromUiFile("serialViewerWindow.ui")
 
         self.setWidget(widget)
-        self.setWindowTitle(window_title)
-        self.setWindowIcon(icon_set.getSerialViewerIcon())
+        self.setWindowTitle(windowTitle)
+        self.setWindowIcon(iconSet.getSerialViewerIcon())
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
         self.tabWidget: QTabWidget = widget.findChild(QTabWidget, 'tabWidget')
@@ -40,7 +41,7 @@ class SerialViewerWindow(QMdiSubWindow):
         self.splitter: QSplitter = widget.findChild(QSplitter, 'splitter')
 
         self.textEdit: SerialViewerTextEdit = widget.findChild(SerialViewerTextEdit, 'textEdit')
-        self.textEdit.setIconSet(icon_set)
+        self.textEdit.setIconSet(iconSet)
         self.autoscroll: AutoscrollHandler = AutoscrollHandler(self.textEdit,
                                                              self.settingsWidget.widget.cb_autoscrollActive,
                                                              self.settingsWidget.widget.cb_autoscrollReactivate)
@@ -68,17 +69,17 @@ class SerialViewerWindow(QMdiSubWindow):
         self.searchWidget: SearchWidget = SearchWidget(self.searchScrollArea)
         self.searchWidget.setMinimumWidth(widgetMinimumWidth)
         self.searchScrollArea.setWidget(self.searchWidget)
-        tabWidget.addTab(self.searchScrollArea, "Search")
+        tabWidget.addTab(self.searchScrollArea, self.iconSet.getSearchIcon(), "Search")
 
         # watches
         self.watchScrollArea = QScrollArea(None)
         self.watchScrollArea.setFrameShape(QFrame.Shape.NoFrame)
         self.watchScrollArea.setWidgetResizable(True)
 
-        self.watchWidget: WatchWidget = WatchWidget(None)
+        self.watchWidget: WatchWidget = WatchWidget(self.watchScrollArea)
         self.watchWidget.setMinimumWidth(widgetMinimumWidth)
         self.watchScrollArea.setWidget(self.watchWidget)
-        tabWidget.addTab(self.watchScrollArea, "Watch")
+        tabWidget.addTab(self.watchScrollArea, self.iconSet.getWatchIcon(), "Watch")
 
         # counter
         self.counterScrollArea = QScrollArea(None)
@@ -88,17 +89,17 @@ class SerialViewerWindow(QMdiSubWindow):
         self.counterWidget: CounterWidget = CounterWidget(self.counterScrollArea)
         self.counterWidget.setMinimumWidth(widgetMinimumWidth)
         self.counterScrollArea.setWidget(self.counterWidget)
-        tabWidget.addTab(self.counterScrollArea, "Count")
+        tabWidget.addTab(self.counterScrollArea, self.iconSet.getCounterIcon(), "Count")
 
         # statistics
         self.statisticsScrollArea = QScrollArea(None)
         self.statisticsScrollArea.setFrameShape(QFrame.Shape.NoFrame)
         self.statisticsScrollArea.setWidgetResizable(True)
 
-        self.statisticsWidget: StatisticsWidget = StatisticsWidget(None)
+        self.statisticsWidget: StatisticsWidget = StatisticsWidget(self.statisticsScrollArea)
         self.statisticsWidget.setMinimumWidth(widgetMinimumWidth)
         self.statisticsScrollArea.setWidget(self.statisticsWidget)
-        tabWidget.addTab(self.statisticsScrollArea, "Statistics")
+        tabWidget.addTab(self.statisticsScrollArea, self.iconSet.getStatsIcon(), "Statistics")
 
         # settings
         self.settingsScrollArea = QScrollArea(None)
@@ -108,7 +109,7 @@ class SerialViewerWindow(QMdiSubWindow):
         self.settingsWidget: SerialViewerSettingsWidget = SerialViewerSettingsWidget(self.settingsScrollArea, readOnly=True)
         self.settingsWidget.setMinimumWidth(widgetMinimumWidth)
         self.settingsScrollArea.setWidget(self.settingsWidget)
-        tabWidget.addTab(self.settingsScrollArea, "Settings")
+        tabWidget.addTab(self.settingsScrollArea, self.iconSet.getSettingsIcon(), "Settings")
 
 
     def __scrollToBottom(self):

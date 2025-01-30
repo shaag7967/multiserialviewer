@@ -57,3 +57,9 @@ class IconSet:
 
     def getWatchIcon(self) -> QIcon:
         return QIcon(str(self.icons_dir_name.joinpath('watch.png')))
+
+    def getSearchIcon(self) -> QIcon:
+        return QIcon(str(self.icons_dir_name.joinpath('search.png')))
+
+    def getStatsIcon(self) -> QIcon:
+        return QIcon(str(self.icons_dir_name.joinpath('stats.png')))
