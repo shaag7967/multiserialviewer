@@ -1,5 +1,5 @@
 from multiserialviewer.settings.serialConnectionSettings import SerialConnectionSettings
-from PySide6.QtCore import Signal, Slot, QObject, QByteArray, QTimer, Qt
+from PySide6.QtCore import Signal, Slot, QObject, QByteArray, QTimer, Qt, QMetaObject
 from PySide6.QtSerialPort import QSerialPort
 
 
@@ -63,9 +63,11 @@ class SerialDataStatistics(QObject):
         self.__receivedBytesPerPeriod += rawData.size()
         self.__overallReceivedBytes += rawData.size()
 
+    def reset(self):
+        QMetaObject.invokeMethod(self, '__handleReset', Qt.ConnectionType.QueuedConnection)
+
     @Slot()
-    def handleReset(self):
-        self.__refreshSignalsTimer.start()
+    def __handleReset(self):
         self.__overallReceivedBytes = 0
         self.__maxUsage = 0
 

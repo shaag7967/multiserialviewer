@@ -146,7 +146,6 @@ class SerialViewerWindow(QMdiSubWindow):
     @Slot()
     def clear(self):
         self.textEdit.clear()
-        self.statisticsWidget.clear()
 
     @Slot()
     def selectTab_Watch(self):

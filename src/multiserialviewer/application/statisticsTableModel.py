@@ -1,5 +1,4 @@
-from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex, Slot
-from multiserialviewer.settings.counterSettings import CounterSettings
+from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex
 
 
 class StatisticsTableModel(QAbstractTableModel):

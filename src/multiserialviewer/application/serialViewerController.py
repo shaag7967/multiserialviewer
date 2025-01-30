@@ -52,8 +52,6 @@ class SerialViewerController(QObject):
         self.view.watchWidget.signal_removeWatch.connect(self.watchHandler.removeWatchByIndex)
         # stats
         self.view.statisticsWidget.setStatisticsTableModel(self.statisticsHandler.statisticsTableModel)
-        self.statistics.signal_curUsageChanged.connect(self.view.statisticsWidget.handleCurUsageChanged)
-        self.statistics.signal_maxUsageChanged.connect(self.view.statisticsWidget.handleMaxUsageChanged)
 
         self.view.textEdit.signal_createCounterFromSelectedText.connect(self.view.setCounterPatternToCreate)
         self.view.textEdit.signal_createWatchFromSelectedText.connect(self.view.createWatchFromText)
@@ -87,7 +85,7 @@ class SerialViewerController(QObject):
         self.counterHandler.clear()
         self.watchHandler.clear()
         self.statisticsHandler.clear()
-        self.statistics.handleReset()
+        self.statistics.reset()
 
     def showErrorMessage(self, text):
         self.view.appendErrorMessage(text)

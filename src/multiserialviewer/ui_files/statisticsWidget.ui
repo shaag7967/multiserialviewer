@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>498</width>
-    <height>297</height>
+    <height>318</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,52 +26,6 @@
    <property name="bottomMargin">
     <number>6</number>
    </property>
-   <item>
-    <widget class="QGroupBox" name="gb_usage">
-     <property name="title">
-      <string>Bandwidth usage</string>
-     </property>
-     <layout class="QFormLayout" name="formLayout">
-      <property name="labelAlignment">
-       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-      </property>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Current</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QProgressBar" name="pbar_curUsage">
-        <property name="value">
-         <number>0</number>
-        </property>
-        <property name="format">
-         <string notr="true">%p%</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Max</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QProgressBar" name="pbar_maxUsage">
-        <property name="value">
-         <number>0</number>
-        </property>
-        <property name="format">
-         <string notr="true">%p%</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item>
     <widget class="QGroupBox" name="gb_stats">
      <property name="sizePolicy">
