@@ -10,8 +10,32 @@ import numpy as np
 
 class Writer(QObject):
     signal_writerFinished: Signal= Signal()
-    # TEXT_TO_WRITE: str = "\nabcdefghijk"
-    TEXT_TO_WRITE: str = "test\nnumber: 123\nzaehler=zwei"
+
+    TEXT_TO_WRITE_1: str = ("\nMCU 1 START"
+                          "\nInit done"
+                          "\ntemperature: 25"
+                          "\nvoltage=3300mV"
+                          "\nadc value: 123"
+                          "\nERROR: 77"
+                          "\ntemperature: 26"
+                          "\nDetected key press"
+                          "\nadc value: 222"
+                          "\nERROR: 83"
+                          "\ntemperature: 27"
+                          "\nvoltage=3300mV"
+                          "\nadc value: 222")
+    TEXT_TO_WRITE_2: str = ("\nMCU 2 START"
+                          "\nERROR: 23"
+                          "\nInit done"
+                          "\ntemperature: 22"
+                          "\nDetected key press"
+                          "\nvoltage=3300mV"
+                          "\nadc value: 222"
+                          "\ntemperature: 26"
+                          "\nadc value: 123"
+                          "\nvoltage=3300mV"
+                          "\ntemperature: 27"
+                          "\nadc value: 222")
 
     def __init__(self, portName: str, baudrate: int):
         super(Writer, self).__init__()
@@ -26,20 +50,20 @@ class Writer(QObject):
             raise Exception(self.__serialPort.error().name)
 
         self.__serialPort.bytesWritten.connect(self.write)
-        self.__maxWriteCount = 100     # <<<=== change here number of writes
+        self.__maxWriteCount = 1     # <<<=== change here number of writes
         self.__writeCounter = 0
 
         self.__printCnt_col = 0
         self.__printCnt_row = 0
 
-        # self.__data: QByteArray = QByteArray.fromStdString(Writer.TEXT_TO_WRITE)
-        # self.__data += '\x00'
+        self.__data: QByteArray = QByteArray.fromStdString(Writer.TEXT_TO_WRITE_2)
+        self.__data += bytearray(b'\x00\x01\x02\x03')
 
-        self.__data: QByteArray = QByteArray()
-        length = np.pi * 2
-        sineWave = np.sin(np.arange(0, length, length / 20))
-        for val in sineWave:
-            self.__data += QByteArray.fromStdString(f'\nmyValue: {val}')
+        # self.__data: QByteArray = QByteArray()
+        # length = np.pi * 2
+        # sineWave = np.sin(np.arange(0, length, length / 20))
+        # for val in sineWave:
+        #     self.__data += QByteArray.fromStdString(f'\nmyValue: {val}')
 
     @Slot()
     def write(self):
