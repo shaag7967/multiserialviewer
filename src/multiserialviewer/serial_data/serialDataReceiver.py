@@ -1,11 +1,11 @@
 from PySide6.QtSerialPort import QSerialPort
 from PySide6.QtCore import Slot, Signal, QObject, QByteArray
 from multiserialviewer.settings.serialConnectionSettings import SerialConnectionSettings
-import time, sys
+from datetime import datetime
 
 
 class SerialDataReceiver(QObject):
-    signal_rawDataAvailable: Signal = Signal(QByteArray, QByteArray)
+    signal_rawDataAvailable: Signal = Signal(datetime, QByteArray)
 
     def __init__(self, settings: SerialConnectionSettings):
         super(SerialDataReceiver, self).__init__()
@@ -42,13 +42,7 @@ class SerialDataReceiver(QObject):
 
     @Slot()
     def __handleData(self):
-        timestamp: int = time.perf_counter_ns()
-        # timestamp is an 32 byte integer and cannot be emitted directly as an int type
-        # Therefore we pack it into a QByteArray, which has to be unpacked with int.from_bytes on the other side
-        timestampData: QByteArray = QByteArray(timestamp.to_bytes(sys.getsizeof(timestamp),
-                                               byteorder='big',
-                                               signed=False))
-
+        rxTime = datetime.now()
         receivedData: QByteArray = self.__serialPort.readAll()
         if receivedData.size() > 0:
-            self.signal_rawDataAvailable.emit(timestampData, receivedData)
+            self.signal_rawDataAvailable.emit(rxTime, receivedData)

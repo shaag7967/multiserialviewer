@@ -4,6 +4,7 @@ from typing import List, Any
 from pathlib import PurePath
 import os
 
+from multiserialviewer.settings.applicationSettings import ApplicationSettings
 from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings, CounterSettings, WatchSettings
 from multiserialviewer.settings.textHighlighterSettings import TextHighlighterSettings
 
@@ -85,12 +86,17 @@ class Settings:
         SettingsName_v1: str = "Application"
 
         def __init__(self):
-            self.restoreCaptureState = False
-            self.captureActive = False
+            self.values = ApplicationSettings()
+            self.captureActive: bool = False
             self.restoreDefaultValues()
 
         def restoreDefaultValues(self):
-            self.restoreCaptureState = False
+            self.values = ApplicationSettings()
+            self.values.restoreCaptureState = True
+            self.values.showTimestamp = False
+            self.values.timestampFormat = ApplicationSettings.DEFAULT_TIMESTAMP_FORMAT
+            self.values.showNonPrintableCharsAsHex = True
+
             self.captureActive = False
 
         def loadSettings(self, settings: QSettings):
@@ -98,15 +104,24 @@ class Settings:
 
             settings.beginGroup(self.SettingsName_v1)
             if settings.contains("restoreCaptureState"):
-                self.restoreCaptureState = settings.value("restoreCaptureState", type=bool)
+                self.values.restoreCaptureState = settings.value("restoreCaptureState", type=bool)
             if settings.contains("captureActive"):
                 self.captureActive = settings.value("captureActive", type=bool)
+            if settings.contains("showTimestamp"):
+                self.values.showTimestamp = settings.value("showTimestamp", type=bool)
+            if settings.contains("timestampFormat"):
+                self.values.timestampFormat = settings.value("timestampFormat")
+            if settings.contains("showNonPrintableCharsAsHex"):
+                self.values.showNonPrintableCharsAsHex = settings.value("showNonPrintableCharsAsHex", type=bool)
             settings.endGroup()
 
         def saveSettings(self, settings: QSettings):
             settings.beginGroup(self.SettingsName_v1)
-            settings.setValue("restoreCaptureState", self.restoreCaptureState)
+            settings.setValue("restoreCaptureState", self.values.restoreCaptureState)
             settings.setValue("captureActive", self.captureActive)
+            settings.setValue("showTimestamp", self.values.showTimestamp)
+            settings.setValue("timestampFormat", self.values.timestampFormat)
+            settings.setValue("showNonPrintableCharsAsHex", self.values.showNonPrintableCharsAsHex)
             settings.endGroup()
 
     class MainWindow:
@@ -171,8 +186,6 @@ class Settings:
                     entry.splitterState = settings.value("splitterState")
                 if settings.contains("currentTabName"):
                     entry.currentTabName = settings.value("currentTabName")
-                if settings.contains("showNonPrintableCharsAsHex"):
-                    entry.showNonPrintableCharsAsHex = settings.value("showNonPrintableCharsAsHex", type=bool)
                 settings.endGroup()
 
                 numberOfCounters = settings.beginReadArray('counter')
@@ -226,7 +239,6 @@ class Settings:
                 settings.setValue("autoscrollReactivate", entry.autoscrollReactivate)
                 settings.setValue("splitterState", entry.splitterState)
                 settings.setValue("currentTabName", entry.currentTabName)
-                settings.setValue("showNonPrintableCharsAsHex", entry.showNonPrintableCharsAsHex)
                 settings.endGroup()
 
                 settings.beginWriteArray('counter')

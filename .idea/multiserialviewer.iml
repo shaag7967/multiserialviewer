@@ -10,7 +10,7 @@
       <excludeFolder url="file://$MODULE_DIR$/src/multiSerialViewer.egg-info" />
       <excludeFolder url="file://$MODULE_DIR$/.venvtest" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.11 (multiserialviewer)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.13 (multiserialviewer)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

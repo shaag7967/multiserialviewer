@@ -18,4 +18,3 @@ class SerialViewerSettings:
         self.counters: List[CounterSettings] = []
         self.watches: List[WatchSettings] = []
         self.connection: SerialConnectionSettings = SerialConnectionSettings('')
-        self.showNonPrintableCharsAsHex = True

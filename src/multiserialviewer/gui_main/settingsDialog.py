@@ -1,18 +1,19 @@
-from PySide6.QtWidgets import QApplication, QDialog, QVBoxLayout, QHeaderView, QDialogButtonBox
+from PySide6.QtWidgets import QApplication, QDialog, QVBoxLayout, QHeaderView, QDialogButtonBox, QLineEdit
 from PySide6.QtCore import Slot, Qt, QModelIndex, QUrl, QItemSelectionModel, QItemSelection
 from PySide6.QtGui import QDesktopServices
 from typing import List
 import copy
+from datetime import datetime
 
 from multiserialviewer.ui_files.uiFileHelper import createWidgetFromUiFile
 from multiserialviewer.icons.iconSet import IconSet
 from multiserialviewer.settings.settings import Settings, TextHighlighterSettings
+from multiserialviewer.settings.applicationSettings import ApplicationSettings
 from multiserialviewer.text_highlighter.textHighlighterTableModel import TextHighlighterTableModel
 from multiserialviewer.text_highlighter.colorSelectorItemDelegate import ColorSelectorItemDelegate
 
 
 class SettingsDialog(QDialog):
-
     def __init__(self, parent, settings: Settings, iconSet: IconSet):
         super().__init__(parent)
 
@@ -23,6 +24,8 @@ class SettingsDialog(QDialog):
         self.settingsBackup = copy.deepcopy(settings)
         self.settings = settings
         self.__init(self.settings)
+
+        self.widget.ed_timestampFormat.textChanged.connect(self.validateTimestampFormat)
 
         #
         # text highlighter
@@ -65,7 +68,15 @@ class SettingsDialog(QDialog):
 
     def __init(self, settings: Settings):
         self.widget.cb_restoreCaptureState.setCheckState(
-            Qt.CheckState.Checked if settings.application.restoreCaptureState else Qt.CheckState.Unchecked)
+            Qt.CheckState.Checked if settings.application.values.restoreCaptureState else Qt.CheckState.Unchecked)
+        self.widget.cb_showNonPrintableAsHex.setCheckState(
+            Qt.CheckState.Checked if settings.application.values.showNonPrintableCharsAsHex else Qt.CheckState.Unchecked)
+
+        self.widget.cb_showTimestamp.setCheckState(
+            Qt.CheckState.Checked if settings.application.values.showTimestamp else Qt.CheckState.Unchecked)
+        self.widget.ed_timestampFormat.setPlaceholderText(ApplicationSettings.DEFAULT_TIMESTAMP_FORMAT)
+        self.widget.ed_timestampFormat.setText(settings.application.values.timestampFormat)
+
         self.tableModel = TextHighlighterTableModel(settings.textHighlighter.entries)
         self.widget.tableView.setModel(self.tableModel)
         selectionModel: QItemSelectionModel = self.widget.tableView.selectionModel()
@@ -81,9 +92,31 @@ class SettingsDialog(QDialog):
 
     @Slot()
     def applyChanges(self):
-        self.settings.application.restoreCaptureState = self.widget.cb_restoreCaptureState.checkState() == Qt.CheckState.Checked
+        self.settings.application.values.restoreCaptureState = self.widget.cb_restoreCaptureState.checkState() == Qt.CheckState.Checked
+        self.settings.application.values.showNonPrintableCharsAsHex = self.widget.cb_showNonPrintableAsHex.checkState() == Qt.CheckState.Checked
+
+        self.settings.application.values.showTimestamp = self.widget.cb_showTimestamp.checkState() == Qt.CheckState.Checked
+        try:
+            timestampFormat = self.widget.ed_timestampFormat.text()
+            datetime.strftime(datetime.now(), timestampFormat)
+            if len(timestampFormat) == 0:
+                timestampFormat = ApplicationSettings.DEFAULT_TIMESTAMP_FORMAT
+            self.settings.application.values.timestampFormat = timestampFormat
+        except ValueError:
+            self.settings.application.values.timestampFormat = ApplicationSettings.DEFAULT_TIMESTAMP_FORMAT
+
         self.settings.textHighlighter.entries = self.tableModel.settings
         self.accept()
+
+    @Slot(str)
+    def validateTimestampFormat(self, timestampFormat: str):
+        try:
+            if len(timestampFormat) == 0:
+                raise ValueError
+            result = datetime.strftime(datetime.now(), timestampFormat)
+            self.widget.lb_validationResult.setText(f"e.g. {result}")
+        except ValueError:
+            self.widget.lb_validationResult.setText(f'Invalid (use e.g. {ApplicationSettings.DEFAULT_TIMESTAMP_FORMAT})')
 
     @Slot()
     def resetChanges(self):
@@ -112,9 +145,21 @@ class SettingsDialog(QDialog):
         cfg.font_size = QApplication.font().pointSize()
         return cfg
 
+    @staticmethod
+    def getDefaultHighlighting_RxTime() -> TextHighlighterSettings:
+        cfg = TextHighlighterSettings()
+        cfg.pattern = r'\[\d{2}:\d{2}:\d{2}.\d{6}\]'
+        cfg.color_foreground = 'slategrey'
+        cfg.color_background = 'transparent'
+        cfg.italic = True
+        cfg.bold = False
+        cfg.font_size = QApplication.font().pointSize() - 1
+        return cfg
+
     @Slot()
     def applyHighlighterRecommendations(self):
-        defaultSettings: List[TextHighlighterSettings] = [SettingsDialog.getDefaultHighlighting_HEX()]
+        defaultSettings: List[TextHighlighterSettings] = [SettingsDialog.getDefaultHighlighting_HEX(),
+                                                          SettingsDialog.getDefaultHighlighting_RxTime()]
 
         for setting in defaultSettings:
             entriesFound: List[QModelIndex] = self.tableModel.match(self.tableModel.index(0, 0),

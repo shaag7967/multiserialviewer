@@ -10,6 +10,7 @@ from multiserialviewer.gui_main.mainWindow import MainWindow
 from multiserialviewer.application.serialViewerControllerPool import SerialViewerControllerPool
 from multiserialviewer.icons.iconSet import IconSet
 from multiserialviewer.settings.settings import Settings
+from multiserialviewer.settings.applicationSettings import ApplicationSettings
 from multiserialviewer.settings.serialConnectionSettings import SerialConnectionSettings
 from multiserialviewer.settings.textHighlighterSettings import TextHighlighterSettings
 from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings
@@ -46,12 +47,30 @@ class Application(QApplication):
         self.mainWindow.signal_applySettings.connect(self.applyModifiedSettings)
         self.mainWindow.signal_createTextHighlightEntry.connect(self.createTextHighlightEntry)
 
-        self.applySettings()
+        self.initMainWindow()
+        self.initSerialViewer()
+        self.initCaptureState()
+
         self.setStyle(ProxyStyle())
         self.mainWindow.show()
 
         if self.controllerPool.count() == 0:
             self.showSerialViewerCreateDialog()
+
+    def initMainWindow(self):
+        self.mainWindow.resize(self.settings.mainWindow.size)
+        self.mainWindow.addToolBar(self.settings.mainWindow.toolBarArea, self.mainWindow.toolBar)
+
+    def initSerialViewer(self):
+        for serialViewerSetting in self.settings.serialViewer.entries:
+            self.createSerialViewer(serialViewerSetting, self.settings.application.values)
+        # note: highlighter settings do not need to be applied here, because this is
+        #       done inside function createSerialViewer
+
+    def initCaptureState(self):
+        if self.settings.application.values.restoreCaptureState:
+            if self.settings.application.captureActive:
+                self.startCapture()
 
     @Slot(str)
     def createTextHighlightEntry(self, text_to_highlight: str):
@@ -77,9 +96,10 @@ class Application(QApplication):
         self.settings.application = modifiedSettings.application
         self.settings.textHighlighter = modifiedSettings.textHighlighter
         self.controllerPool.setHighlighterSettings(self.settings.textHighlighter.entries)
+        self.controllerPool.setApplicationSettings(self.settings.application.values)
 
     @Slot(SerialViewerSettings)
-    def createSerialViewer(self, settings: SerialViewerSettings):
+    def createSerialViewer(self, settings: SerialViewerSettings, settingsApplication: ApplicationSettings):
         if settings.connection.portName in self.controllerPool.getUsedPorts():
             raise Exception(f"{settings.connection.portName} exists already")
 
@@ -91,7 +111,7 @@ class Application(QApplication):
                                                         currentTabName=settings.currentTabName)
         view.setSerialViewerSettings(settings)
 
-        ctrl = SerialViewerController(settings, view)
+        ctrl = SerialViewerController(settings, settingsApplication, view)
         ctrl.signal_deleteController.connect(self.controllerPool.deleteController, type=Qt.ConnectionType.QueuedConnection)
         self.controllerPool.add(ctrl)
 
@@ -123,19 +143,6 @@ class Application(QApplication):
         self.captureActive = False
         self.mainWindow.updateCaptureButton(self.captureActive)
 
-    def applySettings(self):
-        self.mainWindow.resize(self.settings.mainWindow.size)
-        self.mainWindow.addToolBar(self.settings.mainWindow.toolBarArea, self.mainWindow.toolBar)
-
-        for serialViewerSetting in self.settings.serialViewer.entries:
-            self.createSerialViewer(serialViewerSetting)
-        # note: highlighter settings do not need to be applied here, because this is
-        #       done inside function createSerialViewer
-
-        if self.settings.application.restoreCaptureState:
-            if self.settings.application.captureActive:
-                self.startCapture()
-
     def persistCurrentSettings(self):
         self.settings.application.captureActive = self.captureActive
 
@@ -152,7 +159,6 @@ class Application(QApplication):
             settings.position = ctrl.view.pos()
             settings.splitterState = ctrl.view.splitter.saveState()
             settings.currentTabName = ctrl.view.getCurrentTab()
-            settings.showNonPrintableCharsAsHex = ctrl.view.getSettingConvertNonPrintableCharsToHex()
 
             settings.autoscrollActive = ctrl.view.autoscroll.autoscrollIsActive()
             settings.autoscrollReactivate = ctrl.view.autoscroll.autoReactivateIsActive()

@@ -1,6 +1,7 @@
 from PySide6.QtCore import QObject, Slot, Qt
 
 from multiserialviewer.application.serialViewerController import SerialViewerController
+from multiserialviewer.settings.applicationSettings import ApplicationSettings
 from multiserialviewer.settings.textHighlighterSettings import TextHighlighterSettings
 
 
@@ -21,6 +22,11 @@ class SerialViewerControllerPool(QObject):
     def setHighlighterSettings(self, entries: list[TextHighlighterSettings]):
         for ctrl in self.__controller:
             ctrl.view.setHighlighterSettings(entries)
+
+    def setApplicationSettings(self, values: ApplicationSettings):
+        for ctrl in self.__controller:
+            ctrl.processor.setConvertNonPrintableCharsToHex(values.showNonPrintableCharsAsHex)
+            ctrl.processor.setShowTimestampAtLineStart(values.showTimestamp, values.timestampFormat)
 
     def add(self, ctrl: SerialViewerController):
         self.__controller.append(ctrl)

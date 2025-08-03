@@ -1,6 +1,7 @@
 from PySide6.QtCore import QObject, Slot, Signal, QThread
 
 from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings
+from multiserialviewer.settings.applicationSettings import ApplicationSettings
 from multiserialviewer.gui_viewer.serialViewerWindow import SerialViewerWindow
 from multiserialviewer.serial_data.serialDataReceiver import SerialDataReceiver
 from multiserialviewer.serial_data.serialDataProcessor import SerialDataProcessor
@@ -13,7 +14,7 @@ from multiserialviewer.application.statisticsHandler import StatisticsHandler
 class SerialViewerController(QObject):
     signal_deleteController: Signal = Signal(str)
 
-    def __init__(self, settings: SerialViewerSettings, view: SerialViewerWindow):
+    def __init__(self, settings: SerialViewerSettings, settingsApplication: ApplicationSettings, view: SerialViewerWindow):
         super(SerialViewerController, self).__init__()
 
         self.serialDataThread: QThread = QThread(self)
@@ -25,7 +26,8 @@ class SerialViewerController(QObject):
 
         self.receiver: SerialDataReceiver = SerialDataReceiver(settings.connection)
         self.processor: SerialDataProcessor = SerialDataProcessor()
-        self.processor.setConvertNonPrintableCharsToHex(settings.showNonPrintableCharsAsHex)
+        self.processor.setConvertNonPrintableCharsToHex(settingsApplication.showNonPrintableCharsAsHex)
+        self.processor.setShowTimestampAtLineStart(settingsApplication.showTimestamp, settingsApplication.timestampFormat)
         self.statistics: SerialDataStatistics = SerialDataStatistics(settings.connection)
 
         self.counterHandler: CounterHandler = CounterHandler(settings.counters, self.processor)
@@ -55,7 +57,6 @@ class SerialViewerController(QObject):
 
         self.view.textEdit.signal_createCounterFromSelectedText.connect(self.view.setCounterPatternToCreate)
         self.view.textEdit.signal_createWatchFromSelectedText.connect(self.view.createWatchFromText)
-        self.view.signal_settingConvertNonPrintableCharsToHexChanged.connect(self.processor.setConvertNonPrintableCharsToHex)
         self.view.signal_closed.connect(self.onViewClosed)
 
         self.processor.signal_asciiDataAvailable.connect(self.view.appendData)
@@ -81,6 +82,7 @@ class SerialViewerController(QObject):
             self.showStopMessage(f'Closed {self.receiver.getSettings().portName}')
 
     def clearAll(self):
+        self.processor.clear()
         self.view.clear()
         self.counterHandler.clear()
         self.watchHandler.clear()

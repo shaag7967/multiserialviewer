@@ -59,7 +59,7 @@ class SerialDataStatistics(QObject):
         self.__refreshSignalsTimer.start()
 
     @Slot(QByteArray, QByteArray)
-    def handleRawData(self, timestampData: QByteArray, rawData: QByteArray):
+    def handleRawData(self, rxTime, rawData: QByteArray):
         self.__receivedBytesPerPeriod += rawData.size()
         self.__overallReceivedBytes += rawData.size()
 

@@ -10,7 +10,6 @@ from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings
 
 class SerialViewerSettingsWidget(QWidget):
     signal_settingsValidStateChanged: Signal = Signal(bool)
-    signal_showNonPrintableAsHex = Signal(Qt.CheckState)
 
     def __init__(self, parent: QWidget, readOnly=False):
         super().__init__(parent)
@@ -40,8 +39,6 @@ class SerialViewerSettingsWidget(QWidget):
             self.widget.cb_portName.currentTextChanged.connect(self.updateSettingsValidState)
             self.widget.cb_baudrate.currentTextChanged.connect(self.updateSettingsValidState)
 
-        self.widget.cb_showNonPrintableAsHex.checkStateChanged.connect(self.signal_showNonPrintableAsHex)
-
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
         layout.addWidget(self.widget)
@@ -49,8 +46,6 @@ class SerialViewerSettingsWidget(QWidget):
     def setSerialViewerSettings(self, settings: SerialViewerSettings):
         self.settings = settings
 
-        self.widget.cb_showNonPrintableAsHex.setCheckState(
-            Qt.CheckState.Checked if self.settings.showNonPrintableCharsAsHex else Qt.CheckState.Unchecked)
         self.widget.cb_autoscrollActive.setCheckState(
             Qt.CheckState.Checked if self.settings.autoscrollActive else Qt.CheckState.Unchecked)
         self.widget.cb_autoscrollReactivate.setCheckState(
@@ -140,6 +135,3 @@ class SerialViewerSettingsWidget(QWidget):
 
     def getStopBits(self):
         return self.widget.cb_stopBits.currentData()
-
-    def getSettingShowNonPrintableAsHex(self) -> bool:
-        return self.widget.cb_showNonPrintableAsHex.checkState() == Qt.CheckState.Checked
