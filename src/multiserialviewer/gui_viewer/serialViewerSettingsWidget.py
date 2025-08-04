@@ -37,6 +37,7 @@ class SerialViewerSettingsWidget(QWidget):
             self.widget.cb_baudrate.setValidator(QRegularExpressionValidator(r'[0-9]+', self))
             self.widget.pb_refresh.clicked.connect(self.refreshListOfSerialPorts)
             self.widget.cb_portName.currentTextChanged.connect(self.updateSettingsValidState)
+            self.widget.cb_portName.currentTextChanged.connect(self.updateSerialPortInfo)
             self.widget.cb_baudrate.currentTextChanged.connect(self.updateSettingsValidState)
 
         layout = QVBoxLayout(self)
@@ -87,6 +88,17 @@ class SerialViewerSettingsWidget(QWidget):
             settingsAreValid = False
 
         self.signal_settingsValidStateChanged.emit(settingsAreValid)
+
+    @Slot()
+    def updateSerialPortInfo(self):
+        self.widget.lb_portInfo.setText("")
+        for port in QSerialPortInfo.availablePorts():
+            if self.widget.cb_portName.currentText() == port.portName():
+                info = f"{port.manufacturer()} / {port.description()} / {port.serialNumber()}"
+                info += f" / VID{port.vendorIdentifier()}" if port.hasVendorIdentifier() else ''
+                info += f" / PID{port.productIdentifier()}" if port.hasProductIdentifier() else ''
+                self.widget.lb_portInfo.setText(info)
+                break
 
     def populateBaudRateCombobox(self):
         baudrates = ['9600', '38400', '115200', '256000', '1000000']
