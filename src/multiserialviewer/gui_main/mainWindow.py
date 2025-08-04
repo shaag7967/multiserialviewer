@@ -108,6 +108,8 @@ class MainWindow(QMainWindow):
                                  currentTabName: str = None):
         view = SerialViewerWindow(view_title, self.iconSet)
         view.setHighlighterSettings(highlighterSettings)
+        view.signal_createTextHighlightEntry.connect(self.signal_createTextHighlightEntry)
+
         if size:
             view.resize(size)
         if position:
@@ -117,9 +119,19 @@ class MainWindow(QMainWindow):
         if currentTabName:
             view.setCurrentTab(currentTabName)
 
+        # add new window in reverse order (otherwise tile will show windows in wrong order)
+        subWindowList = self.mdiArea.subWindowList()
+        for window in subWindowList:
+            window.hide()
+            self.mdiArea.removeSubWindow(window)
+
         self.mdiArea.addSubWindow(view)
-        view.signal_createTextHighlightEntry.connect(self.signal_createTextHighlightEntry)
         view.show()
+        for window in subWindowList:
+            self.mdiArea.addSubWindow(window)
+            window.show()
+        self.mdiArea.tileSubWindows()
+
         return view
 
     def showSettingsDialog(self, settings: Settings):

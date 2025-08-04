@@ -63,7 +63,7 @@ class Application(QApplication):
 
     def initSerialViewer(self):
         for serialViewerSetting in self.settings.serialViewer.entries:
-            self.createSerialViewer(serialViewerSetting, self.settings.application.values)
+            self.createSerialViewer(serialViewerSetting)
         # note: highlighter settings do not need to be applied here, because this is
         #       done inside function createSerialViewer
 
@@ -99,7 +99,7 @@ class Application(QApplication):
         self.controllerPool.setApplicationSettings(self.settings.application.values)
 
     @Slot(SerialViewerSettings)
-    def createSerialViewer(self, settings: SerialViewerSettings, settingsApplication: ApplicationSettings):
+    def createSerialViewer(self, settings: SerialViewerSettings):
         if settings.connection.portName in self.controllerPool.getUsedPorts():
             raise Exception(f"{settings.connection.portName} exists already")
 
@@ -111,7 +111,7 @@ class Application(QApplication):
                                                         currentTabName=settings.currentTabName)
         view.setSerialViewerSettings(settings)
 
-        ctrl = SerialViewerController(settings, settingsApplication, view)
+        ctrl = SerialViewerController(settings, self.settings.application.values, view)
         ctrl.signal_deleteController.connect(self.controllerPool.deleteController, type=Qt.ConnectionType.QueuedConnection)
         self.controllerPool.add(ctrl)
 
