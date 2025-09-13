@@ -89,6 +89,16 @@ class WatchTableModel(QAbstractTableModel):
         self.entries: list[WatchEntryNumber | WatchEntryWord] = []
         self.nameToIndex: dict[str, int] = {}
 
+    def __removeNameByIndex(self, index: int):
+        for p, i in self.nameToIndex.items():
+            if i == index:
+                del self.nameToIndex[p]
+                break
+        # adjust indices
+        for p in self.nameToIndex.keys():
+            if self.nameToIndex[p] > index:
+                self.nameToIndex[p] -= 1
+
     @Slot()
     def setWatchValue(self, name: str, value: list[str]):
         if name in self.nameToIndex:
@@ -153,7 +163,7 @@ class WatchTableModel(QAbstractTableModel):
     def removeWatchEntry(self, index: int) -> bool:
         if index < len(self.entries):
             self.beginRemoveRows(QModelIndex(), index, index)
-            del self.nameToIndex[self.entries[index].name]
+            self.__removeNameByIndex(index)
             del self.entries[index]
             self.endRemoveRows()
             return True

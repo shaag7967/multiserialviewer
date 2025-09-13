@@ -18,6 +18,16 @@ class CounterTableModel(QAbstractTableModel):
         self.entries: list[CounterTableModel.CounterEntry] = []
         self.patternToIndex: dict[str, int] = {}
 
+    def __removePatternByIndex(self, index: int):
+        for p, i in self.patternToIndex.items():
+            if i == index:
+                del self.patternToIndex[p]
+                break
+        # adjust indices
+        for p in self.patternToIndex.keys():
+            if self.patternToIndex[p] > index:
+                self.patternToIndex[p] -= 1
+
     @Slot()
     def incrementCounterValue(self, pattern: str, unused: object):
         if pattern in self.patternToIndex:
@@ -74,8 +84,8 @@ class CounterTableModel(QAbstractTableModel):
         if index < len(self.settings):
             self.beginRemoveRows(QModelIndex(), index, index)
             del self.settings[index]
-            del self.patternToIndex[self.entries[index].pattern]
             del self.entries[index]
+            self.__removePatternByIndex(index)
             self.endRemoveRows()
             return True
         else:
