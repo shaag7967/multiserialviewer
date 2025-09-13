@@ -17,8 +17,8 @@ class SerialViewerController(QObject):
     def __init__(self, settings: SerialViewerSettings, settingsApplication: ApplicationSettings, view: SerialViewerWindow):
         super(SerialViewerController, self).__init__()
 
-        self.serialDataThread: QThread = QThread(self)
-        self.serialDataThread.setObjectName('SerialData thread')
+        self.dataProcessingThread: QThread = QThread(self)
+        self.dataProcessingThread.setObjectName('SerialData thread')
         self.statsThread: QThread = QThread(self)
         self.statsThread.setObjectName('statsThread thread')
 
@@ -32,15 +32,14 @@ class SerialViewerController(QObject):
         self.watchHandler: WatchHandler = WatchHandler(settings.watches, self.processor)
         self.statisticsHandler: StatisticsHandler = StatisticsHandler(self.statistics)
 
-        self.receiver.moveToThread(self.serialDataThread)
-        self.processor.moveToThread(self.serialDataThread)
+        self.processor.moveToThread(self.dataProcessingThread)
         self.statistics.moveToThread(self.statsThread)
-        self.counterHandler.moveToThread(self.serialDataThread)
-        self.watchHandler.moveToThread(self.serialDataThread)
+        self.counterHandler.moveToThread(self.dataProcessingThread)
+        self.watchHandler.moveToThread(self.dataProcessingThread)
         self.statisticsHandler.moveToThread(self.statsThread)
 
-        self.serialDataThread.start()
-        self.serialDataThread.setPriority(QThread.Priority.NormalPriority)
+        self.dataProcessingThread.start()
+        self.dataProcessingThread.setPriority(QThread.Priority.NormalPriority)
         self.statsThread.start()
         self.statsThread.setPriority(QThread.Priority.TimeCriticalPriority)
 
@@ -102,12 +101,14 @@ class SerialViewerController(QObject):
     def destruct(self):
         self.receiver.closePort()
 
-        if self.serialDataThread.isRunning():
-            self.serialDataThread.quit()
-            self.serialDataThread.wait()
+        if self.dataProcessingThread.isRunning():
+            self.dataProcessingThread.quit()
+            self.dataProcessingThread.wait()
         if self.statsThread.isRunning():
             self.statsThread.quit()
             self.statsThread.wait()
+
+        self.statistics.deleteLater()
 
     @Slot()
     def onViewClosed(self):

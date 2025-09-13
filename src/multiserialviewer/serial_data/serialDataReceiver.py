@@ -1,5 +1,5 @@
 from PySide6.QtSerialPort import QSerialPort
-from PySide6.QtCore import Slot, Signal, QObject, QByteArray
+from PySide6.QtCore import Slot, Signal, QObject, QByteArray, QThread
 from multiserialviewer.settings.serialConnectionSettings import SerialConnectionSettings
 from datetime import datetime
 
@@ -22,9 +22,10 @@ class SerialDataReceiver(QObject):
 
     def openPort(self) -> tuple[bool, str]:
         if not self.__serialPort.isOpen():
-            openedSuccessfully = self.__serialPort.open(QSerialPort.OpenModeFlag.ReadOnly)
-            self.__serialPort.clear(QSerialPort.Direction.AllDirections)
             self.__serialPort.clearError()
+            openedSuccessfully = self.__serialPort.open(QSerialPort.OpenModeFlag.ReadOnly)
+            if openedSuccessfully:
+                self.__serialPort.clear(QSerialPort.Direction.AllDirections)
             return openedSuccessfully, self.__serialPort.error().name
         else:
             return True, QSerialPort.SerialPortError.NoError.name
