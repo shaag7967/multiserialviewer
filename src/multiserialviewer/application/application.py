@@ -10,7 +10,6 @@ from multiserialviewer.gui_main.mainWindow import MainWindow
 from multiserialviewer.application.serialViewerControllerPool import SerialViewerControllerPool
 from multiserialviewer.icons.iconSet import IconSet
 from multiserialviewer.settings.settings import Settings
-from multiserialviewer.settings.applicationSettings import ApplicationSettings
 from multiserialviewer.settings.serialConnectionSettings import SerialConnectionSettings
 from multiserialviewer.settings.textHighlighterSettings import TextHighlighterSettings
 from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings
@@ -56,6 +55,10 @@ class Application(QApplication):
 
         if self.controllerPool.count() == 0:
             self.showSerialViewerCreateDialog()
+
+    @staticmethod
+    def setApplicationAttributes():
+        QApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
 
     def initMainWindow(self):
         self.mainWindow.resize(self.settings.mainWindow.size)

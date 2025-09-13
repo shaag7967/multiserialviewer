@@ -22,10 +22,9 @@ class SerialDataReceiver(QObject):
 
     def openPort(self) -> tuple[bool, str]:
         if not self.__serialPort.isOpen():
+            openedSuccessfully = self.__serialPort.open(QSerialPort.OpenModeFlag.ReadOnly)
             self.__serialPort.clear(QSerialPort.Direction.AllDirections)
             self.__serialPort.clearError()
-
-            openedSuccessfully = self.__serialPort.open(QSerialPort.OpenModeFlag.ReadOnly)
             return openedSuccessfully, self.__serialPort.error().name
         else:
             return True, QSerialPort.SerialPortError.NoError.name

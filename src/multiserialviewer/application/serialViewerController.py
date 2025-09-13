@@ -19,10 +19,8 @@ class SerialViewerController(QObject):
 
         self.serialDataThread: QThread = QThread(self)
         self.serialDataThread.setObjectName('SerialData thread')
-        self.serialDataThread.setPriority(QThread.Priority.NormalPriority)
         self.statsThread: QThread = QThread(self)
         self.statsThread.setObjectName('statsThread thread')
-        self.statsThread.setPriority(QThread.Priority.TimeCriticalPriority)
 
         self.receiver: SerialDataReceiver = SerialDataReceiver(settings.connection)
         self.processor: SerialDataProcessor = SerialDataProcessor()
@@ -40,8 +38,11 @@ class SerialViewerController(QObject):
         self.counterHandler.moveToThread(self.serialDataThread)
         self.watchHandler.moveToThread(self.serialDataThread)
         self.statisticsHandler.moveToThread(self.statsThread)
+
         self.serialDataThread.start()
+        self.serialDataThread.setPriority(QThread.Priority.NormalPriority)
         self.statsThread.start()
+        self.statsThread.setPriority(QThread.Priority.TimeCriticalPriority)
 
         self.view: SerialViewerWindow = view
         # counter
