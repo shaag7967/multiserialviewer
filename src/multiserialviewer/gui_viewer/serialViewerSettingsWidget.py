@@ -94,7 +94,7 @@ class SerialViewerSettingsWidget(QWidget):
         self.widget.lb_portInfo.setText("")
         for port in QSerialPortInfo.availablePorts():
             if self.widget.cb_portName.currentText() == port.portName():
-                info = f"{port.manufacturer()} / {port.description()} / {port.serialNumber()}"
+                info = " / ".join(filter(None, [port.manufacturer(), port.description(), port.serialNumber()]))
                 info += f" / VID{port.vendorIdentifier()}" if port.hasVendorIdentifier() else ''
                 info += f" / PID{port.productIdentifier()}" if port.hasProductIdentifier() else ''
                 self.widget.lb_portInfo.setText(info)
