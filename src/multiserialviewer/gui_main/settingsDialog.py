@@ -71,6 +71,8 @@ class SettingsDialog(QDialog):
             Qt.CheckState.Checked if settings.application.values.restoreCaptureState else Qt.CheckState.Unchecked)
         self.widget.cb_showNonPrintableAsHex.setCheckState(
             Qt.CheckState.Checked if settings.application.values.showNonPrintableCharsAsHex else Qt.CheckState.Unchecked)
+        self.widget.cb_backspaceDeletesLastLine.setCheckState(
+            Qt.CheckState.Checked if settings.application.values.backspaceDeletesLastLine else Qt.CheckState.Unchecked)
 
         self.widget.cb_showTimestamp.setCheckState(
             Qt.CheckState.Checked if settings.application.values.showTimestamp else Qt.CheckState.Unchecked)
@@ -94,6 +96,7 @@ class SettingsDialog(QDialog):
     def applyChanges(self):
         self.settings.application.values.restoreCaptureState = self.widget.cb_restoreCaptureState.checkState() == Qt.CheckState.Checked
         self.settings.application.values.showNonPrintableCharsAsHex = self.widget.cb_showNonPrintableAsHex.checkState() == Qt.CheckState.Checked
+        self.settings.application.values.backspaceDeletesLastLine = self.widget.cb_backspaceDeletesLastLine.checkState() == Qt.CheckState.Checked
 
         self.settings.application.values.showTimestamp = self.widget.cb_showTimestamp.checkState() == Qt.CheckState.Checked
         try:

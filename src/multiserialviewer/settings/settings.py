@@ -96,6 +96,7 @@ class Settings:
             self.values.showTimestamp = False
             self.values.timestampFormat = ApplicationSettings.DEFAULT_TIMESTAMP_FORMAT
             self.values.showNonPrintableCharsAsHex = True
+            self.values.backspaceDeletesLastLine = False
 
             self.captureActive = False
 
@@ -113,6 +114,8 @@ class Settings:
                 self.values.timestampFormat = settings.value("timestampFormat")
             if settings.contains("showNonPrintableCharsAsHex"):
                 self.values.showNonPrintableCharsAsHex = settings.value("showNonPrintableCharsAsHex", type=bool)
+            if settings.contains("backspaceDeletesLastLine"):
+                self.values.backspaceDeletesLastLine = settings.value("backspaceDeletesLastLine", type=bool)
             settings.endGroup()
 
         def saveSettings(self, settings: QSettings):
@@ -122,6 +125,7 @@ class Settings:
             settings.setValue("showTimestamp", self.values.showTimestamp)
             settings.setValue("timestampFormat", self.values.timestampFormat)
             settings.setValue("showNonPrintableCharsAsHex", self.values.showNonPrintableCharsAsHex)
+            settings.setValue("backspaceDeletesLastLine", self.values.backspaceDeletesLastLine)
             settings.endGroup()
 
     class MainWindow:

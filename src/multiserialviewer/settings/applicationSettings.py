@@ -5,5 +5,6 @@ class ApplicationSettings:
     def __init__(self):
         self.restoreCaptureState: bool = False
         self.showNonPrintableCharsAsHex: bool = False
+        self.backspaceDeletesLastLine: bool = False
         self.showTimestamp: bool = False
         self.timestampFormat: str = ""

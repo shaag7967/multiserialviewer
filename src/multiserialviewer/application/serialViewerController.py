@@ -25,6 +25,7 @@ class SerialViewerController(QObject):
         self.receiver: SerialDataReceiver = SerialDataReceiver(settings.connection)
         self.processor: SerialDataProcessor = SerialDataProcessor()
         self.processor.setConvertNonPrintableCharsToHex(settingsApplication.showNonPrintableCharsAsHex)
+        self.processor.setBackspaceDeletesLastLine(settingsApplication.backspaceDeletesLastLine)
         self.processor.setShowTimestampAtLineStart(settingsApplication.showTimestamp, settingsApplication.timestampFormat)
         self.statistics: SerialDataStatistics = SerialDataStatistics(settings.connection)
 
@@ -60,6 +61,7 @@ class SerialViewerController(QObject):
         self.view.signal_closed.connect(self.onViewClosed)
 
         self.processor.signal_asciiDataAvailable.connect(self.view.appendData)
+        self.processor.signal_deleteLine.connect(self.view.deleteLastLine)
         self.processor.signal_numberOfNonPrintableChars.connect(self.statisticsHandler.handleInvalidByteCounter)
         self.receiver.signal_rawDataAvailable.connect(self.processor.handleRawData)
         self.receiver.signal_rawDataAvailable.connect(self.statistics.handleRawData)

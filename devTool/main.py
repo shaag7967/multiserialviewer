@@ -37,6 +37,12 @@ class Writer(QObject):
                           "\nvoltage=3300mV"
                           "\ntemperature: 27"
                           "\nadc value: 222")
+    TEXT_TO_WRITE_3: str = ("\nSome text 1"
+                            "\nSome text 2"
+                            "\bSome text 2.5"
+                            "\bSome text 3"
+                            "\nSome text 4"
+                            "\bSome text 5")
 
     def __init__(self, portName: str, baudrate: int):
         super(Writer, self).__init__()
@@ -51,14 +57,14 @@ class Writer(QObject):
             raise Exception(self.__serialPort.error().name)
 
         self.__serialPort.bytesWritten.connect(self.write)
-        self.__maxWriteCount = 1     # <<<=== change here number of writes
+        self.__maxWriteCount = 10     # <<<=== change here number of writes
         self.__writeCounter = 0
 
         self.__printCnt_col = 0
         self.__printCnt_row = 0
 
-        self.__data: QByteArray = QByteArray.fromStdString(Writer.TEXT_TO_WRITE_2)
-        self.__data += bytearray(b'\x00\x01\x02\x03')
+        self.__data: QByteArray = QByteArray.fromStdString(Writer.TEXT_TO_WRITE_3)
+        # self.__data += bytearray(b'\x00\x01\x02\x03')
 
         # self.__data: QByteArray = QByteArray()
         # length = np.pi * 2

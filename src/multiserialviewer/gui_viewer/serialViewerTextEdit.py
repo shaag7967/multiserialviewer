@@ -39,6 +39,15 @@ class SerialViewerTextEdit(QTextEdit):
         if scrollToBottom:
             self.scrollToBottom()
 
+    def deleteLastLine(self, scrollToBottom: bool):
+        cursor: QTextCursor = QTextCursor(self.document())
+        cursor.movePosition(QTextCursor.MoveOperation.End)
+        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock, QTextCursor.MoveMode.KeepAnchor)
+        cursor.removeSelectedText()
+
+        if scrollToBottom:
+            self.scrollToBottom()
+
     def appendErrorMessage(self, message: str, scrollToBottom: bool):
         cursor: QTextCursor = QTextCursor(self.document())
         cursor.movePosition(QTextCursor.MoveOperation.End)

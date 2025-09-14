@@ -53,6 +53,13 @@
           </widget>
          </item>
          <item>
+          <widget class="QCheckBox" name="cb_backspaceDeletesLastLine">
+           <property name="text">
+            <string>Delete last line when receiving BACKSPACE (0x08, '\b')</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QCheckBox" name="cb_showTimestamp">
            <property name="text">
             <string>Show timestamp at start of line</string>

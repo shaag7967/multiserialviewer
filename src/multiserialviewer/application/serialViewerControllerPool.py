@@ -26,6 +26,7 @@ class SerialViewerControllerPool(QObject):
     def setApplicationSettings(self, values: ApplicationSettings):
         for ctrl in self.__controller:
             ctrl.processor.setConvertNonPrintableCharsToHex(values.showNonPrintableCharsAsHex)
+            ctrl.processor.setBackspaceDeletesLastLine(values.backspaceDeletesLastLine)
             ctrl.processor.setShowTimestampAtLineStart(values.showTimestamp, values.timestampFormat)
 
     def add(self, ctrl: SerialViewerController):

@@ -165,6 +165,10 @@ class SerialViewerWindow(QMdiSubWindow):
         self.textEdit.appendData(data, self.autoscroll.autoscrollIsActive())
 
     @Slot()
+    def deleteLastLine(self):
+        self.textEdit.deleteLastLine(self.autoscroll.autoscrollIsActive())
+
+    @Slot()
     def appendErrorMessage(self, message: str):
         self.textEdit.appendErrorMessage(message, self.autoscroll.autoscrollIsActive())
 
