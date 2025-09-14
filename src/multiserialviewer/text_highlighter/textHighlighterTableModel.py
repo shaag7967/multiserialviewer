@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex
-from PySide6.QtGui import QColor
+from PySide6.QtGui import QColor, QFont
 from typing import List
 from collections import OrderedDict
 
@@ -58,15 +58,18 @@ class TextHighlighterTableModel(QAbstractTableModel):
         elif column == 5:
             self.settings[row].font_size = int(value)
 
-        self.dataChanged.emit(index, index)
+        idx = super().index(row, 0)
+        self.dataChanged.emit(idx, index)
         return True
 
     def flags(self, index):
-        f = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
+        f = Qt.ItemFlag.ItemIsEnabled
         if index.column() in [0, 1, 2, 5]:
             f |= Qt.ItemFlag.ItemIsEditable
         elif index.column() == 3 or index.column() == 4:
             f |= Qt.ItemFlag.ItemIsUserCheckable
+        if index.column() == 0:
+            f |= Qt.ItemFlag.ItemIsSelectable
         return f
 
     def data(self, index: QModelIndex, role=Qt.ItemDataRole.DisplayRole):
@@ -85,6 +88,10 @@ class TextHighlighterTableModel(QAbstractTableModel):
         if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
             if column == 0:
                 return self.settings[row].pattern
+            elif column == 1:
+                return self.settings[row].color_foreground
+            elif column == 2:
+                return self.settings[row].color_background
             elif column == 5:
                 return self.settings[row].font_size
         elif role == Qt.ItemDataRole.CheckStateRole:
@@ -101,9 +108,18 @@ class TextHighlighterTableModel(QAbstractTableModel):
         elif role == Qt.ItemDataRole.ForegroundRole:
             if column == 0:
                 return self.color_map[self.settings[row].color_foreground][2]
+        elif role == Qt.ItemDataRole.FontRole:
+            if column == 0:
+                font = QFont()
+                font.setBold(self.settings[row].bold)
+                font.setItalic(self.settings[row].italic)
+                font.setPointSize(self.settings[row].font_size)
+                return font
         elif role == Qt.ItemDataRole.TextAlignmentRole:
             if column == 0:
                 return Qt.AlignmentFlag.AlignRight + Qt.AlignmentFlag.AlignVCenter
+            elif column == 1 or column == 2:
+                return Qt.AlignmentFlag.AlignCenter
         return None
 
     def replaceRow(self, row, content: TextHighlighterSettings):
