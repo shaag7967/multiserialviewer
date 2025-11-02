@@ -1,3 +1,6 @@
+[![PyPI version](https://badge.fury.io/py/multiserialviewer.svg)](https://pypi.org/project/multiserialviewer/)
+![Release](https://img.shields.io/github/v/release/shaag7967/multiserialviewer)
+![License](https://img.shields.io/github/license/shaag7967/multiserialviewer.svg)
 
 # multiserialviewer
 
