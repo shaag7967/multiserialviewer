@@ -19,12 +19,15 @@ class WatchHandler(QObject):
             self.createWatch(watchSettings.name, watchSettings.description, watchSettings.variableType.name, watchSettings.pattern)
 
     def getSettings(self) -> list[WatchSettings]:
-        assert len(self.textExtractors) == len(self.watchTableModel.entries)
+        if len(self.textExtractors) != len(self.watchTableModel.entries):
+            raise ValueError(f"Internal inconsistency: {len(self.textExtractors)} extractors but {len(self.watchTableModel.entries)} entries")
 
         settings: list[WatchSettings] = []
         for index, entry in enumerate(self.watchTableModel.entries):
-            assert isinstance(entry, (WatchEntryNumber, WatchEntryWord))
-            assert entry.name == self.textExtractors[index].name
+            if not isinstance(entry, (WatchEntryNumber, WatchEntryWord)):
+                raise ValueError(f"Unexpected entry type at index {index}: {type(entry)}")
+            if entry.name != self.textExtractors[index].name:
+                raise ValueError(f"Name mismatch at index {index}: entry '{entry.name}' vs extractor '{self.textExtractors[index].name}'")
 
             if isinstance(self.watchTableModel.entries[index], WatchEntryNumber):
                 settings.append(WatchSettings(entry.name, '', WatchSettings.VariableType.number, entry.pattern))

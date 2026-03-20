@@ -19,7 +19,11 @@ class TextHighlighter(QSyntaxHighlighter):
             return
 
         for setting in self._settings:
-            for match in re.finditer(setting.pattern, text):
+            try:
+                matches = list(re.finditer(setting.pattern, text))
+            except re.error:
+                continue
+            for match in matches:
                 text_format = QTextCharFormat()
                 text_format.setFontItalic(bool(setting.italic))
                 if setting.bold:

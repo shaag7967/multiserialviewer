@@ -8,6 +8,7 @@ class StreamingTextExtractor(QObject):
     def __init__(self, name: str, pattern: str):
         super(StreamingTextExtractor, self).__init__()
 
+        self.alreadyProcessed = False
         self.name = name
         self.regex = re.compile(pattern)
         self.buffer: str = ''
@@ -51,7 +52,7 @@ class StreamingTextExtractor(QObject):
 
     @Slot()
     def processTimeout(self):
-        if self.alreadyProcessed == True:
+        if self.alreadyProcessed:
             # processBytesFromStream was called in the meantime (event queue...)
             return
 
