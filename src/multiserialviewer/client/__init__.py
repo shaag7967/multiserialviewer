@@ -7,5 +7,6 @@ needed (pyserial in addition, if the serial port shall be opened directly).
 """
 
 from multiserialviewer.client.serialDataClient import SerialDataClient, getPortsOccupiedByMsv
+from multiserialviewer.serial_data.serialDataServerProtocol import DEFAULT_HOST, DEFAULT_TCP_PORT
 
-__all__ = ['SerialDataClient', 'getPortsOccupiedByMsv']
+__all__ = ['SerialDataClient', 'getPortsOccupiedByMsv', 'DEFAULT_HOST', 'DEFAULT_TCP_PORT']
