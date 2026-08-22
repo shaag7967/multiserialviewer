@@ -30,7 +30,9 @@ class SerialViewerWindow(QMdiSubWindow):
         widget = createWidgetFromUiFile("serialViewerWindow.ui")
 
         self.setWidget(widget)
-        self.setWindowTitle(windowTitle)
+        self.__windowName: str = windowTitle
+        self.__dataServerClientCount: int = 0
+        self.__updateWindowTitle()
         self.setWindowIcon(iconSet.getSerialViewerIcon())
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
@@ -182,4 +184,22 @@ class SerialViewerWindow(QMdiSubWindow):
 
     @Slot()
     def setWindowName(self, name: str):
-        self.setWindowTitle(name)
+        self.__windowName = name
+        self.__updateWindowTitle()
+
+    def getWindowName(self) -> str:
+        """Returns the name without the additions made by __updateWindowTitle()."""
+        return self.__windowName
+
+    @Slot(int)
+    def setDataServerClientCount(self, count: int):
+        self.__dataServerClientCount = count
+        self.__updateWindowTitle()
+
+    def __updateWindowTitle(self):
+        if self.__dataServerClientCount == 1:
+            self.setWindowTitle(f'{self.__windowName}  [1 client is reading]')
+        elif self.__dataServerClientCount > 1:
+            self.setWindowTitle(f'{self.__windowName}  [{self.__dataServerClientCount} clients are reading]')
+        else:
+            self.setWindowTitle(self.__windowName)

@@ -4,6 +4,7 @@ from typing import List, Any
 from pathlib import PurePath
 import os
 
+from multiserialviewer.serial_data import serialDataServerProtocol as dataServerProtocol
 from multiserialviewer.settings.applicationSettings import ApplicationSettings
 from multiserialviewer.settings.serialViewerSettings import SerialViewerSettings, CounterSettings, WatchSettings
 from multiserialviewer.settings.textHighlighterSettings import TextHighlighterSettings
@@ -97,6 +98,8 @@ class Settings:
             self.values.timestampFormat = ApplicationSettings.DEFAULT_TIMESTAMP_FORMAT
             self.values.showNonPrintableCharsAsHex = True
             self.values.backspaceDeletesLastLine = False
+            self.values.dataServerEnabled = False
+            self.values.dataServerPort = dataServerProtocol.DEFAULT_TCP_PORT
 
             self.captureActive = False
 
@@ -116,6 +119,10 @@ class Settings:
                 self.values.showNonPrintableCharsAsHex = settings.value("showNonPrintableCharsAsHex", type=bool)
             if settings.contains("backspaceDeletesLastLine"):
                 self.values.backspaceDeletesLastLine = settings.value("backspaceDeletesLastLine", type=bool)
+            if settings.contains("dataServerEnabled"):
+                self.values.dataServerEnabled = settings.value("dataServerEnabled", type=bool)
+            if settings.contains("dataServerPort"):
+                self.values.dataServerPort = settings.value("dataServerPort", type=int)
             settings.endGroup()
 
         def saveSettings(self, settings: QSettings):
@@ -126,6 +133,8 @@ class Settings:
             settings.setValue("timestampFormat", self.values.timestampFormat)
             settings.setValue("showNonPrintableCharsAsHex", self.values.showNonPrintableCharsAsHex)
             settings.setValue("backspaceDeletesLastLine", self.values.backspaceDeletesLastLine)
+            settings.setValue("dataServerEnabled", self.values.dataServerEnabled)
+            settings.setValue("dataServerPort", self.values.dataServerPort)
             settings.endGroup()
 
     class MainWindow:

@@ -112,4 +112,59 @@ create counter.
 
 In the statistics tab you find basic information about the received data.
 
+### Share the received data with other applications
+
+A serial port can only be opened by one application at a time. So normally you have to stop the
+capture of a port before another application (e.g. a script of yours) can use it.
+
+To avoid that, you can enable the "Serial data server" in the settings dialog. It provides the
+received raw data of all your ports on a local TCP port (default 45600), read-only.
+
+As long as somebody reads the data of a port, its window title says so, e.g.
+`COM6  [1 client is reading]`.
+
+#### Reading the data from your own script
+
+`SerialDataClient` comes with multiserialviewer. It reads through multiserialviewer if it captures
+the port, and opens the port directly if it does not - your script does not have to know which of
+the two applies:
+
+    from multiserialviewer.client import SerialDataClient
+
+    with SerialDataClient('COM6', 115200) as client:
+        print(f'reading from {client.description}')
+        while True:
+            data = client.read()
+            if not data:
+                break                  # the port is free now
+            ...
+
+Importing `multiserialviewer.client` does not pull in PySide6 - the standard library is enough.
+Only the direct access to a serial port needs pyserial:
+
+    pip install multiserialviewer[direct]
+
+Pass `allowDirectAccess=False` if your script must never occupy the port itself, and
+`getPortsOccupiedByMsv()` tells you which ports multiserialviewer holds at the moment.
+
+See [examples/readSerialData.py](examples/readSerialData.py) for a complete script.
+
+#### Reading the data without writing a script
+
+    multiserialviewer-client COM6 --baudrate 115200   # raw data to stdout, can be piped
+    multiserialviewer-client --list                   # ports currently occupied
+
+#### The protocol
+
+If you want to read the data from another language, this is all it takes. A client connects, sends
+the name of the serial port it is interested in and receives the raw data from then on:
+
+    SUB COM6\n  ->  'OK COM6\n' + raw data stream
+                    'ERR CLOSED\n' if the port is currently not captured
+                    'ERR NOPORT\n' if no serial viewer exists for that port
+    LIST\n      ->  'PORTS COM3 COM6\n' (ports currently occupied by multiserialviewer)
+
+'OK' is sent only if multiserialviewer really holds the port at that moment. So a client that does
+not get a data stream can safely open the serial port on its own - it does not have to know whether
+multiserialviewer is running at all.
 

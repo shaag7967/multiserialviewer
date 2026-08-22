@@ -19,6 +19,13 @@ class SerialViewerControllerPool(QObject):
     def getUsedPorts(self) -> list[str]:
         return [ctrl.getPortName() for ctrl in self.__controller]
 
+    def getController(self, portName: str) -> SerialViewerController | None:
+        return next((ctrl for ctrl in self.__controller if ctrl.getPortName() == portName), None)
+
+    def getCapturedPorts(self) -> list[str]:
+        """Returns the ports that are opened at this moment."""
+        return [ctrl.getPortName() for ctrl in self.__controller if ctrl.receiver.portIsOpen()]
+
     def setHighlighterSettings(self, entries: list[TextHighlighterSettings]):
         for ctrl in self.__controller:
             ctrl.view.setHighlighterSettings(entries)

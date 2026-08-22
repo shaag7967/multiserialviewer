@@ -26,6 +26,7 @@ class SettingsDialog(QDialog):
         self.__init(self.settings)
 
         self.widget.ed_timestampFormat.textChanged.connect(self.validateTimestampFormat)
+        self.widget.cb_dataServerEnabled.toggled.connect(self.widget.sb_dataServerPort.setEnabled)
 
         #
         # text highlighter
@@ -79,6 +80,11 @@ class SettingsDialog(QDialog):
         self.widget.ed_timestampFormat.setPlaceholderText(ApplicationSettings.DEFAULT_TIMESTAMP_FORMAT)
         self.widget.ed_timestampFormat.setText(settings.application.values.timestampFormat)
 
+        self.widget.cb_dataServerEnabled.setCheckState(
+            Qt.CheckState.Checked if settings.application.values.dataServerEnabled else Qt.CheckState.Unchecked)
+        self.widget.sb_dataServerPort.setValue(settings.application.values.dataServerPort)
+        self.widget.sb_dataServerPort.setEnabled(settings.application.values.dataServerEnabled)
+
         self.tableModel = TextHighlighterTableModel(settings.textHighlighter.entries)
         self.widget.tableView.setModel(self.tableModel)
         selectionModel: QItemSelectionModel = self.widget.tableView.selectionModel()
@@ -107,6 +113,9 @@ class SettingsDialog(QDialog):
             self.settings.application.values.timestampFormat = timestampFormat
         except ValueError:
             self.settings.application.values.timestampFormat = ApplicationSettings.DEFAULT_TIMESTAMP_FORMAT
+
+        self.settings.application.values.dataServerEnabled = self.widget.cb_dataServerEnabled.checkState() == Qt.CheckState.Checked
+        self.settings.application.values.dataServerPort = self.widget.sb_dataServerPort.value()
 
         self.settings.textHighlighter.entries = self.tableModel.settings
         self.accept()

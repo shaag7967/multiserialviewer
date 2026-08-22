@@ -83,6 +83,10 @@ class SerialViewerController(QObject):
             self.receiver.closePort()
             self.showStopMessage(f'Closed {self.receiver.getSettings().portName}')
 
+    @Slot(int)
+    def setDataServerClientCount(self, count: int):
+        self.view.setDataServerClientCount(count)
+
     def clearAll(self):
         self.processor.clear()
         self.view.clear()

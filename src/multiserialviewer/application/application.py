@@ -2,9 +2,11 @@ from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import Slot, Qt
 from PySide6.QtGui import QGuiApplication
 from platformdirs import user_config_dir
+from functools import partial
 import copy
 
 from multiserialviewer.application.serialViewerController import SerialViewerController
+from multiserialviewer.serial_data.serialDataServer import SerialDataServer
 from multiserialviewer.application.proxyStyle import ProxyStyle
 from multiserialviewer.gui_main.mainWindow import MainWindow
 from multiserialviewer.application.serialViewerControllerPool import SerialViewerControllerPool
@@ -27,6 +29,9 @@ class Application(QApplication):
 
         self.captureActive: bool = False
         self.controllerPool: SerialViewerControllerPool = SerialViewerControllerPool()
+        self.dataServer: SerialDataServer = SerialDataServer(self.controllerPool.getUsedPorts,
+                                                             self.controllerPool.getCapturedPorts)
+        self.dataServer.signal_clientCountChanged.connect(self.onDataServerClientCountChanged)
 
         colorScheme: Qt.ColorScheme = QGuiApplication.styleHints().colorScheme()
         if colorScheme == Qt.ColorScheme.Dark:
@@ -47,6 +52,7 @@ class Application(QApplication):
         self.mainWindow.signal_createTextHighlightEntry.connect(self.createTextHighlightEntry)
 
         self.initMainWindow()
+        self.updateDataServerState()
         self.initSerialViewer()
         self.initCaptureState()
 
@@ -69,6 +75,15 @@ class Application(QApplication):
             self.createSerialViewer(serialViewerSetting)
         # note: highlighter settings do not need to be applied here, because this is
         #       done inside function createSerialViewer
+
+    def updateDataServerState(self):
+        if self.settings.application.values.dataServerEnabled:
+            tcpPort = self.settings.application.values.dataServerPort
+            started, msg = self.dataServer.start(tcpPort)
+            if not started:
+                print(f'Failed to start data server on TCP port {tcpPort} ({msg})')
+        else:
+            self.dataServer.stop()
 
     def initCaptureState(self):
         if self.settings.application.values.restoreCaptureState:
@@ -100,6 +115,7 @@ class Application(QApplication):
         self.settings.textHighlighter = modifiedSettings.textHighlighter
         self.controllerPool.setHighlighterSettings(self.settings.textHighlighter.entries)
         self.controllerPool.setApplicationSettings(self.settings.application.values)
+        self.updateDataServerState()
 
     @Slot(SerialViewerSettings)
     def createSerialViewer(self, settings: SerialViewerSettings):
@@ -116,11 +132,19 @@ class Application(QApplication):
 
         ctrl = SerialViewerController(settings, self.settings.application.values, view)
         ctrl.signal_deleteController.connect(self.controllerPool.deleteController, type=Qt.ConnectionType.QueuedConnection)
+        ctrl.signal_deleteController.connect(self.dataServer.closeSubscribers)
+        ctrl.receiver.signal_rawDataAvailable.connect(partial(self.dataServer.dispatch, settings.connection.portName))
         self.controllerPool.add(ctrl)
 
         if self.captureActive:
             if not ctrl.startCapture():
                 self.stopCapture()
+
+    @Slot(str, int)
+    def onDataServerClientCountChanged(self, portName: str, count: int):
+        ctrl = self.controllerPool.getController(portName)
+        if ctrl is not None:  # may already be deleted
+            ctrl.setDataServerClientCount(count)
 
     @Slot()
     def clearAll(self):
@@ -143,6 +167,9 @@ class Application(QApplication):
     @Slot()
     def stopCapture(self):
         self.controllerPool.stopCapture()
+        # the serial ports are free now, so we disconnect all clients of the data
+        # server. They see the end of the stream and can open the ports themselves.
+        self.dataServer.closeAllSubscribers()
         self.captureActive = False
         self.mainWindow.updateCaptureButton(self.captureActive)
 
@@ -157,7 +184,7 @@ class Application(QApplication):
         ctrl: SerialViewerController
         for ctrl in self.controllerPool.entries():
             settings = SerialViewerSettings()
-            settings.title = ctrl.view.windowTitle()
+            settings.title = ctrl.view.getWindowName()
             settings.size = ctrl.view.size()
             settings.position = ctrl.view.pos()
             settings.splitterState = ctrl.view.splitter.saveState()
@@ -183,4 +210,5 @@ class Application(QApplication):
     def onAboutToBeClosed(self):
         self.persistCurrentSettings()
         self.stopCapture()
+        self.dataServer.stop()
         self.controllerPool.deleteAll()

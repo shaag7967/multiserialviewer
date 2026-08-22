@@ -1,0 +1,47 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "MultiSerialViewer",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "multiserialviewer",
+            "python": "${command:python.interpreterPath}",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                // run from source, without installing the package
+                "PYTHONPATH": "${workspaceFolder}/src"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "MultiSerialViewer client (COM6)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "multiserialviewer.client",
+            "python": "${command:python.interpreterPath}",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            },
+            "args": ["COM6", "--baudrate", "115200"],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "MultiSerialViewer client example (COM6)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/examples/readSerialData.py",
+            "python": "${command:python.interpreterPath}",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            },
+            "args": ["COM6", "115200"],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        }
+    ]
+}
